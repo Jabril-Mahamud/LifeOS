@@ -6,7 +6,7 @@ node_modules
 /server-build
 .env
 .cache
-
+.env.local
 /prisma/data.db
 /prisma/data.db-journal
 /tests/prisma
