@@ -1,10 +1,7 @@
 import { UserDetails } from "../components/user-details";
 import { UserButton } from "@clerk/nextjs";
 import { CodeSwitcher } from "../components/code-switcher";
-import { LearnMore } from "../components/learn-more";
 import { Footer } from "../components/footer";
-import { ClerkLogo } from "../components/clerk-logo";
-import { NextLogo } from "../components/next-logo";
 import { PostsList } from "../components/posts-list";
 
 import { DASHBOARD_CARDS } from "../consts/cards";
@@ -17,9 +14,7 @@ export default async function DashboardPage() {
           <div>
             <header className="flex items-center justify-between w-full h-16 gap-4">
               <div className="flex gap-4">
-                <ClerkLogo />
-                <div aria-hidden className="w-px h-6 bg-[#C7C7C8]" />
-                <NextLogo />
+                
               </div>
               <div className="flex items-center gap-2">
                 <UserButton
@@ -44,7 +39,6 @@ export default async function DashboardPage() {
           </div>
         </div>
       </main>
-      <LearnMore cards={DASHBOARD_CARDS} />
       <Footer />
     </>
   );
