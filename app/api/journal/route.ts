@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
+import { startOfDay, endOfDay } from 'date-fns';
 
 export async function GET(req: NextRequest) {
   const authObject = await auth();
@@ -46,15 +47,74 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // Check if there's a date parameter in the request
+    const dateParam = req.nextUrl.searchParams.get('date');
+    let date: Date | null = null;
+    
+    if (dateParam) {
+      date = new Date(dateParam);
+      if (isNaN(date.getTime())) {
+        return NextResponse.json({ error: 'Invalid date parameter' }, { status: 400 });
+      }
+    }
+
     // Get user's journal entries
     const entries = await prisma.journal.findMany({
-      where: { authorId: dbUser.id },
-      orderBy: { createdAt: 'desc' },
+      where: { 
+        authorId: dbUser.id,
+        ...(date && {
+          date: {
+            gte: startOfDay(date),
+            lte: endOfDay(date),
+          }
+        })
+      },
+      orderBy: { date: 'desc' },
+      include: {
+        habitLogs: {
+          include: {
+            habit: true,
+          },
+        },
+      },
+    });
+
+    // Get today's entry if it exists
+    const today = new Date();
+    const todayStart = startOfDay(today);
+    const todayEnd = endOfDay(today);
+    
+    const todayEntry = await prisma.journal.findFirst({
+      where: {
+        authorId: dbUser.id,
+        date: {
+          gte: todayStart,
+          lte: todayEnd,
+        },
+      },
+      include: {
+        habitLogs: {
+          include: {
+            habit: true,
+          },
+        },
+      },
+    });
+
+    // Get user's active habits
+    const habits = await prisma.habit.findMany({
+      where: {
+        authorId: dbUser.id,
+        active: true,
+      },
+      orderBy: { createdAt: 'asc' },
     });
 
     return NextResponse.json({ 
       user: dbUser, 
       entries,
+      todayEntry,
+      habits,
     });
   } catch (error) {
     console.error('Error fetching journal entries:', error);
@@ -74,7 +134,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { title, content, mood = 'neutral' } = await req.json();
+    const { title, content, mood = 'neutral', habitLogs = [] } = await req.json();
     
     if (!title) {
       return NextResponse.json(
@@ -115,17 +175,82 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Check if a journal entry already exists for today
+    const today = new Date();
+    const todayStart = startOfDay(today);
+    const todayEnd = endOfDay(today);
+    
+    const existingEntry = await prisma.journal.findFirst({
+      where: {
+        authorId: dbUser.id,
+        date: {
+          gte: todayStart,
+          lte: todayEnd,
+        },
+      },
+    });
+
+    if (existingEntry) {
+      return NextResponse.json(
+        { error: 'A journal entry for today already exists', entry: existingEntry }, 
+        { status: 400 }
+      );
+    }
+
     // Create a new journal entry
     const entry = await prisma.journal.create({
       data: {
         title,
         content,
         mood,
+        date: today,
         authorId: dbUser.id,
       },
     });
 
-    return NextResponse.json({ entry }, { status: 201 });
+    // Process habit logs if provided
+    const createdHabitLogs = [];
+    if (habitLogs.length > 0) {
+      // Verify these habits belong to the user
+      const habitIds = habitLogs.map((log: any) => log.habitId);
+      const userHabits = await prisma.habit.findMany({
+        where: {
+          id: { in: habitIds },
+          authorId: dbUser.id,
+        },
+      });
+      
+      const validHabitIds = userHabits.map(habit => habit.id);
+      
+      // Create habit logs
+      for (const log of habitLogs) {
+        if (validHabitIds.includes(log.habitId)) {
+          const habitLog = await prisma.habitLog.create({
+            data: {
+              completed: log.completed || false,
+              notes: log.notes || null,
+              journalId: entry.id,
+              habitId: log.habitId,
+            },
+          });
+          createdHabitLogs.push(habitLog);
+        }
+      }
+    }
+
+    // Return the created entry with its habit logs
+    const completeEntry = await prisma.journal.findUnique({
+      where: { id: entry.id },
+      include: {
+        habitLogs: {
+          include: {
+            habit: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({ entry: completeEntry }, { status: 201 });
   } catch (error) {
     console.error('Error creating journal entry:', error);
     return NextResponse.json(

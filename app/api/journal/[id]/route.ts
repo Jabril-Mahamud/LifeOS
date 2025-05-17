@@ -23,9 +23,16 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Get the journal entry
+    // Get the journal entry with habit logs
     const entry = await prisma.journal.findUnique({
       where: { id: params.id },
+      include: {
+        habitLogs: {
+          include: {
+            habit: true,
+          },
+        },
+      },
     });
 
     if (!entry) {
@@ -59,7 +66,7 @@ export async function PATCH(
   }
 
   try {
-    const { title, content, mood } = await req.json();
+    const { title, content, mood, habitLogs = [] } = await req.json();
     
     // Find the user in our database
     const dbUser = await prisma.user.findUnique({
@@ -73,6 +80,9 @@ export async function PATCH(
     // Get the journal entry
     const entry = await prisma.journal.findUnique({
       where: { id: params.id },
+      include: {
+        habitLogs: true,
+      },
     });
 
     if (!entry) {
@@ -94,7 +104,69 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json({ entry: updatedEntry });
+    // Process habit logs if provided
+    if (habitLogs.length > 0) {
+      // Verify these habits belong to the user
+      const habitIds = habitLogs.map((log: any) => log.habitId);
+      const userHabits = await prisma.habit.findMany({
+        where: {
+          id: { in: habitIds },
+          authorId: dbUser.id,
+        },
+      });
+      
+      const validHabitIds = userHabits.map(habit => habit.id);
+      
+      // Update or create habit logs
+      for (const log of habitLogs) {
+        if (validHabitIds.includes(log.habitId)) {
+          // Check if a habit log already exists
+          const existingLog = await prisma.habitLog.findUnique({
+            where: {
+              journalId_habitId: {
+                journalId: entry.id,
+                habitId: log.habitId,
+              },
+            },
+          });
+
+          if (existingLog) {
+            // Update existing log
+            await prisma.habitLog.update({
+              where: { id: existingLog.id },
+              data: {
+                completed: log.completed,
+                notes: log.notes,
+              },
+            });
+          } else {
+            // Create new log
+            await prisma.habitLog.create({
+              data: {
+                completed: log.completed || false,
+                notes: log.notes || null,
+                journalId: entry.id,
+                habitId: log.habitId,
+              },
+            });
+          }
+        }
+      }
+    }
+
+    // Return the updated entry with its habit logs
+    const completeEntry = await prisma.journal.findUnique({
+      where: { id: entry.id },
+      include: {
+        habitLogs: {
+          include: {
+            habit: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({ entry: completeEntry });
   } catch (error) {
     console.error('Error updating journal entry:', error);
     return NextResponse.json(
@@ -139,7 +211,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Delete the journal entry
+    // Delete the journal entry (habit logs will be cascade deleted due to the relation setup)
     await prisma.journal.delete({
       where: { id: params.id },
     });
