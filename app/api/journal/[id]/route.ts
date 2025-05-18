@@ -4,8 +4,9 @@ import prisma from '@/lib/prisma';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const authObject = await auth();
   const userId = authObject.userId;
   
@@ -25,7 +26,7 @@ export async function GET(
 
     // Get the journal entry with habit logs
     const entry = await prisma.journal.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         habitLogs: {
           include: {
@@ -56,8 +57,9 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const authObject = await auth();
   const userId = authObject.userId;
   
@@ -79,7 +81,7 @@ export async function PATCH(
 
     // Get the journal entry
     const entry = await prisma.journal.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         habitLogs: true,
       },
@@ -96,7 +98,7 @@ export async function PATCH(
 
     // Update the journal entry
     const updatedEntry = await prisma.journal.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title: title !== undefined ? title : entry.title,
         content: content !== undefined ? content : entry.content,
@@ -178,8 +180,9 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const authObject = await auth();
   const userId = authObject.userId;
   
@@ -199,7 +202,7 @@ export async function DELETE(
 
     // Get the journal entry
     const entry = await prisma.journal.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!entry) {
@@ -213,7 +216,7 @@ export async function DELETE(
 
     // Delete the journal entry (habit logs will be cascade deleted due to the relation setup)
     await prisma.journal.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });

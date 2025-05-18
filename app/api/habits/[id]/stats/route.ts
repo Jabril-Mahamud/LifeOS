@@ -5,8 +5,9 @@ import { startOfDay, subDays, parseISO, format } from 'date-fns';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const authObject = await auth();
   const userId = authObject.userId;
   
@@ -26,7 +27,7 @@ export async function GET(
 
     // Get the habit
     const habit = await prisma.habit.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!habit) {
@@ -54,7 +55,7 @@ export async function GET(
       include: {
         habitLogs: {
           where: {
-            habitId: params.id
+            habitId: id
           }
         }
       },

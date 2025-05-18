@@ -1,16 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import prisma from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import prisma from "@/lib/prisma";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const authObject = await auth();
   const userId = authObject.userId;
-  
+
   if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -20,28 +21,28 @@ export async function GET(
     });
 
     if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Get the habit
     const habit = await prisma.habit.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!habit) {
-      return NextResponse.json({ error: 'Habit not found' }, { status: 404 });
+      return NextResponse.json({ error: "Habit not found" }, { status: 404 });
     }
 
     // Check if the user is the author of the habit
     if (habit.authorId !== dbUser.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     return NextResponse.json({ habit });
   } catch (error) {
-    console.error('Error fetching habit:', error);
+    console.error("Error fetching habit:", error);
     return NextResponse.json(
-      { error: 'Internal server error' }, 
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -49,39 +50,40 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const authObject = await auth();
   const userId = authObject.userId;
-  
+
   if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const { name, description, icon, color, active } = await req.json();
-    
+
     // Find the user in our database
     const dbUser = await prisma.user.findUnique({
       where: { clerkId: userId },
     });
 
     if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Get the habit
     const habit = await prisma.habit.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!habit) {
-      return NextResponse.json({ error: 'Habit not found' }, { status: 404 });
+      return NextResponse.json({ error: "Habit not found" }, { status: 404 });
     }
 
     // Check if the user is the author of the habit
     if (habit.authorId !== dbUser.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     // If name is being changed, check for duplicates
@@ -90,13 +92,13 @@ export async function PATCH(
         where: {
           authorId: dbUser.id,
           name,
-          id: { not: params.id }, // exclude current habit
+          id: { not: id }, // exclude current habit
         },
       });
 
       if (existingHabit) {
         return NextResponse.json(
-          { error: 'A habit with this name already exists' }, 
+          { error: "A habit with this name already exists" },
           { status: 400 }
         );
       }
@@ -104,10 +106,11 @@ export async function PATCH(
 
     // Update the habit
     const updatedHabit = await prisma.habit.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: name !== undefined ? name : habit.name,
-        description: description !== undefined ? description : habit.description,
+        description:
+          description !== undefined ? description : habit.description,
         icon: icon !== undefined ? icon : habit.icon,
         color: color !== undefined ? color : habit.color,
         active: active !== undefined ? active : habit.active,
@@ -116,9 +119,9 @@ export async function PATCH(
 
     return NextResponse.json({ habit: updatedHabit });
   } catch (error) {
-    console.error('Error updating habit:', error);
+    console.error("Error updating habit:", error);
     return NextResponse.json(
-      { error: 'Internal server error' }, 
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -126,13 +129,14 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const authObject = await auth();
   const userId = authObject.userId;
-  
+
   if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -142,33 +146,33 @@ export async function DELETE(
     });
 
     if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Get the habit
     const habit = await prisma.habit.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!habit) {
-      return NextResponse.json({ error: 'Habit not found' }, { status: 404 });
+      return NextResponse.json({ error: "Habit not found" }, { status: 404 });
     }
 
     // Check if the user is the author of the habit
     if (habit.authorId !== dbUser.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     // Delete the habit
     await prisma.habit.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting habit:', error);
+    console.error("Error deleting habit:", error);
     return NextResponse.json(
-      { error: 'Internal server error' }, 
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
