@@ -1,15 +1,17 @@
-# Daily Journal & Habit Tracker
+# LifeOS
 
-A comprehensive personal journal and habit tracking application built with Next.js, Prisma, and Clerk authentication.
+A comprehensive personal life operating system built with Next.js, Prisma, and Clerk authentication.
 
 ## Overview
 
-This application helps users maintain a daily journaling practice while tracking habits and personal well-being. Features include:
+LifeOS is your all-in-one personal management system designed to help you maintain consistency, track progress, and gain insights into your daily life. Unlike Notion-based life management systems that require complex configuration, LifeOS provides a streamlined, purpose-built experience with:
 
-- 📝 **Daily Journaling**: Create, edit, and review daily journal entries with mood tracking
-- 🏆 **Habit Tracking**: Set up and monitor habits alongside your journal entries
-- 📊 **Visualizations**: View progress with heatmaps, streak calendars, and habit statistics
-- 🔒 **Secure Authentication**: Complete user management with Clerk
+- 📝 **Daily Journaling**: Document your thoughts, experiences, and reflections
+- 🏆 **Habit Tracking**: Build consistency with customizable habit tracking
+- 🧠 **Mood Monitoring**: Track your emotional well-being over time
+- 📊 **Visual Analytics**: Understand patterns with heatmaps, streak calendars, and statistics
+- 🔄 **Daily Consistency**: Maintain your routines with a unified daily check-in process
+- 🔒 **Privacy-First**: Complete user management with secure authentication
 - 📱 **Responsive Design**: Works seamlessly across desktop and mobile devices
 
 ## Tech Stack
@@ -23,7 +25,7 @@ This application helps users maintain a daily journaling practice while tracking
 
 ## Demo
 
-A hosted demo of this example application will be available soon.
+A hosted demo of this application will be available soon.
 
 ## Getting Started
 
@@ -38,8 +40,8 @@ A hosted demo of this example application will be available soon.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/daily-journal-habit-tracker.git
-   cd daily-journal-habit-tracker
+   git clone https://github.com/yourusername/life-os.git
+   cd life-os
    ```
 
 2. Install dependencies:
@@ -80,7 +82,7 @@ A hosted demo of this example application will be available soon.
 
 7. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Features
+## Core Features
 
 ### User Authentication
 
@@ -89,27 +91,30 @@ Powered by Clerk, the application offers a seamless authentication experience:
 - Email and password authentication
 - Social login options
 - User profiles
-- Session management
+- Secure session management
 
-### Journal Entries
+### Journal System
 
 - Create daily journal entries with titles, content, and mood selection
 - View past entries with search and filter capabilities
-- Each day gets one journal entry to encourage consistent practice
+- One journal entry per day to encourage consistent reflection
+- Mood tracking and analysis
 
-### Habit Tracking
+### Habit Management
 
 - Create custom habits with names, descriptions, icons, and colors
-- Track habit completion in daily journal entries
+- Track habit completion alongside your daily journal entries
 - View habit streaks and performance statistics
 - Activate/deactivate habits as needed
+- Build consistency through visual progress indicators
 
-### Dashboard
+### Analytics Dashboard
 
 - View journal activity through a heatmap visualization
 - Track habit streaks and completion rates
-- See mood distribution and trends
+- Analyze mood distribution and trends
 - Get insights into your journaling and habit consistency
+- Make data-driven decisions about your routines
 
 ## Project Structure
 
@@ -142,7 +147,7 @@ Powered by Clerk, the application offers a seamless authentication experience:
 
 You can easily deploy this application on Vercel:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyourusername%2Fdaily-journal-habit-tracker)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyourusername%2Flife-os)
 
 When deploying, make sure to set up the required environment variables in the Vercel dashboard.
 
