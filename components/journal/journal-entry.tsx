@@ -1,7 +1,7 @@
-// This updated version uses shadcn/ui components for a more polished journal entry
+// components/journal/journal-entry.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { formatDistanceToNow, format, isSameDay } from 'date-fns';
 import { HabitTracker } from '../habits/habit-tracker';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,8 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Pencil, Trash, ChevronUp } from "lucide-react";
+import { ChevronDown, Pencil, Trash, ChevronUp, Info } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,8 +21,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Use the same HabitLog type as in journal-entry.tsx
+// Types for habit and habit logs
 type Habit = {
   id: string;
   name: string;
@@ -31,6 +32,7 @@ type Habit = {
   color: string | null;
 };
 
+// Original HabitLog from API
 type HabitLog = {
   id: string;
   habitId: string;
@@ -39,7 +41,7 @@ type HabitLog = {
   habit: Habit;
 };
 
-// Type for the local habit log state used in the form
+// For form state and tracking - with optional id
 type HabitLogForm = {
   id?: string;
   habitId: string;
@@ -77,6 +79,8 @@ export function JournalEntry({
   const [editMood, setEditMood] = useState(mood);
   const [editHabitLogs, setEditHabitLogs] = useState<HabitLogForm[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [allHabits, setAllHabits] = useState<Habit[]>([]);
+  const [isLoadingHabits, setIsLoadingHabits] = useState(false);
 
   const entryDate = new Date(date);
   const formattedDate = format(entryDate, 'EEEE, MMMM d, yyyy');
@@ -84,19 +88,62 @@ export function JournalEntry({
   
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
 
+  // Fetch all habits when editing starts
+  useEffect(() => {
+    if (isEditing) {
+      fetchAllHabits();
+    }
+  }, [isEditing]);
+
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
 
+  // Fetch all habits to ensure we have the complete list for the habit tracker
+  async function fetchAllHabits() {
+    try {
+      setIsLoadingHabits(true);
+      const response = await fetch('/api/habits');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch habits');
+      }
+      
+      const data = await response.json();
+      setAllHabits(data.habits || []);
+      
+      // Initialize edit habit logs from existing habit logs
+      const formattedLogs: HabitLogForm[] = habitLogs.map(log => ({
+        id: log.id,
+        habitId: log.habitId,
+        completed: log.completed,
+        notes: log.notes
+      }));
+      
+      // Make sure all habits are included in the edit logs
+      const currentHabitIds = formattedLogs.map(log => log.habitId);
+      
+      // Add missing habits without an id (will be created when saved)
+      for (const habit of data.habits) {
+        if (!currentHabitIds.includes(habit.id)) {
+          // Add any missing habits to the edit logs (uncompleted by default)
+          formattedLogs.push({
+            habitId: habit.id,
+            completed: false,
+            notes: null
+          });
+        }
+      }
+      
+      setEditHabitLogs(formattedLogs);
+    } catch (err) {
+      console.error('Error fetching habits:', err);
+    } finally {
+      setIsLoadingHabits(false);
+    }
+  }
+
   const startEditing = () => {
-    // Convert the habitLogs to a format suitable for the HabitTracker component
-    const formattedLogs = habitLogs.map(log => ({
-      id: log.id,
-      habitId: log.habitId,
-      completed: log.completed,
-      notes: log.notes
-    }));
-    setEditHabitLogs(formattedLogs);
     setIsEditing(true);
   };
 
@@ -148,7 +195,10 @@ export function JournalEntry({
       <Card className="mb-4">
         <CardHeader>
           <CardTitle>Edit Journal Entry</CardTitle>
-          <CardDescription>Update your thoughts and habit tracking</CardDescription>
+          <CardDescription>
+            {format(new Date(date), 'EEEE, MMMM d, yyyy')} 
+            {!isToday && <span className="ml-1 text-blue-500">(Past Entry)</span>}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
@@ -173,7 +223,7 @@ export function JournalEntry({
           </div>
           
           <div className="grid gap-2">
-            <Label htmlFor="editMood">How are you feeling?</Label>
+            <Label htmlFor="editMood">How were you feeling?</Label>
             <Select value={editMood} onValueChange={setEditMood}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a mood" />
@@ -191,15 +241,32 @@ export function JournalEntry({
             </Select>
           </div>
           
-          {/* Habit Tracker for editing */}
+          {/* Habit Tracker for editing - with loading state */}
           <div>
             <Label>Track Your Habits</Label>
             <div className="mt-2">
-              <HabitTracker
-                habitLogs={editHabitLogs}
-                onHabitLogsChange={handleHabitLogsChange}
-              />
+              {isLoadingHabits ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              ) : (
+                <HabitTracker
+                  habitLogs={editHabitLogs}
+                  onHabitLogsChange={handleHabitLogsChange}
+                  date={date} 
+                />
+              )}
             </div>
+            {!isToday && (
+              <Alert variant="default" className="mt-3 bg-blue-50 text-blue-800 border-blue-200">
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  You can retroactively track habits on past journal entries
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex justify-end gap-2">
@@ -345,6 +412,20 @@ export function JournalEntry({
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+            
+            {/* Button to edit habits on past entries */}
+            {!isToday && habitLogs.length === 0 && (
+              <div className="mt-4 flex justify-center">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={startEditing}
+                  className="text-sm"
+                >
+                  Add Habit Tracking to This Entry
+                </Button>
               </div>
             )}
           </CardContent>

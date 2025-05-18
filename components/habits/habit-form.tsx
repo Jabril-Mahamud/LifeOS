@@ -1,4 +1,5 @@
-// This updated version uses shadcn/ui components for a better habit form
+// components/habits/habit-form.tsx
+// This updated version uses shadcn/ui components with language referencing journaling
 "use client";
 
 import { useState } from 'react';
@@ -93,7 +94,7 @@ export function HabitForm({ onHabitCreated }: HabitFormProps) {
       
       toast({
         title: "Habit created",
-        description: `${values.name} has been added to your habits.`,
+        description: `${values.name} has been added to your journal habits.`,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
@@ -111,7 +112,7 @@ export function HabitForm({ onHabitCreated }: HabitFormProps) {
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle>Create New Habit</CardTitle>
+        <CardTitle>Create Journal Habit</CardTitle>
       </CardHeader>
       
       <Form {...form}>
@@ -130,6 +131,9 @@ export function HabitForm({ onHabitCreated }: HabitFormProps) {
                       {...field} 
                     />
                   </FormControl>
+                  <FormDescription>
+                    This habit will appear in your daily journal entries
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -212,7 +216,7 @@ export function HabitForm({ onHabitCreated }: HabitFormProps) {
               type="submit" 
               disabled={isSubmitting || !form.watch("name").trim()}
             >
-              {isSubmitting ? 'Creating...' : 'Create Habit'}
+              {isSubmitting ? 'Creating...' : 'Create Journal Habit'}
             </Button>
           </CardFooter>
         </form>

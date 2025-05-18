@@ -1,7 +1,13 @@
+// components/habits/habit-streak.tsx
 "use client";
 
 import { useState, useEffect } from 'react';
-import { format, startOfWeek, addDays, parseISO, startOfMonth, endOfMonth, isEqual, isSameDay } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CalendarIcon, TrendingUpIcon, AwardIcon, BarChartIcon } from "lucide-react";
 
 type HabitStreakProps = {
   habitId: string;
@@ -13,221 +19,296 @@ type HabitStreakProps = {
 type HabitLogEntry = {
   date: string;
   completed: boolean;
+  notes?: string | null;
 };
 
-export function HabitStreak({ habitId, habitName, habitIcon, habitColor = "#4299e1" }: HabitStreakProps) {
+type HabitStats = {
+  currentStreak: number;
+  longestStreak: number;
+  completionRate: number;
+  totalDays: number;
+  completedDays: number;
+};
+
+export function HabitStreak({ 
+  habitId, 
+  habitName, 
+  habitIcon = "🎯", 
+  habitColor = "#4299e1" // Default blue color as fallback
+}: HabitStreakProps) {
+  // Ensure habitColor is never null
+  const safeColor = habitColor || "#4299e1";
+  
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [habitLogs, setHabitLogs] = useState<HabitLogEntry[]>([]);
-  const [currentStreak, setCurrentStreak] = useState(0);
-  const [longestStreak, setLongestStreak] = useState(0);
-  const [completionRate, setCompletionRate] = useState(0);
-  
-  // For the activity grid
-  const [firstDayOfMonth, setFirstDayOfMonth] = useState<Date>(startOfMonth(new Date()));
-  const [lastDayOfMonth, setLastDayOfMonth] = useState<Date>(endOfMonth(new Date()));
-  const [daySquares, setDaySquares] = useState<{date: Date, active: boolean, completed: boolean}[]>([]);
+  const [stats, setStats] = useState<HabitStats>({
+    currentStreak: 0,
+    longestStreak: 0,
+    completionRate: 0,
+    totalDays: 0,
+    completedDays: 0
+  });
+  const [viewMode, setViewMode] = useState<'calendar' | 'streak'>('streak');
 
   useEffect(() => {
-    fetchHabitLogs();
+    fetchHabitData();
   }, [habitId]);
 
-  useEffect(() => {
-    if (habitLogs.length > 0) {
-      calculateStreaks();
-      generateActivityGrid();
-    }
-  }, [habitLogs]);
-
-  async function fetchHabitLogs() {
-    // This would be a real API endpoint in a production app
-    // For now, let's generate some mock data
-    setIsLoading(true);
-    
+  async function fetchHabitData() {
     try {
-      // In a real app, you would fetch the data from an API:
-      // const response = await fetch(`/api/habits/${habitId}/logs`);
-      // const data = await response.json();
-      // if (!response.ok) throw new Error(data.error || 'Failed to fetch habit logs');
-      // setHabitLogs(data.logs);
+      setIsLoading(true);
+      const response = await fetch(`/api/habits/${habitId}/stats`);
       
-      // For now, let's generate some mock data for the last 30 days
-      const mockLogs: HabitLogEntry[] = [];
-      const today = new Date();
-      
-      for (let i = 30; i >= 0; i--) {
-        const date = addDays(today, -i);
-        // Randomly determine if the habit was completed on this day (more likely to be completed on recent days)
-        const completed = Math.random() < (0.5 + (30 - i) * 0.01);
-        mockLogs.push({
-          date: date.toISOString(),
-          completed
-        });
+      if (!response.ok) {
+        throw new Error('Failed to fetch habit statistics');
       }
       
-      setHabitLogs(mockLogs);
+      const data = await response.json();
+      setHabitLogs(data.dailyLogs || []);
+      setStats(data.stats || {
+        currentStreak: 0,
+        longestStreak: 0,
+        completionRate: 0,
+        totalDays: 0,
+        completedDays: 0
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error fetching habit logs:', err);
+      console.error('Error fetching habit stats:', err);
     } finally {
       setIsLoading(false);
     }
   }
 
-  function calculateStreaks() {
-    // Sort logs by date (oldest first)
-    const sortedLogs = [...habitLogs].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-    
-    let currentStreakCount = 0;
-    let maxStreakCount = 0;
-    let completedCount = 0;
-    
-    // Calculate current streak (consecutive days up to today)
-    for (let i = sortedLogs.length - 1; i >= 0; i--) {
-      const log = sortedLogs[i];
-      
-      if (log.completed) {
-        currentStreakCount++;
-        completedCount++;
-      } else {
-        break; // Current streak broken
-      }
-    }
-    
-    // Calculate longest streak
-    let tempStreak = 0;
-    sortedLogs.forEach(log => {
-      if (log.completed) {
-        tempStreak++;
-        maxStreakCount = Math.max(maxStreakCount, tempStreak);
-      } else {
-        tempStreak = 0;
-      }
-    });
-    
-    setCurrentStreak(currentStreakCount);
-    setLongestStreak(maxStreakCount);
-    setCompletionRate(Math.round((completedCount / sortedLogs.length) * 100));
-  }
-
-  function generateActivityGrid() {
-    const firstDay = startOfMonth(new Date());
-    const lastDay = endOfMonth(new Date());
-    setFirstDayOfMonth(firstDay);
-    setLastDayOfMonth(lastDay);
-    
-    const days = [];
-    let currentDay = firstDay;
-    
-    while (currentDay <= lastDay) {
-      const active = currentDay <= new Date();
-      
-      // Check if there's a log entry for this day
-      const logEntry = habitLogs.find(log => {
-        const logDate = parseISO(log.date);
-        return isSameDay(logDate, currentDay);
-      });
-      
-      days.push({
-        date: new Date(currentDay),
-        active,
-        completed: logEntry?.completed || false
-      });
-      
-      currentDay = addDays(currentDay, 1);
-    }
-    
-    setDaySquares(days);
-  }
-
   if (isLoading) {
-    return <div className="animate-pulse h-48 bg-gray-200 rounded-md"></div>;
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-1/2" />
+        <div className="space-y-2">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-4 text-center text-red-500">{error}</div>;
+    return (
+      <Card className="bg-red-50 border-red-200">
+        <CardContent className="py-4">
+          <p className="text-red-600">{error}</p>
+        </CardContent>
+      </Card>
+    );
   }
 
-  // Make sure habitColor is a string
-  const colorValue = typeof habitColor === 'string' ? habitColor : "#4299e1";
+  // Helper function to get intensity color based on streak density
+  const getIntensityColor = (streak: number, max: number) => {
+    if (streak === 0) return "#f1f5f9"; // light gray for no streak
+    
+    // Calculate opacity based on streak (50%-100%)
+    const opacity = 0.5 + (streak / max) * 0.5;
+    
+    // Convert hex to rgb for the safe color
+    const r = parseInt(safeColor.slice(1, 3), 16);
+    const g = parseInt(safeColor.slice(3, 5), 16);
+    const b = parseInt(safeColor.slice(5, 7), 16);
+    
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  // Generate calendar data for the monthly view
+  const generateMonthlyCalendar = () => {
+    const today = new Date();
+    const firstDayOfMonth = startOfMonth(today);
+    const lastDayOfMonth = endOfMonth(today);
+    
+    // Get all days in current month
+    const daysInMonth = eachDayOfInterval({ start: firstDayOfMonth, end: lastDayOfMonth });
+    
+    // Group by week (starting with Sunday)
+    const weeks: Date[][] = [];
+    let currentWeek: Date[] = [];
+    
+    daysInMonth.forEach(day => {
+      if (day.getDay() === 0 && currentWeek.length > 0) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
+      currentWeek.push(day);
+    });
+    
+    if (currentWeek.length > 0) {
+      weeks.push(currentWeek);
+    }
+    
+    return weeks;
+  };
+
+  // Check if a day has a completed habit
+  const isDayCompleted = (day: Date) => {
+    const dayString = format(day, 'yyyy-MM-dd');
+    const logEntry = habitLogs.find(log => log.date === dayString);
+    return logEntry?.completed || false;
+  };
+
+  const months = generateMonthlyCalendar();
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4">
-      <div className="flex items-center mb-4">
-        <span className="text-2xl mr-2">{habitIcon}</span>
-        <h3 className="text-lg font-medium">{habitName}</h3>
-      </div>
+    <Card>
+      <CardHeader className="pb-2 flex flex-row items-center gap-2">
+        <span className="text-2xl">{habitIcon}</span>
+        <CardTitle className="text-base">{habitName}</CardTitle>
+      </CardHeader>
       
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="text-center p-3 bg-gray-50 rounded-md">
-          <div className="text-2xl font-bold" style={{ color: colorValue }}>
-            {currentStreak}
-          </div>
-          <div className="text-xs text-gray-500">Current Streak</div>
-        </div>
-        <div className="text-center p-3 bg-gray-50 rounded-md">
-          <div className="text-2xl font-bold" style={{ color: colorValue }}>
-            {longestStreak}
-          </div>
-          <div className="text-xs text-gray-500">Longest Streak</div>
-        </div>
-        <div className="text-center p-3 bg-gray-50 rounded-md">
-          <div className="text-2xl font-bold" style={{ color: colorValue }}>
-            {completionRate}%
-          </div>
-          <div className="text-xs text-gray-500">Completion Rate</div>
-        </div>
-      </div>
-      
-      <div className="mb-4">
-        <h4 className="font-medium text-sm text-gray-700 mb-2">
-          {format(firstDayOfMonth, 'MMMM yyyy')} Activity
-        </h4>
-        <div className="grid grid-cols-7 gap-1">
-          {Array(7).fill(0).map((_, i) => (
-            <div key={`header-${i}`} className="h-6 flex justify-center items-center">
-              <span className="text-xs text-gray-500">{format(addDays(startOfWeek(new Date()), i), 'EEEEE')}</span>
-            </div>
-          ))}
+      <CardContent>
+        <Tabs defaultValue="streak" onValueChange={(value) => setViewMode(value as 'calendar' | 'streak')}>
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="streak" className="flex items-center gap-1.5">
+              <TrendingUpIcon className="h-3.5 w-3.5" />
+              <span>Streak Stats</span>
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="flex items-center gap-1.5">
+              <CalendarIcon className="h-3.5 w-3.5" />
+              <span>Calendar</span>
+            </TabsTrigger>
+          </TabsList>
           
-          {/* Fill in empty cells for days before first day of month */}
-          {Array(firstDayOfMonth.getDay()).fill(0).map((_, i) => (
-            <div key={`empty-start-${i}`} className="h-6"></div>
-          ))}
-          
-          {daySquares.map((square, i) => (
-            <div 
-              key={`day-${i}`}
-              className={`h-6 w-6 rounded-sm flex justify-center items-center ${
-                !square.active 
-                  ? 'bg-gray-100' 
-                  : square.completed
-                    ? ''
-                    : 'bg-gray-200'
-              }`}
-              style={{ backgroundColor: square.completed ? colorValue : undefined }}
-            >
-              <span className={`text-xs ${square.completed ? 'text-white' : 'text-gray-700'}`}>
-                {format(square.date, 'd')}
-              </span>
+          <TabsContent value="streak" className="mt-0">
+            <div className="space-y-4">
+              {/* Streaks Summary */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="flex flex-col items-center justify-center p-3 bg-gray-50 rounded-md">
+                  <div className="text-2xl font-bold" style={{ color: safeColor }}>{stats.currentStreak}</div>
+                  <div className="text-xs text-gray-500 mt-1">Current Streak</div>
+                </div>
+                <div className="flex flex-col items-center justify-center p-3 bg-gray-50 rounded-md">
+                  <div className="text-2xl font-bold" style={{ color: safeColor }}>{stats.longestStreak}</div>
+                  <div className="text-xs text-gray-500 mt-1">Longest Streak</div>
+                </div>
+                <div className="flex flex-col items-center justify-center p-3 bg-gray-50 rounded-md">
+                  <div className="text-2xl font-bold" style={{ color: safeColor }}>{stats.completionRate}%</div>
+                  <div className="text-xs text-gray-500 mt-1">Completion Rate</div>
+                </div>
+              </div>
+              
+              {/* Streak Visualization */}
+              <div className="mt-4">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="text-sm font-medium">Last 30 Days</div>
+                  <div className="text-xs text-gray-500">{stats.completedDays}/{stats.totalDays} days</div>
+                </div>
+                
+                <div className="overflow-hidden rounded-md border border-gray-200">
+                  <div className="flex overflow-x-auto py-2 px-1">
+                    {habitLogs.slice(-30).map((log, index) => {
+                      const date = new Date(log.date);
+                      const dayLabel = format(date, 'd');
+                      const isCurrentDay = isToday(date);
+                      
+                      return (
+                        <div key={index} className="flex flex-col items-center min-w-[30px] px-0.5">
+                          <div 
+                            className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                              log.completed 
+                                ? 'text-white' 
+                                : 'bg-gray-100 text-gray-400'
+                            } ${
+                              isCurrentDay 
+                                ? 'ring-2 ring-blue-500 ring-offset-1' 
+                                : ''
+                            }`}
+                            style={{ 
+                              backgroundColor: log.completed ? safeColor : undefined 
+                            }}
+                          >
+                            {dayLabel}
+                          </div>
+                          <div className="mt-1">
+                            {log.completed ? (
+                              <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            ) : (
+                              <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </div>
-          ))}
+          </TabsContent>
+          
+          <TabsContent value="calendar" className="mt-0">
+            <div className="space-y-3">
+              <div className="text-sm font-medium mb-1">
+                {format(new Date(), 'MMMM yyyy')}
+              </div>
+              
+              <div className="rounded-lg border border-gray-200 overflow-hidden">
+                {/* Day headers */}
+                <div className="grid grid-cols-7 bg-gray-50 border-b">
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+                    <div key={i} className="h-7 flex items-center justify-center text-xs font-medium text-gray-500">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Calendar grid */}
+                <div className="bg-white">
+                  {months.map((week, weekIndex) => (
+                    <div key={weekIndex} className="grid grid-cols-7">
+                      {week.map((day, dayIndex) => {
+                        const completed = isDayCompleted(day);
+                        const isCurrentDay = isToday(day);
+                        
+                        return (
+                          <div 
+                            key={dayIndex}
+                            className={`p-1 ${isCurrentDay ? 'bg-blue-50' : ''}`}
+                          >
+                            <div 
+                              className={`w-full aspect-square rounded-full flex items-center justify-center text-xs
+                                ${completed ? 'text-white' : 'text-gray-700'}
+                                ${isCurrentDay ? 'ring-1 ring-blue-500' : ''}
+                              `}
+                              style={{ 
+                                backgroundColor: completed ? safeColor : undefined
+                              }}
+                            >
+                              {format(day, 'd')}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="flex justify-between pt-2 text-xs text-gray-500">
+                <div>This Month: {habitLogs.filter(log => log.completed && log.date.startsWith(format(new Date(), 'yyyy-MM'))).length} days completed</div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Progress Bar */}
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="flex justify-between text-xs text-gray-500 mb-1">
+            <span>Overall Progress</span>
+            <span>{stats.completionRate}% Complete</span>
+          </div>
+          <Progress value={stats.completionRate} className="h-2" />
         </div>
-      </div>
-      
-      <div className="flex justify-between text-xs text-gray-500">
-        <div>Less</div>
-        <div className="flex items-center">
-          <div className="h-3 w-3 rounded-sm bg-gray-200 mr-1"></div>
-          <div className="h-3 w-3 rounded-sm mr-1" style={{ backgroundColor: `${colorValue}33` }}></div>
-          <div className="h-3 w-3 rounded-sm mr-1" style={{ backgroundColor: `${colorValue}66` }}></div>
-          <div className="h-3 w-3 rounded-sm mr-1" style={{ backgroundColor: `${colorValue}99` }}></div>
-          <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: colorValue }}></div>
-        </div>
-        <div>More</div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

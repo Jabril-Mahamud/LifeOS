@@ -1,4 +1,4 @@
-// This updated version uses shadcn components for improved UI and accessibility
+// components/layout/main-header.tsx
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -29,8 +29,8 @@ export function MainHeader() {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', current: pathname === '/dashboard' },
-    { name: 'Journal', href: '/journal', current: pathname === '/journal' },
-    { name: 'Habits', href: '/habits', current: pathname === '/habits' },
+    { name: 'Journal', href: '/journal', current: pathname === '/journal' || pathname === '/habits' },
+    { name: 'Manage Habits', href: '/habits', current: false }, // Secondary item, not highlighted in nav
   ];
 
   return (
@@ -63,7 +63,7 @@ export function MainHeader() {
             {/* Desktop Navigation */}
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <SignedIn>
-                {navigation.map((item) => (
+                {navigation.filter(item => item.name !== 'Manage Habits').map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}

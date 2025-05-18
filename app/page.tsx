@@ -1,3 +1,4 @@
+// app/page.tsx
 import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs"
 import "./home.css"
 import Link from "next/link"
@@ -8,9 +9,9 @@ export default function Home() {
     <>
       <main className="min-h-screen flex flex-col items-center justify-center px-4">
         <div className="max-w-[75rem] w-full mx-auto text-center">
-          <h1 className="text-5xl font-bold mb-6">Personal Journal App</h1>
+          <h1 className="text-5xl font-bold mb-6">Personal Journal & Habit Tracker</h1>
           <p className="text-xl mb-8 text-gray-600">
-            Record your thoughts, track your moods, and reflect on your journey.
+            Record your thoughts, track your habits, and reflect on your journey.
           </p>
           
           <div className="flex gap-4 justify-center mb-12">
@@ -19,7 +20,7 @@ export default function Home() {
                 href="/journal" 
                 className="bg-black text-white px-6 py-3 rounded-md font-medium hover:bg-gray-800 transition-colors"
               >
-                Go to Journal
+                My Journal
               </Link>
               <Link 
                 href="/dashboard" 
@@ -55,18 +56,18 @@ export default function Home() {
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow-sm">
-              <div className="text-4xl mb-3">😊</div>
-              <h3 className="text-lg font-semibold mb-2">Mood Tracking</h3>
+              <div className="text-4xl mb-3">🏆</div>
+              <h3 className="text-lg font-semibold mb-2">Habit Tracking</h3>
               <p className="text-gray-600">
-                Track your emotional state over time with our simple mood recording system.
+                Build consistency by tracking your habits alongside your daily journal entries.
               </p>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow-sm">
-              <div className="text-4xl mb-3">🔒</div>
-              <h3 className="text-lg font-semibold mb-2">Private & Secure</h3>
+              <div className="text-4xl mb-3">📊</div>
+              <h3 className="text-lg font-semibold mb-2">Progress Insights</h3>
               <p className="text-gray-600">
-                Your journal entries are private and protected with secure authentication.
+                View your journaling patterns and habit streaks with helpful visualizations.
               </p>
             </div>
           </div>
