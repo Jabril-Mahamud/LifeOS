@@ -9,7 +9,8 @@ import {
   subWeeks, 
   isSameDay,
   parseISO,
-  endOfWeek
+  endOfWeek,
+  startOfDay
 } from 'date-fns';
 
 type HeatmapEntry = {
@@ -28,7 +29,7 @@ export function ActivityHeatmap({ data, numWeeks = 12 }: ActivityHeatmapProps) {
   
   useEffect(() => {
     // Start from current date and go back
-    const today = new Date();
+    const today = startOfDay(new Date());
     const endDate = today;
     const startDate = subWeeks(today, numWeeks - 1);
     
@@ -54,9 +55,15 @@ export function ActivityHeatmap({ data, numWeeks = 12 }: ActivityHeatmapProps) {
   
   // Helper function to get entry for a particular day
   const getEntryForDay = (day: Date) => {
-    const dayStr = format(day, 'yyyy-MM-dd');
-    return data.find(entry => entry.date === dayStr);
-  };
+  const dayStr = format(day, 'yyyy-MM-dd');
+  return data.find(entry => {
+    // Handle if entry.date is already a formatted string or a Date object
+    const entryDate = typeof entry.date === 'string' 
+      ? entry.date 
+      : format(entry.date, 'yyyy-MM-dd');
+    return entryDate === dayStr;
+  });
+};
   
   // Helper function to get color based on mood
   const getMoodColor = (mood: string, intensity: number = 1) => {

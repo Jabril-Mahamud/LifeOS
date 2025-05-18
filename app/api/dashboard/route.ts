@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get today's date boundaries
-    const today = new Date();
+    const today = startOfDay(new Date());
     const todayStart = startOfDay(today);
     const todayEnd = endOfDay(today);
 

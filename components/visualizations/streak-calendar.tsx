@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { format, parseISO, eachDayOfInterval, subDays, isSameDay } from 'date-fns';
+import { format, parseISO, eachDayOfInterval, subDays, isSameDay, startOfDay, isFirstDayOfMonth } from 'date-fns';
 
 type StreakEntry = {
   date: string;
@@ -16,22 +16,15 @@ type StreakCalendarProps = {
 
 export function StreakCalendar({ data, color = '#4299e1', days = 30 }: StreakCalendarProps) {
   const [calendarDays, setCalendarDays] = useState<Date[]>([]);
+  const safeColor = color || '#4299e1';
   
   useEffect(() => {
-    // Generate the last N days
-    const today = new Date();
+    const today = startOfDay(new Date());
     const startDate = subDays(today, days - 1);
-    
-    // Get all days in the interval
-    const daysArray = eachDayOfInterval({
-      start: startDate,
-      end: today
-    });
-    
+    const daysArray = eachDayOfInterval({ start: startDate, end: today });
     setCalendarDays(daysArray);
   }, [days]);
   
-  // Get completion status for a day
   const getCompletionForDay = (day: Date) => {
     const dayStr = format(day, 'yyyy-MM-dd');
     const entry = data.find(item => item.date === dayStr);
@@ -39,24 +32,18 @@ export function StreakCalendar({ data, color = '#4299e1', days = 30 }: StreakCal
   };
   
   if (calendarDays.length === 0) {
-    return <div className="h-16 bg-gray-100 animate-pulse rounded-md"></div>;
+    return <div className="h-10 bg-gray-50 animate-pulse rounded"></div>;
   }
   
-  // Calculate current streak
+  // Calculate streaks
   let currentStreak = 0;
   for (let i = calendarDays.length - 1; i >= 0; i--) {
-    const day = calendarDays[i];
-    if (getCompletionForDay(day)) {
-      currentStreak++;
-    } else {
-      break; // Streak broken
-    }
+    if (getCompletionForDay(calendarDays[i])) currentStreak++;
+    else break;
   }
   
-  // Find longest streak
   let longestStreak = 0;
   let tempStreak = 0;
-  
   for (const day of calendarDays) {
     if (getCompletionForDay(day)) {
       tempStreak++;
@@ -67,35 +54,61 @@ export function StreakCalendar({ data, color = '#4299e1', days = 30 }: StreakCal
   }
   
   return (
-    <div>
-      <div className="flex justify-between mb-2">
-        <div className="text-sm text-gray-600">
-          Current streak: <span className="font-semibold">{currentStreak} days</span>
+    <div className="space-y-3">
+      {/* Streak Stats */}
+      <div className="flex justify-between text-xs text-gray-500">
+        <div className="flex items-center space-x-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+          <span>Current: <span className="font-medium text-gray-700">{currentStreak}</span></span>
         </div>
-        <div className="text-sm text-gray-600">
-          Longest streak: <span className="font-semibold">{longestStreak} days</span>
+        <div className="flex items-center space-x-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+          <span>Best: <span className="font-medium text-gray-700">{longestStreak}</span></span>
         </div>
       </div>
       
-      <div className="flex overflow-x-auto pb-2">
-        <div className="grid grid-flow-col gap-1 auto-cols-min">
+      {/* Calendar Grid */}
+      <div className="relative pt-1">
+        <div className="flex flex-wrap">
           {calendarDays.map((day, index) => {
             const isCompleted = getCompletionForDay(day);
             const isToday = isSameDay(day, new Date());
+            const isFirstOfMonth = isFirstDayOfMonth(day);
             
             return (
-              <div 
-                key={index}
-                className={`w-8 h-8 flex flex-col items-center justify-center rounded-md text-xs ${
-                  isToday ? 'ring-1 ring-gray-400' : ''
-                }`}
-                style={{ 
-                  backgroundColor: isCompleted ? (color || '#4299e1') : '#f1f5f9',
-                  color: isCompleted ? 'white' : '#64748b'
-                }}
-                title={`${format(day, 'MMM d, yyyy')}: ${isCompleted ? 'Completed' : 'Not completed'}`}
-              >
-                <div className="font-medium">{format(day, 'd')}</div>
+              <div key={index} className="relative group">
+                {/* Month marker */}
+                {isFirstOfMonth && (
+                  <div className="absolute -top-4 left-0 text-[10px] font-medium text-gray-400">
+                    {format(day, 'MMM')}
+                  </div>
+                )}
+                
+                <div
+                  className={`
+                    m-0.5 w-6 h-6 flex items-center justify-center text-xs
+                    rounded-sm transition-all duration-200
+                    ${isToday ? 'ring-1 ring-gray-300' : ''}
+                    ${isCompleted 
+                      ? 'bg-opacity-90 hover:bg-opacity-100' 
+                      : 'bg-gray-50 hover:bg-gray-100'
+                    }
+                  `}
+                  style={{ 
+                    backgroundColor: isCompleted ? safeColor : undefined,
+                    color: isCompleted ? 'white' : '#64748b' 
+                  }}
+                >
+                  {format(day, 'd')}
+                  
+                  {/* Tooltip */}
+                  <div className="absolute z-10 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap">
+                    <div className="bg-gray-800 text-white text-[10px] px-2 py-1 rounded shadow-sm">
+                      {format(day, 'E, MMM d')}: {isCompleted ? 'Done ✓' : 'Missed ✗'}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-4 border-transparent border-t-gray-800"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             );
           })}

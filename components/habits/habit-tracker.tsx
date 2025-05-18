@@ -48,7 +48,7 @@ export function HabitTracker({ habitLogs = [], onHabitLogsChange, date }: HabitT
   // Format date for display
   const entryDate = date ? new Date(date) : new Date();
   const formattedDate = format(entryDate, 'MMM d, yyyy');
-  const isToday = format(entryDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+  const isToday = isSameDay(entryDate, new Date());
 
   useEffect(() => {
     fetchHabits();

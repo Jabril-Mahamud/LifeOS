@@ -2,7 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, eachMonthOfInterval, isSameDay, subMonths, subDays } from "date-fns";
+import {
+  format,
+  parseISO,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  isSameDay,
+  subMonths,
+  subDays,
+} from "date-fns";
 import { ActivityHeatmap } from "../visualizations/activity-heatmap";
 import { StreakCalendar } from "../visualizations/streak-calendar";
 import {
@@ -13,13 +23,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { 
   Select,
   SelectContent,
   SelectItem,
@@ -30,10 +35,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
+import {
   CalendarIcon,
-  BookIcon, 
-  ChartBarIcon, 
+  BookIcon,
+  ChartBarIcon,
   PieChartIcon,
   BarChart2,
   TrendingUpIcon,
@@ -54,7 +59,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  PieChart, 
+  PieChart,
   Pie,
   Cell,
   RadarChart,
@@ -67,7 +72,7 @@ import {
   Scatter,
   ScatterChart,
   ComposedChart,
-} from 'recharts';
+} from "recharts";
 
 type HabitSummary = {
   id: string;
@@ -175,27 +180,6 @@ export function DashboardContent() {
     return null;
   };
 
-  // Custom tooltip for habit comparison chart
-  const HabitComparisonTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">
-          <p className="font-medium flex items-center">
-            <span className="mr-1">{label}</span>
-            <span className="text-base">{payload[0]?.payload.icon}</span>
-          </p>
-          <p className="text-gray-600">
-            Completion Rate: {payload[0]?.value}%
-          </p>
-          <p className="text-green-600">
-            Current Streak: {payload[0]?.payload.streak} day(s)
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -289,15 +273,9 @@ export function DashboardContent() {
 
   // Get today's date in a readable format
   const today = new Date();
-  const dateFormatter = new Intl.DateTimeFormat("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-  const formattedDate = dateFormatter.format(today);
+  const formattedDate = format(today, "EEEE, MMMM d, yyyy");
 
-  const selectedHabitData = summary.habits.find(h => h.id === selectedHabit);
+  const selectedHabitData = summary.habits.find((h) => h.id === selectedHabit);
 
   return (
     <Tabs defaultValue="overview" className="space-y-6">
@@ -383,7 +361,9 @@ export function DashboardContent() {
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold">
-                      {Math.max(...summary.habits.map((h) => h.streak) || [0])}
+                      {Math.max(
+                        ...(summary.habits.map((h) => h.streak) || [0])
+                      )}
                     </p>
                     <p className="text-xs text-gray-500">Longest Streak</p>
                   </div>
@@ -416,36 +396,42 @@ export function DashboardContent() {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         layout="vertical"
-                        data={summary.habits.sort((a, b) => b.completionRate - a.completionRate)}
+                        data={summary.habits.sort(
+                          (a, b) => b.completionRate - a.completionRate
+                        )}
                         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                       >
                         <XAxis type="number" domain={[0, 100]} />
-                        <YAxis 
-                          type="category" 
-                          dataKey="name" 
+                        <YAxis
+                          type="category"
+                          dataKey="name"
                           width={100}
                           tick={{ fontSize: 12 }}
                         />
-                        <Tooltip 
-                          formatter={(value) => [`${value}%`, 'Completion Rate']}
+                        <Tooltip
+                          formatter={(value) => [
+                            `${value}%`,
+                            "Completion Rate",
+                          ]}
                           labelFormatter={(name) => name}
                         />
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.3} />
-                        <Bar 
-                          dataKey="completionRate" 
-                          radius={[0, 4, 4, 0]}
-                        >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          horizontal={false}
+                          opacity={0.3}
+                        />
+                        <Bar dataKey="completionRate" radius={[0, 4, 4, 0]}>
                           {summary.habits.map((entry, index) => (
-                            <Cell 
-                              key={`cell-${index}`} 
-                              fill={entry.color || '#4299e1'} 
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={entry.color || "#4299e1"}
                             />
                           ))}
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
                     {summary.habits.slice(0, 4).map((habit) => (
                       <div
@@ -458,7 +444,9 @@ export function DashboardContent() {
                       >
                         <div className="flex flex-col items-center">
                           <span className="text-2xl mb-1">{habit.icon}</span>
-                          <p className="text-sm font-medium">{habit.streak} day streak</p>
+                          <p className="text-sm font-medium">
+                            {habit.streak} day streak
+                          </p>
                           <p className="text-xs text-gray-500">{habit.name}</p>
                         </div>
                       </div>
@@ -483,38 +471,53 @@ export function DashboardContent() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={Object.entries(summary.journal.moodDistribution).map(([mood, value]) => ({
+                        data={Object.entries(
+                          summary.journal.moodDistribution
+                        ).map(([mood, value]) => ({
                           name: mood,
                           value: value,
-                          emoji: getMoodEmoji(mood)
+                          emoji: getMoodEmoji(mood),
                         }))}
                         cx="50%"
                         cy="50%"
                         outerRadius={80}
                         labelLine={true}
-                        label={({ name, percent }) => `${getMoodEmoji(name)} ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) =>
+                          `${getMoodEmoji(name)} ${(percent * 100).toFixed(0)}%`
+                        }
                         fill="#8884d8"
                         dataKey="value"
                       >
-                        {Object.entries(summary.journal.moodDistribution).map(([mood, _], index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={
-                              mood === 'happy' ? '#10B981' :
-                              mood === 'excited' ? '#F59E0B' :
-                              mood === 'calm' ? '#60A5FA' :
-                              mood === 'neutral' ? '#9CA3AF' :
-                              mood === 'tired' ? '#6B7280' :
-                              mood === 'anxious' ? '#F97316' :
-                              mood === 'sad' ? '#3B82F6' :
-                              '#EF4444'
-                            }
-                          />
-                        ))}
+                        {Object.entries(summary.journal.moodDistribution).map(
+                          ([mood, _], index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={
+                                mood === "happy"
+                                  ? "#10B981"
+                                  : mood === "excited"
+                                  ? "#F59E0B"
+                                  : mood === "calm"
+                                  ? "#60A5FA"
+                                  : mood === "neutral"
+                                  ? "#9CA3AF"
+                                  : mood === "tired"
+                                  ? "#6B7280"
+                                  : mood === "anxious"
+                                  ? "#F97316"
+                                  : mood === "sad"
+                                  ? "#3B82F6"
+                                  : "#EF4444"
+                              }
+                            />
+                          )
+                        )}
                       </Pie>
-                      <Tooltip 
-                        formatter={(value) => [`${value}%`, 'of entries']}
-                        labelFormatter={(value) => value.charAt(0).toUpperCase() + value.slice(1)}
+                      <Tooltip
+                        formatter={(value) => [`${value}%`, "of entries"]}
+                        labelFormatter={(value) =>
+                          value.charAt(0).toUpperCase() + value.slice(1)
+                        }
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -667,51 +670,69 @@ export function DashboardContent() {
                   </div>
                 )}
               </div>
-              
+
               {/* Mood analysis section */}
               <div className="border-t pt-4">
                 <h3 className="text-sm font-medium mb-4">Mood Analysis</h3>
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Mood Distribution Pie Chart */}
                   <div>
-                    <h4 className="text-xs font-medium text-gray-500 mb-2">Mood Distribution</h4>
-                    {Object.keys(summary.journal.moodDistribution).length > 0 ? (
+                    <h4 className="text-xs font-medium text-gray-500 mb-2">
+                      Mood Distribution
+                    </h4>
+                    {Object.keys(summary.journal.moodDistribution).length >
+                    0 ? (
                       <div className="h-48">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <Pie
-                              data={Object.entries(summary.journal.moodDistribution).map(([mood, value]) => ({
+                              data={Object.entries(
+                                summary.journal.moodDistribution
+                              ).map(([mood, value]) => ({
                                 name: mood,
-                                value: value
+                                value: value,
                               }))}
                               cx="50%"
                               cy="50%"
                               labelLine={false}
-                              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                              label={({ name, percent }) =>
+                                `${name} ${(percent * 100).toFixed(0)}%`
+                              }
                               outerRadius={80}
                               fill="#8884d8"
                               dataKey="value"
                             >
-                              {Object.entries(summary.journal.moodDistribution).map((entry, index) => (
-                                <Cell 
-                                  key={`cell-${index}`} 
+                              {Object.entries(
+                                summary.journal.moodDistribution
+                              ).map((entry, index) => (
+                                <Cell
+                                  key={`cell-${index}`}
                                   fill={
-                                    entry[0] === 'happy' ? '#10B981' :
-                                    entry[0] === 'excited' ? '#F59E0B' :
-                                    entry[0] === 'calm' ? '#60A5FA' :
-                                    entry[0] === 'neutral' ? '#9CA3AF' :
-                                    entry[0] === 'tired' ? '#6B7280' :
-                                    entry[0] === 'anxious' ? '#F97316' :
-                                    entry[0] === 'sad' ? '#3B82F6' :
-                                    '#EF4444'
+                                    entry[0] === "happy"
+                                      ? "#10B981"
+                                      : entry[0] === "excited"
+                                      ? "#F59E0B"
+                                      : entry[0] === "calm"
+                                      ? "#60A5FA"
+                                      : entry[0] === "neutral"
+                                      ? "#9CA3AF"
+                                      : entry[0] === "tired"
+                                      ? "#6B7280"
+                                      : entry[0] === "anxious"
+                                      ? "#F97316"
+                                      : entry[0] === "sad"
+                                      ? "#3B82F6"
+                                      : "#EF4444"
                                   }
                                 />
                               ))}
                             </Pie>
-                            <Tooltip 
-                              formatter={(value) => [`${value}%`, 'of entries']} 
-                              labelFormatter={(value) => value.charAt(0).toUpperCase() + value.slice(1)}
+                            <Tooltip
+                              formatter={(value) => [`${value}%`, "of entries"]}
+                              labelFormatter={(value) =>
+                                value.charAt(0).toUpperCase() + value.slice(1)
+                              }
                             />
                           </PieChart>
                         </ResponsiveContainer>
@@ -722,86 +743,121 @@ export function DashboardContent() {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Mood Trend Line Chart */}
                   <div>
-                    <h4 className="text-xs font-medium text-gray-500 mb-2">Recent Mood Trends</h4>
+                    <h4 className="text-xs font-medium text-gray-500 mb-2">
+                      Recent Mood Trends
+                    </h4>
                     {summary.journal.totalEntries > 0 ? (
                       <div className="h-48">
                         <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={summary.journal.heatmap.slice(-30).map(entry => ({
-                            date: format(parseISO(entry.date), 'MM/dd'),
-                            mood: entry.mood,
-                            // Convert moods to numerical values for visualization
-                            value: entry.mood === 'happy' ? 5 :
-                                  entry.mood === 'excited' ? 4 :
-                                  entry.mood === 'calm' ? 3 :
-                                  entry.mood === 'neutral' ? 2 :
-                                  entry.mood === 'tired' ? 1 :
-                                  entry.mood === 'anxious' ? 0 :
-                                  entry.mood === 'sad' ? -1 : -2
-                          }))}>
-                            <XAxis 
-                              dataKey="date" 
+                          <LineChart
+                            data={summary.journal.heatmap
+                              .slice(-30)
+                              .map((entry) => ({
+                                date: format(parseISO(entry.date), "MM/dd"),
+                                mood: entry.mood,
+                                // Convert moods to numerical values for visualization
+                                value:
+                                  entry.mood === "happy"
+                                    ? 5
+                                    : entry.mood === "excited"
+                                    ? 4
+                                    : entry.mood === "calm"
+                                    ? 3
+                                    : entry.mood === "neutral"
+                                    ? 2
+                                    : entry.mood === "tired"
+                                    ? 1
+                                    : entry.mood === "anxious"
+                                    ? 0
+                                    : entry.mood === "sad"
+                                    ? -1
+                                    : -2,
+                              }))}
+                          >
+                            <XAxis
+                              dataKey="date"
                               tick={{ fontSize: 10 }}
-                              tickFormatter={(value, index) => index % 3 === 0 ? value : ''}
+                              tickFormatter={(value, index) =>
+                                index % 3 === 0 ? value : ""
+                              }
                             />
-                            <YAxis 
-                              domain={[-3, 6]} 
+                            <YAxis
+                              domain={[-3, 6]}
                               tick={false}
                               axisLine={false}
                             />
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              vertical={false}
+                              opacity={0.2}
+                            />
                             <Tooltip content={<MoodTooltip />} />
-                            <Line 
-                              type="monotone" 
-                              dataKey="value" 
-                              stroke="#8884d8" 
+                            <Line
+                              type="monotone"
+                              dataKey="value"
+                              stroke="#8884d8"
                               strokeWidth={2}
-                              dot={{ stroke: '#8884d8', r: 1 }}
-                              activeDot={{ r: 5, stroke: '#8884d8', strokeWidth: 1 }}
+                              dot={{ stroke: "#8884d8", r: 1 }}
+                              activeDot={{
+                                r: 5,
+                                stroke: "#8884d8",
+                                strokeWidth: 1,
+                              }}
                             />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
                     ) : (
                       <div className="h-48 flex items-center justify-center bg-gray-50 rounded-md">
-                        <p className="text-gray-500">Not enough entries for mood trends</p>
+                        <p className="text-gray-500">
+                          Not enough entries for mood trends
+                        </p>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
-              
+
               {/* Journal stats and insights */}
               <div className="border-t pt-4">
                 <h3 className="text-sm font-medium mb-3">Journal Insights</h3>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-2xl text-center font-bold">
                         {summary.journal.totalEntries}
                       </div>
-                      <p className="text-xs text-center text-gray-500 mt-1">Total Journal Entries</p>
+                      <p className="text-xs text-center text-gray-500 mt-1">
+                        Total Journal Entries
+                      </p>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-2xl text-center font-bold">
                         {summary.journal.hasEntryToday ? "Yes" : "No"}
                       </div>
-                      <p className="text-xs text-center text-gray-500 mt-1">Entry Today</p>
+                      <p className="text-xs text-center text-gray-500 mt-1">
+                        Entry Today
+                      </p>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-2xl text-center font-bold flex justify-center">
-                        {summary.journal.recentMoods[0] ? getMoodEmoji(summary.journal.recentMoods[0]) : "—"}
+                        {summary.journal.recentMoods[0]
+                          ? getMoodEmoji(summary.journal.recentMoods[0])
+                          : "—"}
                       </div>
-                      <p className="text-xs text-center text-gray-500 mt-1">Most Recent Mood</p>
+                      <p className="text-xs text-center text-gray-500 mt-1">
+                        Most Recent Mood
+                      </p>
                     </CardContent>
                   </Card>
                 </div>
@@ -810,7 +866,7 @@ export function DashboardContent() {
           </CardContent>
         </Card>
       </TabsContent>
-      
+
       {/* HABITS TAB */}
       <TabsContent value="habits">
         <Card>
@@ -822,7 +878,7 @@ export function DashboardContent() {
                   Detailed analysis of your habit tracking
                 </CardDescription>
               </div>
-              
+
               <Select
                 value={selectedHabit || ""}
                 onValueChange={setSelectedHabit}
@@ -831,10 +887,10 @@ export function DashboardContent() {
                   <SelectValue placeholder="Select a habit" />
                 </SelectTrigger>
                 <SelectContent>
-                  {summary.habits.map(habit => (
+                  {summary.habits.map((habit) => (
                     <SelectItem key={habit.id} value={habit.id}>
                       <div className="flex items-center">
-                        <span className="mr-2">{habit.icon || '🎯'}</span>
+                        <span className="mr-2">{habit.icon || "🎯"}</span>
                         <span>{habit.name}</span>
                       </div>
                     </SelectItem>
@@ -854,28 +910,35 @@ export function DashboardContent() {
             ) : selectedHabitData ? (
               <div className="space-y-6">
                 {/* Selected Habit Detail */}
-                <div className="px-3 py-4 border bg-gray-50 rounded-lg">
-                  <div className="flex items-center mb-4">
-                    <span 
-                      className="text-2xl mr-3"
-                      style={{ color: selectedHabitData.color || '#4299e1' }}
+                <div className="px-4 py-6 border border-gray-100 bg-white rounded-lg shadow-sm">
+                  <div className="flex items-center mb-6">
+                    <span
+                      className="text-3xl mr-4"
+                      style={{ color: selectedHabitData.color || "#4299e1" }}
                     >
                       {selectedHabitData.icon}
                     </span>
                     <div>
-                      <h3 className="font-medium text-lg">{selectedHabitData.name}</h3>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Badge 
-                          variant="outline" 
-                          className="mr-2 bg-blue-50 text-blue-700 hover:bg-blue-50"
-                        >
-                          {selectedHabitData.streak} day streak
-                        </Badge>
-                        <span>{selectedHabitData.completionRate}% completion rate</span>
+                      <h3 className="font-medium text-xl mb-1">
+                        {selectedHabitData.name}
+                      </h3>
+                      <div className="flex items-center text-sm space-x-3">
+                        <div className="flex items-center">
+                          <div className="w-2 h-2 rounded-full bg-green-500 mr-1.5"></div>
+                          <span className="text-gray-700">
+                            {selectedHabitData.streak} day streak
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-2 h-2 rounded-full bg-blue-500 mr-1.5"></div>
+                          <span className="text-gray-700">
+                            {selectedHabitData.completionRate}% completion
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Streak Calendar */}
                   <div className="mt-2">
                     <StreakCalendar
@@ -885,11 +948,13 @@ export function DashboardContent() {
                     />
                   </div>
                 </div>
-                
+
                 {/* Habit Comparison */}
                 <div className="pt-4 border-t border-gray-200">
-                  <h3 className="text-base font-medium mb-3">Habit Comparison</h3>
-                  
+                  <h3 className="text-base font-medium mb-3">
+                    Habit Comparison
+                  </h3>
+
                   <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart
@@ -898,55 +963,65 @@ export function DashboardContent() {
                       >
                         <CartesianGrid stroke="#f5f5f5" />
                         <XAxis dataKey="name" scale="band" />
-                        <YAxis 
-                          yAxisId="left" 
-                          orientation="left" 
-                          domain={[0, 100]} 
-                          label={{ 
-                            value: 'Completion Rate (%)', 
-                            angle: -90, 
-                            position: 'insideLeft',
-                            style: { textAnchor: 'middle', fontSize: 12, fill: '#888' }
+                        <YAxis
+                          yAxisId="left"
+                          orientation="left"
+                          domain={[0, 100]}
+                          label={{
+                            value: "Completion Rate (%)",
+                            angle: -90,
+                            position: "insideLeft",
+                            style: {
+                              textAnchor: "middle",
+                              fontSize: 12,
+                              fill: "#888",
+                            },
                           }}
                         />
-                        <YAxis 
-                          yAxisId="right" 
-                          orientation="right" 
-                          domain={[0, 'dataMax + 5']} 
-                          label={{ 
-                            value: 'Streak (days)', 
-                            angle: 90, 
-                            position: 'insideRight',
-                            style: { textAnchor: 'middle', fontSize: 12, fill: '#888' }
+                        <YAxis
+                          yAxisId="right"
+                          orientation="right"
+                          domain={[0, "dataMax + 5"]}
+                          label={{
+                            value: "Streak (days)",
+                            angle: 90,
+                            position: "insideRight",
+                            style: {
+                              textAnchor: "middle",
+                              fontSize: 12,
+                              fill: "#888",
+                            },
                           }}
                         />
                         <Tooltip />
                         <Legend />
-                        <Bar 
-                          dataKey="completionRate" 
-                          name="Completion Rate" 
-                          yAxisId="left" 
-                          barSize={20} 
-                          fill="#8884d8" 
+                        <Bar
+                          dataKey="completionRate"
+                          name="Completion Rate"
+                          yAxisId="left"
+                          barSize={20}
+                          fill="#8884d8"
                           radius={[4, 4, 0, 0]}
                         />
-                        <Line 
-                          type="monotone" 
-                          dataKey="streak" 
-                          name="Current Streak" 
-                          yAxisId="right" 
-                          stroke="#ff7300" 
+                        <Line
+                          type="monotone"
+                          dataKey="streak"
+                          name="Current Streak"
+                          yAxisId="right"
+                          stroke="#ff7300"
                           strokeWidth={2}
                         />
                       </ComposedChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
-                
+
                 {/* Habit Stack Recommendations */}
                 <div className="pt-4 border-t border-gray-200">
-                  <h3 className="text-base font-medium mb-3">Habit Stacking Recommendations</h3>
-                  
+                  <h3 className="text-base font-medium mb-3">
+                    Habit Stacking Recommendations
+                  </h3>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Card>
                       <CardContent className="p-4">
@@ -958,20 +1033,25 @@ export function DashboardContent() {
                           {summary.habits
                             .sort((a, b) => b.completionRate - a.completionRate)
                             .slice(0, 2)
-                            .map(habit => (
+                            .map((habit) => (
                               <div key={habit.id} className="flex items-center">
-                                <span className="text-xl mr-2">{habit.icon}</span>
+                                <span className="text-xl mr-2">
+                                  {habit.icon}
+                                </span>
                                 <div>
-                                  <p className="text-sm font-medium">{habit.name}</p>
-                                  <p className="text-xs text-gray-500">{habit.completionRate}% completion</p>
+                                  <p className="text-sm font-medium">
+                                    {habit.name}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {habit.completionRate}% completion
+                                  </p>
                                 </div>
                               </div>
-                            ))
-                          }
+                            ))}
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     <Card>
                       <CardContent className="p-4">
                         <h4 className="font-medium text-sm flex items-center mb-2">
@@ -982,33 +1062,52 @@ export function DashboardContent() {
                           {summary.habits
                             .sort((a, b) => a.completionRate - b.completionRate)
                             .slice(0, 2)
-                            .map(habit => (
+                            .map((habit) => (
                               <div key={habit.id} className="flex items-center">
-                                <span className="text-xl mr-2">{habit.icon}</span>
+                                <span className="text-xl mr-2">
+                                  {habit.icon}
+                                </span>
                                 <div>
-                                  <p className="text-sm font-medium">{habit.name}</p>
-                                  <p className="text-xs text-gray-500">{habit.completionRate}% completion</p>
+                                  <p className="text-sm font-medium">
+                                    {habit.name}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {habit.completionRate}% completion
+                                  </p>
                                 </div>
                               </div>
-                            ))
-                          }
+                            ))}
                         </div>
                       </CardContent>
                     </Card>
                   </div>
-                  
+
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg">
                     <p className="text-sm text-blue-700">
-                      <strong>Habit Stacking Tip:</strong> Try connecting your lower-performing habits with your 
-                      most consistent ones. For example, do your {summary.habits.sort((a, b) => a.completionRate - b.completionRate)[0]?.name}
-                      right after your {summary.habits.sort((a, b) => b.completionRate - a.completionRate)[0]?.name}.
+                      <strong>Habit Stacking Tip:</strong> Try connecting your
+                      lower-performing habits with your most consistent ones.
+                      For example, do your{" "}
+                      {
+                        summary.habits.sort(
+                          (a, b) => a.completionRate - b.completionRate
+                        )[0]?.name
+                      }
+                      right after your{" "}
+                      {
+                        summary.habits.sort(
+                          (a, b) => b.completionRate - a.completionRate
+                        )[0]?.name
+                      }
+                      .
                     </p>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="flex items-center justify-center h-64">
-                <p className="text-gray-500">Select a habit to view detailed statistics</p>
+                <p className="text-gray-500">
+                  Select a habit to view detailed statistics
+                </p>
               </div>
             )}
           </CardContent>

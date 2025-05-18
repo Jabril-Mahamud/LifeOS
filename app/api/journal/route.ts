@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Get today's entry if it exists
-    const today = new Date();
+    const today = startOfDay(new Date());
     const todayStart = startOfDay(today);
     const todayEnd = endOfDay(today);
     
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if a journal entry already exists for today
-    const today = new Date();
+    const today = startOfDay(new Date());
     const todayStart = startOfDay(today);
     const todayEnd = endOfDay(today);
     

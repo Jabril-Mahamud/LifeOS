@@ -1,16 +1,29 @@
 // components/journal/journal-entry.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { formatDistanceToNow, format, isSameDay } from 'date-fns';
-import { HabitTracker } from '../habits/habit-tracker';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { formatDistanceToNow, format, isSameDay } from "date-fns";
+import { HabitTracker } from "../habits/habit-tracker";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ChevronDown, Pencil, Trash, ChevronUp, Info } from "lucide-react";
 import {
   Dialog,
@@ -23,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { formatDisplayDate, isDateToday } from "@/lib/utils";
 
 // Types for habit and habit logs
 type Habit = {
@@ -58,24 +72,30 @@ type JournalEntryProps = {
   createdAt: string;
   habitLogs?: HabitLog[];
   onDelete?: (id: string) => void;
-  onEdit?: (id: string, title: string, content: string, mood: string, habitLogs: HabitLogForm[]) => void;
+  onEdit?: (
+    id: string,
+    title: string,
+    content: string,
+    mood: string,
+    habitLogs: HabitLogForm[]
+  ) => void;
 };
 
-export function JournalEntry({ 
-  id, 
-  title, 
-  content, 
-  mood = 'neutral',
+export function JournalEntry({
+  id,
+  title,
+  content,
+  mood = "neutral",
   date,
-  createdAt, 
+  createdAt,
   habitLogs = [],
   onDelete,
-  onEdit
+  onEdit,
 }: JournalEntryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
-  const [editContent, setEditContent] = useState(content || '');
+  const [editContent, setEditContent] = useState(content || "");
   const [editMood, setEditMood] = useState(mood);
   const [editHabitLogs, setEditHabitLogs] = useState<HabitLogForm[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -83,9 +103,9 @@ export function JournalEntry({
   const [isLoadingHabits, setIsLoadingHabits] = useState(false);
 
   const entryDate = new Date(date);
-  const formattedDate = format(entryDate, 'EEEE, MMMM d, yyyy');
-  const isToday = isSameDay(entryDate, new Date());
-  
+  const formattedDate = formatDisplayDate(entryDate);
+  const isToday = isDateToday(entryDate);
+
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
 
   // Fetch all habits when editing starts
@@ -103,26 +123,26 @@ export function JournalEntry({
   async function fetchAllHabits() {
     try {
       setIsLoadingHabits(true);
-      const response = await fetch('/api/habits');
-      
+      const response = await fetch("/api/habits");
+
       if (!response.ok) {
-        throw new Error('Failed to fetch habits');
+        throw new Error("Failed to fetch habits");
       }
-      
+
       const data = await response.json();
       setAllHabits(data.habits || []);
-      
+
       // Initialize edit habit logs from existing habit logs
-      const formattedLogs: HabitLogForm[] = habitLogs.map(log => ({
+      const formattedLogs: HabitLogForm[] = habitLogs.map((log) => ({
         id: log.id,
         habitId: log.habitId,
         completed: log.completed,
-        notes: log.notes
+        notes: log.notes,
       }));
-      
+
       // Make sure all habits are included in the edit logs
-      const currentHabitIds = formattedLogs.map(log => log.habitId);
-      
+      const currentHabitIds = formattedLogs.map((log) => log.habitId);
+
       // Add missing habits without an id (will be created when saved)
       for (const habit of data.habits) {
         if (!currentHabitIds.includes(habit.id)) {
@@ -130,14 +150,14 @@ export function JournalEntry({
           formattedLogs.push({
             habitId: habit.id,
             completed: false,
-            notes: null
+            notes: null,
           });
         }
       }
-      
+
       setEditHabitLogs(formattedLogs);
     } catch (err) {
-      console.error('Error fetching habits:', err);
+      console.error("Error fetching habits:", err);
     } finally {
       setIsLoadingHabits(false);
     }
@@ -150,7 +170,7 @@ export function JournalEntry({
   const cancelEditing = () => {
     setIsEditing(false);
     setEditTitle(title);
-    setEditContent(content || '');
+    setEditContent(content || "");
     setEditMood(mood);
   };
 
@@ -174,20 +194,28 @@ export function JournalEntry({
 
   // Render different mood emojis based on the mood
   const getMoodEmoji = (mood: string) => {
-    switch(mood.toLowerCase()) {
-      case 'happy': return '😊';
-      case 'sad': return '😔';
-      case 'angry': return '😠';
-      case 'anxious': return '😰';
-      case 'calm': return '😌';
-      case 'excited': return '🤩';
-      case 'tired': return '😴';
-      default: return '😐';
+    switch (mood.toLowerCase()) {
+      case "happy":
+        return "😊";
+      case "sad":
+        return "😔";
+      case "angry":
+        return "😠";
+      case "anxious":
+        return "😰";
+      case "calm":
+        return "😌";
+      case "excited":
+        return "🤩";
+      case "tired":
+        return "😴";
+      default:
+        return "😐";
     }
   };
 
   // Count completed habits
-  const completedHabits = habitLogs.filter(log => log.completed).length;
+  const completedHabits = habitLogs.filter((log) => log.completed).length;
   const totalHabits = habitLogs.length;
 
   if (isEditing) {
@@ -196,8 +224,10 @@ export function JournalEntry({
         <CardHeader>
           <CardTitle>Edit Journal Entry</CardTitle>
           <CardDescription>
-            {format(new Date(date), 'EEEE, MMMM d, yyyy')} 
-            {!isToday && <span className="ml-1 text-blue-500">(Past Entry)</span>}
+            {format(new Date(date), "EEEE, MMMM d, yyyy")}
+            {!isToday && (
+              <span className="ml-1 text-blue-500">(Past Entry)</span>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -210,7 +240,7 @@ export function JournalEntry({
               placeholder="Entry title"
             />
           </div>
-          
+
           <div className="grid gap-2">
             <Label htmlFor="editContent">Content</Label>
             <Textarea
@@ -221,7 +251,7 @@ export function JournalEntry({
               className="min-h-[150px]"
             />
           </div>
-          
+
           <div className="grid gap-2">
             <Label htmlFor="editMood">How were you feeling?</Label>
             <Select value={editMood} onValueChange={setEditMood}>
@@ -240,7 +270,7 @@ export function JournalEntry({
               </SelectContent>
             </Select>
           </div>
-          
+
           {/* Habit Tracker for editing - with loading state */}
           <div>
             <Label>Track Your Habits</Label>
@@ -255,12 +285,15 @@ export function JournalEntry({
                 <HabitTracker
                   habitLogs={editHabitLogs}
                   onHabitLogsChange={handleHabitLogsChange}
-                  date={date} 
+                  date={date}
                 />
               )}
             </div>
             {!isToday && (
-              <Alert variant="default" className="mt-3 bg-blue-50 text-blue-800 border-blue-200">
+              <Alert
+                variant="default"
+                className="mt-3 bg-blue-50 text-blue-800 border-blue-200"
+              >
                 <Info className="h-4 w-4" />
                 <AlertDescription>
                   You can retroactively track habits on past journal entries
@@ -273,9 +306,7 @@ export function JournalEntry({
           <Button variant="outline" onClick={cancelEditing}>
             Cancel
           </Button>
-          <Button onClick={saveEdit}>
-            Save
-          </Button>
+          <Button onClick={saveEdit}>Save</Button>
         </CardFooter>
       </Card>
     );
@@ -283,7 +314,7 @@ export function JournalEntry({
 
   return (
     <>
-      <Card className={`mb-4 ${isToday ? 'border-blue-400' : ''}`}>
+      <Card className={`mb-4 ${isToday ? "border-blue-400" : ""}`}>
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div>
@@ -291,7 +322,9 @@ export function JournalEntry({
                 {title}
                 <span className="ml-2 text-base">{getMoodEmoji(mood)}</span>
                 {isToday && (
-                  <Badge className="ml-2" variant="secondary">Today</Badge>
+                  <Badge className="ml-2" variant="secondary">
+                    Today
+                  </Badge>
                 )}
               </CardTitle>
               <CardDescription className="mt-1">
@@ -299,8 +332,8 @@ export function JournalEntry({
               </CardDescription>
             </div>
             <div className="flex gap-1">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 onClick={startEditing}
                 aria-label="Edit entry"
@@ -309,11 +342,7 @@ export function JournalEntry({
               </Button>
               <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
                 <DialogTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    aria-label="Delete entry"
-                  >
+                  <Button variant="ghost" size="icon" aria-label="Delete entry">
                     <Trash className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
@@ -321,11 +350,15 @@ export function JournalEntry({
                   <DialogHeader>
                     <DialogTitle>Are you sure?</DialogTitle>
                     <DialogDescription>
-                      This will permanently delete this journal entry and all associated habit logs.
+                      This will permanently delete this journal entry and all
+                      associated habit logs.
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setConfirmDelete(false)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setConfirmDelete(false)}
+                    >
                       Cancel
                     </Button>
                     <Button variant="destructive" onClick={handleDelete}>
@@ -334,8 +367,8 @@ export function JournalEntry({
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 onClick={toggleExpand}
                 aria-label={isExpanded ? "Collapse entry" : "Expand entry"}
@@ -348,15 +381,23 @@ export function JournalEntry({
               </Button>
             </div>
           </div>
-          
+
           {/* Habit Tracking Summary */}
           {habitLogs.length > 0 && (
             <div className="mt-3 flex items-center">
-              <div className="mr-2 text-xs font-medium text-gray-500">Habits:</div>
+              <div className="mr-2 text-xs font-medium text-gray-500">
+                Habits:
+              </div>
               <div className="flex-1 bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-green-500 h-2 rounded-full" 
-                  style={{ width: `${totalHabits > 0 ? (completedHabits / totalHabits) * 100 : 0}%` }}
+                <div
+                  className="bg-green-500 h-2 rounded-full"
+                  style={{
+                    width: `${
+                      totalHabits > 0
+                        ? (completedHabits / totalHabits) * 100
+                        : 0
+                    }%`,
+                  }}
                 ></div>
               </div>
               <div className="ml-2 text-xs text-gray-600">
@@ -365,7 +406,7 @@ export function JournalEntry({
             </div>
           )}
         </CardHeader>
-        
+
         {isExpanded && (
           <CardContent>
             {content && (
@@ -373,33 +414,63 @@ export function JournalEntry({
                 {content}
               </div>
             )}
-            
+
             {/* Tracked Habits Details */}
             {habitLogs.length > 0 && (
               <div className="mt-3">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Habits Tracked</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">
+                  Habits Tracked
+                </h4>
                 <div className="space-y-2">
-                  {habitLogs.map(log => (
-                    <div 
-                      key={log.id} 
+                  {habitLogs.map((log) => (
+                    <div
+                      key={log.id}
                       className="flex items-center p-2 bg-gray-50 rounded-md"
-                      style={{ borderLeft: `3px solid ${log.habit.color || '#4299e1'}` }}
+                      style={{
+                        borderLeft: `3px solid ${log.habit.color || "#4299e1"}`,
+                      }}
                     >
-                      <div className={`mr-2 ${log.completed ? 'text-green-500' : 'text-gray-400'}`}>
+                      <div
+                        className={`mr-2 ${
+                          log.completed ? "text-green-500" : "text-gray-400"
+                        }`}
+                      >
                         {log.completed ? (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         ) : (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         )}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center">
                           <span className="text-lg mr-2">{log.habit.icon}</span>
-                          <span className={`font-medium ${log.completed ? 'text-gray-800' : 'text-gray-500'}`}>
+                          <span
+                            className={`font-medium ${
+                              log.completed ? "text-gray-800" : "text-gray-500"
+                            }`}
+                          >
                             {log.habit.name}
                           </span>
                         </div>
@@ -414,13 +485,13 @@ export function JournalEntry({
                 </div>
               </div>
             )}
-            
+
             {/* Button to edit habits on past entries */}
             {!isToday && habitLogs.length === 0 && (
               <div className="mt-4 flex justify-center">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={startEditing}
                   className="text-sm"
                 >
