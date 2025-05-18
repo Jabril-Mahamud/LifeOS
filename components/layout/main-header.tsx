@@ -1,3 +1,4 @@
+// This updated version uses shadcn components for improved UI and accessibility
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -5,6 +6,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserButton, useUser } from "@clerk/nextjs";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { Menu } from "lucide-react";
 
 export function MainHeader() {
   const pathname = usePathname();
@@ -90,17 +101,11 @@ export function MainHeader() {
             
             <SignedOut>
               <div className="flex items-center space-x-4">
-                <Link
-                  href="/sign-in"
-                  className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-                >
-                  Sign in
+                <Link href="/sign-in">
+                  <Button variant="ghost">Sign in</Button>
                 </Link>
-                <Link
-                  href="/sign-up"
-                  className="bg-black text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800"
-                >
-                  Sign up
+                <Link href="/sign-up">
+                  <Button>Sign up</Button>
                 </Link>
               </div>
             </SignedOut>
@@ -109,71 +114,48 @@ export function MainHeader() {
           {/* Mobile menu button */}
           <div className="flex items-center sm:hidden">
             <SignedIn>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black"
-                aria-expanded="false"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                <span className="sr-only">Open main menu</span>
-                {isMobileMenuOpen ? (
-                  <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                )}
-              </button>
+              <DropdownMenu open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-10 w-10">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Open main menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 mt-2 rounded-md">
+                  <DropdownMenuLabel>Navigation</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {navigation.map((item) => (
+                    <DropdownMenuItem key={item.name} asChild>
+                      <Link href={item.href} className={item.current ? 'bg-gray-50 font-semibold' : ''}>
+                        {item.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <div className="p-2">
+                    <UserButton
+                      afterSignOutUrl="/"
+                      appearance={{
+                        elements: {
+                          userButtonAvatarBox: "h-8 w-8",
+                        },
+                      }}
+                    />
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </SignedIn>
             
             <SignedOut>
-              <Link
-                href="/sign-in"
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium px-4 py-2"
-              >
-                Sign in
+              <Link href="/sign-in">
+                <Button variant="ghost" className="text-gray-600 hover:text-gray-900 text-sm font-medium px-4 py-2">
+                  Sign in
+                </Button>
               </Link>
             </SignedOut>
           </div>
         </div>
       </div>
-
-      {/* Mobile menu, show/hide based on menu state. */}
-      <SignedIn>
-        <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} sm:hidden`}>
-          <div className="pt-2 pb-3 space-y-1">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`${
-                  item.current
-                    ? 'bg-gray-50 border-black text-gray-900'
-                    : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
-                } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-          <div className="pt-4 pb-3 border-t border-gray-200">
-            <div className="flex items-center px-4">
-              <div className="ml-auto">
-                <UserButton
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      userButtonAvatarBox: "h-8 w-8",
-                    },
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </SignedIn>
     </header>
   );
 }

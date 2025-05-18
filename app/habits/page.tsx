@@ -1,5 +1,5 @@
-import { HabitsList } from "@/app/components/habits/habits-list";
-import { HabitDashboard } from "@/app/components/habits/habit-dashboard";
+import { HabitsList } from "@/components/habits/habits-list";
+import { HabitDashboard } from "@/components/habits/habit-dashboard";
 
 export default function HabitsPage() {
   return (

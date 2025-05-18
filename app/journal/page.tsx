@@ -1,4 +1,4 @@
-import { JournalList } from "@/app/components/journal/journal-list";
+import { JournalList } from "@/components/journal/journal-list";
 
 export default function JournalPage() {
   return (

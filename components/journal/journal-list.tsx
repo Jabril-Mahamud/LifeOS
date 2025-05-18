@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { JournalEntry } from './journal-entry';
-import { HabitTracker } from '../habits/habit-tracker';
+import { JournalEntry } from '@/components/journal/journal-entry';
+import { HabitTracker } from '@/components/habits/habit-tracker';
 import { format, isToday, parseISO, startOfDay, isSameDay } from 'date-fns';
 
 // Define consistent HabitLog types
