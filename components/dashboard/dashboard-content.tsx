@@ -1,8 +1,8 @@
-// This updated version uses shadcn/ui components for a better dashboard
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, eachMonthOfInterval, isSameDay, subMonths, subDays } from "date-fns";
 import { ActivityHeatmap } from "../visualizations/activity-heatmap";
 import { StreakCalendar } from "../visualizations/streak-calendar";
 import {
@@ -13,12 +13,61 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { CalendarIcon, BookIcon, ChartBarIcon } from "lucide-react";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  CalendarIcon,
+  BookIcon, 
+  ChartBarIcon, 
+  PieChartIcon,
+  BarChart2,
+  TrendingUpIcon,
+  BarChart2Icon,
+  ListFilter,
+  ArrowUpIcon,
+  ArrowDownIcon,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  PieChart, 
+  Pie,
+  Cell,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  LineChart,
+  Line,
+  Scatter,
+  ScatterChart,
+  ComposedChart,
+} from 'recharts';
 
 type HabitSummary = {
   id: string;
@@ -54,29 +103,98 @@ export function DashboardContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchDashboardData() {
-      try {
-        setIsLoading(true);
-        const response = await fetch("/api/dashboard");
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch dashboard data");
-        }
-
-        const data = await response.json();
-        setSummary(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        console.error("Error fetching dashboard data:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
     fetchDashboardData();
   }, []);
+
+  useEffect(() => {
+    // When summary data is available, set the first habit as selected by default
+    if (summary && summary.habits.length > 0 && !selectedHabit) {
+      setSelectedHabit(summary.habits[0].id);
+    }
+  }, [summary, selectedHabit]);
+
+  async function fetchDashboardData() {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/dashboard");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch dashboard data");
+      }
+
+      const data = await response.json();
+      setSummary(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error("Error fetching dashboard data:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  // Helper function to get mood emoji
+  const getMoodEmoji = (mood: string) => {
+    switch (mood) {
+      case "happy":
+        return "😊";
+      case "sad":
+        return "😔";
+      case "angry":
+        return "😠";
+      case "anxious":
+        return "😰";
+      case "calm":
+        return "😌";
+      case "excited":
+        return "🤩";
+      case "tired":
+        return "😴";
+      default:
+        return "😐";
+    }
+  };
+
+  // Custom tooltip for mood chart
+  const MoodTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">
+          <p className="font-medium">{label}</p>
+          <p className="flex items-center">
+            <span className="mr-1">Mood:</span>
+            <span>{getMoodEmoji(data.mood)}</span>
+            <span className="ml-1 capitalize">{data.mood}</span>
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Custom tooltip for habit comparison chart
+  const HabitComparisonTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">
+          <p className="font-medium flex items-center">
+            <span className="mr-1">{label}</span>
+            <span className="text-base">{payload[0]?.payload.icon}</span>
+          </p>
+          <p className="text-gray-600">
+            Completion Rate: {payload[0]?.value}%
+          </p>
+          <p className="text-green-600">
+            Current Streak: {payload[0]?.payload.streak} day(s)
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   if (isLoading) {
     return (
@@ -179,27 +297,7 @@ export function DashboardContent() {
   });
   const formattedDate = dateFormatter.format(today);
 
-  // Helper function to get mood emoji
-  const getMoodEmoji = (mood: string) => {
-    switch (mood) {
-      case "happy":
-        return "😊";
-      case "sad":
-        return "😔";
-      case "angry":
-        return "😠";
-      case "anxious":
-        return "😰";
-      case "calm":
-        return "😌";
-      case "excited":
-        return "🤩";
-      case "tired":
-        return "😴";
-      default:
-        return "😐";
-    }
-  };
+  const selectedHabitData = summary.habits.find(h => h.id === selectedHabit);
 
   return (
     <Tabs defaultValue="overview" className="space-y-6">
@@ -211,7 +309,11 @@ export function DashboardContent() {
           </TabsTrigger>
           <TabsTrigger value="journal" className="flex gap-2 items-center">
             <BookIcon className="h-4 w-4" />
-            <span>Journal & Habits</span>
+            <span>Journal</span>
+          </TabsTrigger>
+          <TabsTrigger value="habits" className="flex gap-2 items-center">
+            <BarChart2 className="h-4 w-4" />
+            <span>Habits</span>
           </TabsTrigger>
         </TabsList>
 
@@ -227,6 +329,7 @@ export function DashboardContent() {
         </div>
       </div>
 
+      {/* OVERVIEW TAB */}
       <TabsContent value="overview">
         {/* Welcome Section */}
         <Card className="mb-6">
@@ -280,7 +383,7 @@ export function DashboardContent() {
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold">
-                      {Math.max(...summary.habits.map((h) => h.streak))}
+                      {Math.max(...summary.habits.map((h) => h.streak) || [0])}
                     </p>
                     <p className="text-xs text-gray-500">Longest Streak</p>
                   </div>
@@ -294,7 +397,7 @@ export function DashboardContent() {
           {/* Habits Overview */}
           <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle>Habit Streaks</CardTitle>
+              <CardTitle>Habit Completion Rates</CardTitle>
               <Button asChild variant="link" size="sm">
                 <Link href="/habits">View All</Link>
               </Button>
@@ -309,80 +412,116 @@ export function DashboardContent() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {summary.habits.map((habit) => (
-                    <div
-                      key={habit.id}
-                      className="border border-gray-200 rounded-lg p-4"
-                      style={{
-                        borderLeftWidth: "4px",
-                        borderLeftColor: habit.color || "#4299e1",
-                      }}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center">
-                          <span className="text-2xl mr-3">{habit.icon}</span>
-                          <div>
-                            <h3 className="font-medium text-gray-900">
-                              {habit.name}
-                            </h3>
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <span>{habit.streak} day streak</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="flex items-center">
-                            <div className="w-24 mr-3">
-                              <Progress
-                                value={habit.completionRate}
-                                className="h-2"
-                              />
-                            </div>
-                            <span className="text-sm font-medium">
-                              {habit.completionRate}%
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-3">
-                        <StreakCalendar
-                          data={habit.streakData}
-                          color={habit.color || undefined}
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        layout="vertical"
+                        data={summary.habits.sort((a, b) => b.completionRate - a.completionRate)}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <XAxis type="number" domain={[0, 100]} />
+                        <YAxis 
+                          type="category" 
+                          dataKey="name" 
+                          width={100}
+                          tick={{ fontSize: 12 }}
                         />
+                        <Tooltip 
+                          formatter={(value) => [`${value}%`, 'Completion Rate']}
+                          labelFormatter={(name) => name}
+                        />
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.3} />
+                        <Bar 
+                          dataKey="completionRate" 
+                          radius={[0, 4, 4, 0]}
+                        >
+                          {summary.habits.map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={entry.color || '#4299e1'} 
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                    {summary.habits.slice(0, 4).map((habit) => (
+                      <div
+                        key={habit.id}
+                        className="border border-gray-200 rounded-lg p-3 text-center"
+                        style={{
+                          borderLeftWidth: "3px",
+                          borderLeftColor: habit.color || "#4299e1",
+                        }}
+                      >
+                        <div className="flex flex-col items-center">
+                          <span className="text-2xl mb-1">{habit.icon}</span>
+                          <p className="text-sm font-medium">{habit.streak} day streak</p>
+                          <p className="text-xs text-gray-500">{habit.name}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Journal Overview */}
+          {/* Mood Overview */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle>Journal Stats</CardTitle>
+              <CardTitle>Mood Trends</CardTitle>
               <Button asChild variant="link" size="sm">
                 <Link href="/journal">View Journal</Link>
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-blue-50 rounded-lg p-3 flex justify-between items-center">
-                <div className="text-sm text-blue-800">Total entries</div>
-                <div className="text-xl font-bold text-blue-800">
-                  {summary.journal.totalEntries}
+              {Object.keys(summary.journal.moodDistribution).length > 0 ? (
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={Object.entries(summary.journal.moodDistribution).map(([mood, value]) => ({
+                          name: mood,
+                          value: value,
+                          emoji: getMoodEmoji(mood)
+                        }))}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        labelLine={true}
+                        label={({ name, percent }) => `${getMoodEmoji(name)} ${(percent * 100).toFixed(0)}%`}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {Object.entries(summary.journal.moodDistribution).map(([mood, _], index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={
+                              mood === 'happy' ? '#10B981' :
+                              mood === 'excited' ? '#F59E0B' :
+                              mood === 'calm' ? '#60A5FA' :
+                              mood === 'neutral' ? '#9CA3AF' :
+                              mood === 'tired' ? '#6B7280' :
+                              mood === 'anxious' ? '#F97316' :
+                              mood === 'sad' ? '#3B82F6' :
+                              '#EF4444'
+                            }
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value) => [`${value}%`, 'of entries']}
+                        labelFormatter={(value) => value.charAt(0).toUpperCase() + value.slice(1)}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
-              </div>
-
-              {summary.journal.heatmap.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    Activity Calendar
-                  </h3>
-                  <ActivityHeatmap
-                    data={summary.journal.heatmap}
-                    numWeeks={8}
-                  />
+              ) : (
+                <div className="text-center py-6 text-gray-500">
+                  <p>Not enough journal entries to show mood distribution.</p>
                 </div>
               )}
 
@@ -440,31 +579,14 @@ export function DashboardContent() {
                   </div>
                 </div>
               )}
-
-              <div className="pt-2 border-t border-gray-200">
-                <div className="flex justify-between items-center">
-                  <div className="text-sm text-gray-500">Today's entry</div>
-                  <div>
-                    {summary.journal.hasEntryToday ? (
-                      <Badge
-                        variant="outline"
-                        className="bg-green-100 text-green-800 hover:bg-green-100"
-                      >
-                        Completed
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-                      >
-                        Pending
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Habit and Journal Matrix */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          {/* Habit Weekday Performance - Removed */}
+          {/* Habit Categories - Removed */}
         </div>
 
         {/* Tips and resources section */}
@@ -515,87 +637,380 @@ export function DashboardContent() {
         </Card>
       </TabsContent>
 
+      {/* JOURNAL TAB */}
       <TabsContent value="journal">
         <Card>
           <CardHeader>
-            <CardTitle>Journal & Habit Activity</CardTitle>
+            <CardTitle>Journal Activity</CardTitle>
             <CardDescription>
-              Track your journaling consistency and habit performance
+              Track your journaling consistency and mood patterns
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Combined content for journal entries and habits */}
             <div className="space-y-6">
-              {/* Journal stats section */}
+              {/* Journal activity section */}
               <div>
-                <h3 className="text-sm font-medium mb-3">Journal Activity</h3>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-sm font-medium">Journal Activity</h3>
+                  <Badge variant="outline" className="px-2 py-1 text-xs">
+                    {summary.journal.totalEntries} entries total
+                  </Badge>
+                </div>
                 {summary.journal.heatmap.length > 0 ? (
                   <ActivityHeatmap
                     data={summary.journal.heatmap}
                     numWeeks={14}
                   />
                 ) : (
-                  <p className="text-sm text-gray-500">
-                    Not enough data to display activity
-                  </p>
+                  <div className="p-4 text-center text-gray-500 bg-gray-50 rounded-md">
+                    <p>Start journaling to see your activity patterns</p>
+                  </div>
                 )}
               </div>
-
-              {/* Habits performance section */}
-              <div>
-                <h3 className="text-sm font-medium mb-3">Habit Performance</h3>
-                {summary.habits.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <p className="mb-2">No habits tracked yet</p>
-                    <Button asChild>
-                      <Link href="/habits">Add your first habit</Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {summary.habits.map((habit) => (
-                      <div key={habit.id} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-2xl">{habit.icon}</span>
-                            <h3 className="font-medium">{habit.name}</h3>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-center">
-                              <p className="text-sm text-gray-500">
-                                Current Streak
-                              </p>
-                              <p
-                                className="text-xl font-bold"
-                                style={{ color: habit.color || "#4299e1" }}
-                              >
-                                {habit.streak}
-                              </p>
-                            </div>
-                            <div className="h-8 w-px bg-gray-200"></div>
-                            <div className="text-center">
-                              <p className="text-sm text-gray-500">
-                                Completion
-                              </p>
-                              <p className="text-xl font-bold">
-                                {habit.completionRate}%
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div>
-                          <StreakCalendar
-                            data={habit.streakData}
-                            color={habit.color || undefined}
-                            days={30}
-                          />
-                        </div>
+              
+              {/* Mood analysis section */}
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-medium mb-4">Mood Analysis</h3>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Mood Distribution Pie Chart */}
+                  <div>
+                    <h4 className="text-xs font-medium text-gray-500 mb-2">Mood Distribution</h4>
+                    {Object.keys(summary.journal.moodDistribution).length > 0 ? (
+                      <div className="h-48">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={Object.entries(summary.journal.moodDistribution).map(([mood, value]) => ({
+                                name: mood,
+                                value: value
+                              }))}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                            >
+                              {Object.entries(summary.journal.moodDistribution).map((entry, index) => (
+                                <Cell 
+                                  key={`cell-${index}`} 
+                                  fill={
+                                    entry[0] === 'happy' ? '#10B981' :
+                                    entry[0] === 'excited' ? '#F59E0B' :
+                                    entry[0] === 'calm' ? '#60A5FA' :
+                                    entry[0] === 'neutral' ? '#9CA3AF' :
+                                    entry[0] === 'tired' ? '#6B7280' :
+                                    entry[0] === 'anxious' ? '#F97316' :
+                                    entry[0] === 'sad' ? '#3B82F6' :
+                                    '#EF4444'
+                                  }
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              formatter={(value) => [`${value}%`, 'of entries']} 
+                              labelFormatter={(value) => value.charAt(0).toUpperCase() + value.slice(1)}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
                       </div>
-                    ))}
+                    ) : (
+                      <div className="h-48 flex items-center justify-center bg-gray-50 rounded-md">
+                        <p className="text-gray-500">No mood data available</p>
+                      </div>
+                    )}
                   </div>
-                )}
+                  
+                  {/* Mood Trend Line Chart */}
+                  <div>
+                    <h4 className="text-xs font-medium text-gray-500 mb-2">Recent Mood Trends</h4>
+                    {summary.journal.totalEntries > 0 ? (
+                      <div className="h-48">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={summary.journal.heatmap.slice(-30).map(entry => ({
+                            date: format(parseISO(entry.date), 'MM/dd'),
+                            mood: entry.mood,
+                            // Convert moods to numerical values for visualization
+                            value: entry.mood === 'happy' ? 5 :
+                                  entry.mood === 'excited' ? 4 :
+                                  entry.mood === 'calm' ? 3 :
+                                  entry.mood === 'neutral' ? 2 :
+                                  entry.mood === 'tired' ? 1 :
+                                  entry.mood === 'anxious' ? 0 :
+                                  entry.mood === 'sad' ? -1 : -2
+                          }))}>
+                            <XAxis 
+                              dataKey="date" 
+                              tick={{ fontSize: 10 }}
+                              tickFormatter={(value, index) => index % 3 === 0 ? value : ''}
+                            />
+                            <YAxis 
+                              domain={[-3, 6]} 
+                              tick={false}
+                              axisLine={false}
+                            />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
+                            <Tooltip content={<MoodTooltip />} />
+                            <Line 
+                              type="monotone" 
+                              dataKey="value" 
+                              stroke="#8884d8" 
+                              strokeWidth={2}
+                              dot={{ stroke: '#8884d8', r: 1 }}
+                              activeDot={{ r: 5, stroke: '#8884d8', strokeWidth: 1 }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    ) : (
+                      <div className="h-48 flex items-center justify-center bg-gray-50 rounded-md">
+                        <p className="text-gray-500">Not enough entries for mood trends</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Journal stats and insights */}
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-medium mb-3">Journal Insights</h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-2xl text-center font-bold">
+                        {summary.journal.totalEntries}
+                      </div>
+                      <p className="text-xs text-center text-gray-500 mt-1">Total Journal Entries</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-2xl text-center font-bold">
+                        {summary.journal.hasEntryToday ? "Yes" : "No"}
+                      </div>
+                      <p className="text-xs text-center text-gray-500 mt-1">Entry Today</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-2xl text-center font-bold flex justify-center">
+                        {summary.journal.recentMoods[0] ? getMoodEmoji(summary.journal.recentMoods[0]) : "—"}
+                      </div>
+                      <p className="text-xs text-center text-gray-500 mt-1">Most Recent Mood</p>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      
+      {/* HABITS TAB */}
+      <TabsContent value="habits">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Habit Performance</CardTitle>
+                <CardDescription>
+                  Detailed analysis of your habit tracking
+                </CardDescription>
+              </div>
+              
+              <Select
+                value={selectedHabit || ""}
+                onValueChange={setSelectedHabit}
+              >
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select a habit" />
+                </SelectTrigger>
+                <SelectContent>
+                  {summary.habits.map(habit => (
+                    <SelectItem key={habit.id} value={habit.id}>
+                      <div className="flex items-center">
+                        <span className="mr-2">{habit.icon || '🎯'}</span>
+                        <span>{habit.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {summary.habits.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p className="mb-2">No habits tracked yet</p>
+                <Button asChild>
+                  <Link href="/habits">Add your first habit</Link>
+                </Button>
+              </div>
+            ) : selectedHabitData ? (
+              <div className="space-y-6">
+                {/* Selected Habit Detail */}
+                <div className="px-3 py-4 border bg-gray-50 rounded-lg">
+                  <div className="flex items-center mb-4">
+                    <span 
+                      className="text-2xl mr-3"
+                      style={{ color: selectedHabitData.color || '#4299e1' }}
+                    >
+                      {selectedHabitData.icon}
+                    </span>
+                    <div>
+                      <h3 className="font-medium text-lg">{selectedHabitData.name}</h3>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Badge 
+                          variant="outline" 
+                          className="mr-2 bg-blue-50 text-blue-700 hover:bg-blue-50"
+                        >
+                          {selectedHabitData.streak} day streak
+                        </Badge>
+                        <span>{selectedHabitData.completionRate}% completion rate</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Streak Calendar */}
+                  <div className="mt-2">
+                    <StreakCalendar
+                      data={selectedHabitData.streakData}
+                      color={selectedHabitData.color || undefined}
+                      days={30}
+                    />
+                  </div>
+                </div>
+                
+                {/* Habit Comparison */}
+                <div className="pt-4 border-t border-gray-200">
+                  <h3 className="text-base font-medium mb-3">Habit Comparison</h3>
+                  
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart
+                        data={summary.habits}
+                        margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                      >
+                        <CartesianGrid stroke="#f5f5f5" />
+                        <XAxis dataKey="name" scale="band" />
+                        <YAxis 
+                          yAxisId="left" 
+                          orientation="left" 
+                          domain={[0, 100]} 
+                          label={{ 
+                            value: 'Completion Rate (%)', 
+                            angle: -90, 
+                            position: 'insideLeft',
+                            style: { textAnchor: 'middle', fontSize: 12, fill: '#888' }
+                          }}
+                        />
+                        <YAxis 
+                          yAxisId="right" 
+                          orientation="right" 
+                          domain={[0, 'dataMax + 5']} 
+                          label={{ 
+                            value: 'Streak (days)', 
+                            angle: 90, 
+                            position: 'insideRight',
+                            style: { textAnchor: 'middle', fontSize: 12, fill: '#888' }
+                          }}
+                        />
+                        <Tooltip />
+                        <Legend />
+                        <Bar 
+                          dataKey="completionRate" 
+                          name="Completion Rate" 
+                          yAxisId="left" 
+                          barSize={20} 
+                          fill="#8884d8" 
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="streak" 
+                          name="Current Streak" 
+                          yAxisId="right" 
+                          stroke="#ff7300" 
+                          strokeWidth={2}
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+                
+                {/* Habit Stack Recommendations */}
+                <div className="pt-4 border-t border-gray-200">
+                  <h3 className="text-base font-medium mb-3">Habit Stacking Recommendations</h3>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Card>
+                      <CardContent className="p-4">
+                        <h4 className="font-medium text-sm flex items-center mb-2">
+                          <ArrowUpIcon className="h-4 w-4 text-green-500 mr-1" />
+                          Best Performing Habits
+                        </h4>
+                        <div className="space-y-2">
+                          {summary.habits
+                            .sort((a, b) => b.completionRate - a.completionRate)
+                            .slice(0, 2)
+                            .map(habit => (
+                              <div key={habit.id} className="flex items-center">
+                                <span className="text-xl mr-2">{habit.icon}</span>
+                                <div>
+                                  <p className="text-sm font-medium">{habit.name}</p>
+                                  <p className="text-xs text-gray-500">{habit.completionRate}% completion</p>
+                                </div>
+                              </div>
+                            ))
+                          }
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-4">
+                        <h4 className="font-medium text-sm flex items-center mb-2">
+                          <ArrowDownIcon className="h-4 w-4 text-red-500 mr-1" />
+                          Needs Improvement
+                        </h4>
+                        <div className="space-y-2">
+                          {summary.habits
+                            .sort((a, b) => a.completionRate - b.completionRate)
+                            .slice(0, 2)
+                            .map(habit => (
+                              <div key={habit.id} className="flex items-center">
+                                <span className="text-xl mr-2">{habit.icon}</span>
+                                <div>
+                                  <p className="text-sm font-medium">{habit.name}</p>
+                                  <p className="text-xs text-gray-500">{habit.completionRate}% completion</p>
+                                </div>
+                              </div>
+                            ))
+                          }
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      <strong>Habit Stacking Tip:</strong> Try connecting your lower-performing habits with your 
+                      most consistent ones. For example, do your {summary.habits.sort((a, b) => a.completionRate - b.completionRate)[0]?.name}
+                      right after your {summary.habits.sort((a, b) => b.completionRate - a.completionRate)[0]?.name}.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-64">
+                <p className="text-gray-500">Select a habit to view detailed statistics</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </TabsContent>

@@ -1,13 +1,19 @@
-// components/habits/habit-streak.tsx
 "use client";
 
 import { useState, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from 'date-fns';
+import { format, parseISO, eachDayOfInterval, subDays, isSameDay, startOfMonth, endOfMonth, differenceInDays } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarIcon, TrendingUpIcon, AwardIcon, BarChartIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
+  Tooltip, ResponsiveContainer, Legend, Cell, PieChart, Pie, RadialBarChart, 
+  RadialBar, ReferenceLine 
+} from 'recharts';
+
+import { TrendingUpIcon, CalendarIcon, BarChart3, PieChartIcon } from "lucide-react";
 
 type HabitStreakProps = {
   habitId: string;
@@ -49,11 +55,22 @@ export function HabitStreak({
     totalDays: 0,
     completedDays: 0
   });
-  const [viewMode, setViewMode] = useState<'calendar' | 'streak'>('streak');
+
+  // Data for visualizations
+  const [streakData, setStreakData] = useState<any[]>([]);
+  const [weekdayData, setWeekdayData] = useState<any[]>([]);
+  const [monthlyData, setMonthlyData] = useState<any[]>([]);
 
   useEffect(() => {
     fetchHabitData();
   }, [habitId]);
+
+  useEffect(() => {
+    // Process data for visualizations when habit logs change
+    if (habitLogs.length > 0) {
+      processVisualizationData();
+    }
+  }, [habitLogs]);
 
   async function fetchHabitData() {
     try {
@@ -81,6 +98,130 @@ export function HabitStreak({
     }
   }
 
+  function processVisualizationData() {
+    // Process streak data (last 30 days, showing streak status)
+    const last30Days = habitLogs.slice(-30);
+    const streakChartData = last30Days.map((log, index) => {
+      const date = parseISO(log.date);
+      return {
+        name: format(date, 'MMM d'),
+        date: log.date,
+        value: log.completed ? 1 : 0,
+        streak: calculateStreakAt(index, last30Days),
+      };
+    });
+    setStreakData(streakChartData);
+
+    // Process weekday data (completion rate by day of week)
+    const weekdays = [
+      {name: 'Sun', value: 0, total: 0},
+      {name: 'Mon', value: 0, total: 0},
+      {name: 'Tue', value: 0, total: 0},
+      {name: 'Wed', value: 0, total: 0},
+      {name: 'Thu', value: 0, total: 0},
+      {name: 'Fri', value: 0, total: 0},
+      {name: 'Sat', value: 0, total: 0},
+    ];
+
+    habitLogs.forEach(log => {
+      const date = parseISO(log.date);
+      const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+      weekdays[dayOfWeek].total += 1;
+      if (log.completed) {
+        weekdays[dayOfWeek].value += 1;
+      }
+    });
+
+    const weekdayChartData = weekdays.map(day => ({
+      ...day,
+      completionRate: day.total > 0 ? Math.round((day.value / day.total) * 100) : 0
+    }));
+    setWeekdayData(weekdayChartData);
+
+    // Process monthly data (last 3 months)
+    const monthlyChartData = [];
+    const today = new Date();
+    let monthEnd = endOfMonth(today);
+    
+    for (let i = 0; i < 3; i++) {
+      const monthStart = startOfMonth(monthEnd);
+      const monthName = format(monthStart, 'MMM');
+      
+      // Filter logs for current month
+      const monthLogs = habitLogs.filter(log => {
+        const logDate = parseISO(log.date);
+        return logDate >= monthStart && logDate <= monthEnd;
+      });
+      
+      const completed = monthLogs.filter(log => log.completed).length;
+      const total = monthLogs.length;
+      
+      monthlyChartData.unshift({
+        name: monthName,
+        completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+        completed,
+        total
+      });
+      
+      // Go to previous month
+      monthEnd = subDays(monthStart, 1);
+    }
+    
+    setMonthlyData(monthlyChartData);
+  }
+
+  // Helper function to calculate streak value at a specific index
+  function calculateStreakAt(index: number, logs: HabitLogEntry[]): number {
+    let streak = 0;
+    
+    // Count backwards from this index
+    for (let i = index; i >= 0; i--) {
+      if (logs[i].completed) {
+        streak++;
+      } else {
+        break; // Streak broken
+      }
+    }
+    
+    return streak;
+  }
+
+  // Custom tooltip for streak chart
+  const StreakTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">
+          <p className="font-medium">{label}</p>
+          <p className="text-gray-600">
+            {data.value ? 'Completed' : 'Not Completed'}
+          </p>
+          {data.value ? (
+            <p className="text-green-600">Streak: {data.streak} day(s)</p>
+          ) : null}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Custom tooltip for weekday chart
+  const WeekdayTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">
+          <p className="font-medium">{label}</p>
+          <p className="text-gray-600">
+            Completed {data.value} of {data.total} times
+          </p>
+          <p className="text-green-600">Success rate: {data.completionRate}%</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -103,58 +244,6 @@ export function HabitStreak({
     );
   }
 
-  // Helper function to get intensity color based on streak density
-  const getIntensityColor = (streak: number, max: number) => {
-    if (streak === 0) return "#f1f5f9"; // light gray for no streak
-    
-    // Calculate opacity based on streak (50%-100%)
-    const opacity = 0.5 + (streak / max) * 0.5;
-    
-    // Convert hex to rgb for the safe color
-    const r = parseInt(safeColor.slice(1, 3), 16);
-    const g = parseInt(safeColor.slice(3, 5), 16);
-    const b = parseInt(safeColor.slice(5, 7), 16);
-    
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  };
-
-  // Generate calendar data for the monthly view
-  const generateMonthlyCalendar = () => {
-    const today = new Date();
-    const firstDayOfMonth = startOfMonth(today);
-    const lastDayOfMonth = endOfMonth(today);
-    
-    // Get all days in current month
-    const daysInMonth = eachDayOfInterval({ start: firstDayOfMonth, end: lastDayOfMonth });
-    
-    // Group by week (starting with Sunday)
-    const weeks: Date[][] = [];
-    let currentWeek: Date[] = [];
-    
-    daysInMonth.forEach(day => {
-      if (day.getDay() === 0 && currentWeek.length > 0) {
-        weeks.push(currentWeek);
-        currentWeek = [];
-      }
-      currentWeek.push(day);
-    });
-    
-    if (currentWeek.length > 0) {
-      weeks.push(currentWeek);
-    }
-    
-    return weeks;
-  };
-
-  // Check if a day has a completed habit
-  const isDayCompleted = (day: Date) => {
-    const dayString = format(day, 'yyyy-MM-dd');
-    const logEntry = habitLogs.find(log => log.date === dayString);
-    return logEntry?.completed || false;
-  };
-
-  const months = generateMonthlyCalendar();
-
   return (
     <Card>
       <CardHeader className="pb-2 flex flex-row items-center gap-2">
@@ -163,15 +252,19 @@ export function HabitStreak({
       </CardHeader>
       
       <CardContent>
-        <Tabs defaultValue="streak" onValueChange={(value) => setViewMode(value as 'calendar' | 'streak')}>
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+        <Tabs defaultValue="streak">
+          <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="streak" className="flex items-center gap-1.5">
               <TrendingUpIcon className="h-3.5 w-3.5" />
-              <span>Streak Stats</span>
+              <span>Streak</span>
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="flex items-center gap-1.5">
-              <CalendarIcon className="h-3.5 w-3.5" />
-              <span>Calendar</span>
+            <TabsTrigger value="weekday" className="flex items-center gap-1.5">
+              <BarChart3 className="h-3.5 w-3.5" />
+              <span>By Day</span>
+            </TabsTrigger>
+            <TabsTrigger value="monthly" className="flex items-center gap-1.5">
+              <PieChartIcon className="h-3.5 w-3.5" />
+              <span>Monthly</span>
             </TabsTrigger>
           </TabsList>
           
@@ -193,109 +286,185 @@ export function HabitStreak({
                 </div>
               </div>
               
-              {/* Streak Visualization */}
-              <div className="mt-4">
-                <div className="flex justify-between items-center mb-2">
-                  <div className="text-sm font-medium">Last 30 Days</div>
-                  <div className="text-xs text-gray-500">{stats.completedDays}/{stats.totalDays} days</div>
+              {/* Streak Line Chart */}
+              <div className="mt-4 pt-2">
+                <div className="text-sm font-medium mb-2">Last 30 Days Performance</div>
+                <div className="h-48 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={streakData}
+                      margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fontSize: 10 }}
+                        tickFormatter={(value, index) => index % 5 === 0 ? value : ''}
+                        axisLine={{ stroke: '#E5E7EB' }}
+                      />
+                      <YAxis 
+                        domain={[0, 1]} 
+                        tick={false}
+                        axisLine={false}
+                      />
+                      <Tooltip content={<StreakTooltip />} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="value" 
+                        stroke={safeColor} 
+                        strokeWidth={2}
+                        dot={{ stroke: safeColor, strokeWidth: 2, r: 4, fill: 'white' }}
+                        activeDot={{ stroke: safeColor, strokeWidth: 2, r: 6, fill: safeColor }}
+                      />
+                      <ReferenceLine y={0.5} stroke="#E5E7EB" strokeDasharray="3 3" />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
                 
-                <div className="overflow-hidden rounded-md border border-gray-200">
-                  <div className="flex overflow-x-auto py-2 px-1">
-                    {habitLogs.slice(-30).map((log, index) => {
-                      const date = new Date(log.date);
-                      const dayLabel = format(date, 'd');
-                      const isCurrentDay = isToday(date);
-                      
-                      return (
-                        <div key={index} className="flex flex-col items-center min-w-[30px] px-0.5">
-                          <div 
-                            className={`w-7 h-7 rounded-full flex items-center justify-center ${
-                              log.completed 
-                                ? 'text-white' 
-                                : 'bg-gray-100 text-gray-400'
-                            } ${
-                              isCurrentDay 
-                                ? 'ring-2 ring-blue-500 ring-offset-1' 
-                                : ''
-                            }`}
-                            style={{ 
-                              backgroundColor: log.completed ? safeColor : undefined 
-                            }}
-                          >
-                            {dayLabel}
-                          </div>
-                          <div className="mt-1">
-                            {log.completed ? (
-                              <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            ) : (
-                              <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                {/* Current streak visual indicator */}
+                {stats.currentStreak > 0 && (
+                  <div className="mt-2 p-2 bg-green-50 rounded-md flex items-center">
+                    <Badge className="mr-2 bg-green-100 text-green-800 hover:bg-green-100">
+                      {stats.currentStreak} days
+                    </Badge>
+                    <span className="text-sm text-green-700">
+                      Current streak - keep it going!
+                    </span>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </TabsContent>
           
-          <TabsContent value="calendar" className="mt-0">
+          <TabsContent value="weekday" className="mt-0">
             <div className="space-y-3">
               <div className="text-sm font-medium mb-1">
-                {format(new Date(), 'MMMM yyyy')}
+                Completion Rate by Day of Week
               </div>
               
-              <div className="rounded-lg border border-gray-200 overflow-hidden">
-                {/* Day headers */}
-                <div className="grid grid-cols-7 bg-gray-50 border-b">
-                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-                    <div key={i} className="h-7 flex items-center justify-center text-xs font-medium text-gray-500">
-                      {day}
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Calendar grid */}
-                <div className="bg-white">
-                  {months.map((week, weekIndex) => (
-                    <div key={weekIndex} className="grid grid-cols-7">
-                      {week.map((day, dayIndex) => {
-                        const completed = isDayCompleted(day);
-                        const isCurrentDay = isToday(day);
-                        
-                        return (
-                          <div 
-                            key={dayIndex}
-                            className={`p-1 ${isCurrentDay ? 'bg-blue-50' : ''}`}
-                          >
-                            <div 
-                              className={`w-full aspect-square rounded-full flex items-center justify-center text-xs
-                                ${completed ? 'text-white' : 'text-gray-700'}
-                                ${isCurrentDay ? 'ring-1 ring-blue-500' : ''}
-                              `}
-                              style={{ 
-                                backgroundColor: completed ? safeColor : undefined
-                              }}
-                            >
-                              {format(day, 'd')}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
+              <div className="h-48 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={weekdayData}
+                    margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fontSize: 10 }}
+                      axisLine={{ stroke: '#E5E7EB' }}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 10 }}
+                      axisLine={false}
+                      tickFormatter={(value) => `${value}%`}
+                      domain={[0, 100]}
+                    />
+                    <Tooltip content={<WeekdayTooltip />} />
+                    <Bar 
+                      dataKey="completionRate" 
+                      radius={[4, 4, 0, 0]}
+                    >
+                      {weekdayData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={entry.completionRate > 0 ? safeColor : '#F3F4F6'} 
+                          fillOpacity={0.5 + (entry.completionRate / 200)} // Vary opacity based on value
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
               
-              <div className="flex justify-between pt-2 text-xs text-gray-500">
-                <div>This Month: {habitLogs.filter(log => log.completed && log.date.startsWith(format(new Date(), 'yyyy-MM'))).length} days completed</div>
+              {/* Insight about best/worst day */}
+              {weekdayData.length > 0 && (
+                <div className="mt-2 p-2 bg-blue-50 rounded-md">
+                  <p className="text-sm text-blue-700">
+                    {(() => {
+                      const bestDay = [...weekdayData].sort((a, b) => b.completionRate - a.completionRate)[0];
+                      const worstDay = [...weekdayData].filter(d => d.total > 0).sort((a, b) => a.completionRate - b.completionRate)[0];
+                      
+                      if (bestDay && bestDay.total > 0) {
+                        return `Your best day is ${bestDay.name} with ${bestDay.completionRate}% completion rate.`;
+                      }
+                      return "Track this habit consistently to see patterns by day of week.";
+                    })()}
+                  </p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="monthly" className="mt-0">
+            <div className="space-y-3">
+              <div className="text-sm font-medium mb-1">
+                Monthly Performance
               </div>
+              
+              <div className="h-48 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadialBarChart 
+                    innerRadius="30%" 
+                    outerRadius="90%" 
+                    data={monthlyData} 
+                    startAngle={90} 
+                    endAngle={-270}
+                  >
+                    <RadialBar
+                      background
+                      dataKey="completionRate"
+                      cornerRadius={10}
+                    >
+                      {monthlyData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={safeColor}
+                          fillOpacity={0.6 + (index * 0.1)} 
+                        />
+                      ))}
+                    </RadialBar>
+                    <Legend 
+                      iconSize={10} 
+                      layout="vertical" 
+                      verticalAlign="middle" 
+                      align="right"
+                      formatter={(value, entry, index) => {
+                        const item = monthlyData[index];
+                        return `${value}: ${item.completionRate}% (${item.completed}/${item.total})`;
+                      }}
+                    />
+                    <Tooltip 
+                      formatter={(value, name, props) => [`${value}%`, 'Completion Rate']}
+                      labelFormatter={(label) => monthlyData.find(item => item.name === label)?.name || ''}
+                    />
+                  </RadialBarChart>
+                </ResponsiveContainer>
+              </div>
+              
+              {/* Monthly trend insight */}
+              {monthlyData.length > 1 && (
+                <div className="mt-2 p-2 bg-purple-50 rounded-md">
+                  <p className="text-sm text-purple-700">
+                    {(() => {
+                      const currentMonth = monthlyData[monthlyData.length - 1];
+                      const previousMonth = monthlyData[monthlyData.length - 2];
+                      
+                      if (currentMonth && previousMonth) {
+                        const difference = currentMonth.completionRate - previousMonth.completionRate;
+                        if (difference > 0) {
+                          return `You're improving! Up ${difference}% from last month.`;
+                        } else if (difference < 0) {
+                          return `You completed this habit ${Math.abs(difference)}% less often than last month.`;
+                        } else {
+                          return `Your completion rate is steady at ${currentMonth.completionRate}% for the past two months.`;
+                        }
+                      }
+                      return "Keep tracking to see your monthly progress.";
+                    })()}
+                  </p>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
