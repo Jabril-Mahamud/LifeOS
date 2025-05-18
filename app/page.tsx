@@ -1,110 +1,78 @@
+// app/page.tsx
 import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs"
-import { LearnMore } from "./components/learn-more"
-import screenshotDevices from "./images/user-button@2xrl.webp"
-import signIn from "./images/sign-in@2xrl.webp"
-import verify from "./images/verify@2xrl.webp"
-import userButton2 from "./images/user-button-2@2xrl.webp"
-import signUp from "./images/sign-up@2xrl.webp"
-import logo from "./images/logo.png"
 import "./home.css"
-import Image from "next/image"
 import Link from "next/link"
-import { Footer } from "./components/footer"
-
-import { CARDS } from "./consts/cards"
-import { ClerkLogo } from "./components/clerk-logo"
-import { NextLogo } from "./components/next-logo"
+import { Footer } from "@/components/footer"
 
 export default function Home() {
   return (
     <>
-      <main className="bg-[#FAFAFA] relative">
-        <div className="w-full bg-white max-w-[75rem] mx-auto flex flex-col border-l border-r border-[#F2F2F2] row-span-3">
-          <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px bg-[#F2F2F2]" />
-          <Image
-            alt="Device"
-            className="size-64 bg-transparent absolute left-1/2 -translate-x-[23.75rem] -top-6 h-[51.375rem] object-contain w-[39.0625rem]"
-            src={logo}
-            unoptimized
-          />
-
-          <div className="px-12 py-16 border-b border-[#F2F2F4]">
-            <div className="bg-[#F4F4F5] px-4 py-3 rounded-full inline-flex gap-4">
-              <ClerkLogo />
-              <div aria-hidden className="w-px h-6 bg-[#C7C7C8]" />
-              <NextLogo />
-            </div>
+      <main className="min-h-screen flex flex-col items-center justify-center px-4">
+        <div className="max-w-[75rem] w-full mx-auto text-center">
+          <h1 className="text-5xl font-bold mb-6">Personal Journal & Habit Tracker</h1>
+          <p className="text-xl mb-8 text-gray-600">
+            Record your thoughts, track your habits, and reflect on your journey.
+          </p>
+          
+          <div className="flex gap-4 justify-center mb-12">
+            <SignedIn>
+              <Link 
+                href="/journal" 
+                className="bg-black text-white px-6 py-3 rounded-md font-medium hover:bg-gray-800 transition-colors"
+              >
+                My Journal
+              </Link>
+              <Link 
+                href="/dashboard" 
+                className="border border-black px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition-colors"
+              >
+                My Dashboard
+              </Link>
+            </SignedIn>
+            
+            <SignedOut>
+              <Link 
+                href="/sign-in" 
+                className="bg-black text-white px-6 py-3 rounded-md font-medium hover:bg-gray-800 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link 
+                href="/sign-up" 
+                className="border border-black px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition-colors"
+              >
+                Sign Up
+              </Link>
+            </SignedOut>
           </div>
-
-          <div className="p-10 border-b border-[#F2F2F2]">
-            <h1 className="text-5xl font-bold tracking-tight text-[#131316] relative">
-              Auth starts here
-            </h1>
-
-            <p className="text-[#5E5F6E] pt-3 pb-6 max-w-[30rem] text-[1.0625rem] relative">
-              A simple and powerful Next.js template featuring authentication
-              and user management powered by Clerk.
-            </p>
-            <div className="relative flex gap-3">
-              <SignedIn>
-                <Link
-                  href="/dashboard"
-                  className="px-4 py-2 rounded-full bg-[#131316] text-white text-sm font-semibold"
-                >
-                  Dashboard
-                </Link>
-              </SignedIn>
-              <SignedOut>
-                <SignInButton>
-                  <button className="px-4 py-2 rounded-full bg-[#131316] text-white text-sm font-semibold">
-                    Sign in
-                  </button>
-                </SignInButton>
-              </SignedOut>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="text-4xl mb-3">📝</div>
+              <h3 className="text-lg font-semibold mb-2">Daily Reflections</h3>
+              <p className="text-gray-600">
+                Capture your thoughts, experiences, and feelings in a private, secure space.
+              </p>
             </div>
-          </div>
-          <div className="flex gap-8 w-full h-[41.25rem] scale-[1.03]">
-            <div className="space-y-8 translate-y-12">
-              <Image
-                alt="Device"
-                src={signUp}
-                unoptimized
-                className="flex-none rounded-xl bg-white shadow-[0_5px_15px_rgba(0,0,0,0.08),0_15px_35px_-5px_rgba(25,28,33,0.2)] ring-1 ring-gray-950/5"
-              />
+            
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="text-4xl mb-3">🏆</div>
+              <h3 className="text-lg font-semibold mb-2">Habit Tracking</h3>
+              <p className="text-gray-600">
+                Build consistency by tracking your habits alongside your daily journal entries.
+              </p>
             </div>
-            <div className="space-y-8 -translate-y-4">
-              <Image
-                alt="Device"
-                src={verify}
-                unoptimized
-                className="flex-none rounded-xl bg-white shadow-[0_5px_15px_rgba(0,0,0,0.08),0_15px_35px_-5px_rgba(25,28,33,0.2)] ring-1 ring-gray-950/5"
-              />
-              <Image
-                alt="Device"
-                src={userButton2}
-                unoptimized
-                className="flex-none rounded-xl bg-white shadow-[0_5px_15px_rgba(0,0,0,0.08),0_15px_35px_-5px_rgba(25,28,33,0.2)] ring-1 ring-gray-950/5"
-              />
-            </div>
-            <div className="space-y-8 -translate-y-[22.5rem]">
-              <Image
-                alt="Device"
-                src={signIn}
-                unoptimized
-                className="flex-none rounded-xl bg-white shadow-[0_5px_15px_rgba(0,0,0,0.08),0_15px_35px_-5px_rgba(25,28,33,0.2)] ring-1 ring-gray-950/5"
-              />
-              <Image
-                alt="Device"
-                src={screenshotDevices}
-                unoptimized
-                className="flex-none rounded-xl bg-white shadow-[0_5px_15px_rgba(0,0,0,0.08),0_15px_35px_-5px_rgba(25,28,33,0.2)] ring-1 ring-gray-950/5"
-              />
+            
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="text-4xl mb-3">📊</div>
+              <h3 className="text-lg font-semibold mb-2">Progress Insights</h3>
+              <p className="text-gray-600">
+                View your journaling patterns and habit streaks with helpful visualizations.
+              </p>
             </div>
           </div>
         </div>
-        <div className="absolute left-0 right-0 bottom-0 h-[18.75rem] bg-gradient-to-t from-white" />
       </main>
-      <LearnMore cards={CARDS} />
       <Footer />
     </>
   )

@@ -1,83 +1,186 @@
-<p align="center">
-  <a href="https://go.clerk.com/e3UDpP4" target="_blank" rel="noopener noreferrer">
-   <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="./public/light-logo.png">
-      <img src="./public/dark-logo.png" height="64">
-    </picture>
-  </a>
-  <br />
-</p>
-<div align="center">
-  <h1>
-    Next.js Clerk auth starter template
-  </h1>
-  <a href="https://www.npmjs.com/package/@clerk/clerk-js">
-    <img alt="" src="https://img.shields.io/npm/dm/@clerk/clerk-js" />
-  </a>
-  <a href="https://discord.com/invite/b5rXHjAg7A">
-    <img alt="Discord" src="https://img.shields.io/discord/856971667393609759?color=7389D8&label&logo=discord&logoColor=ffffff" />
-  </a>
-  <a href="https://twitter.com/clerkdev">
-    <img alt="Twitter" src="https://img.shields.io/twitter/url.svg?label=%40clerkdev&style=social&url=https%3A%2F%2Ftwitter.com%2Fclerkdev" />
-  </a>
-  <br />
-  <br />
-  <img alt="Clerk Hero Image" src="public/og.png">
-</div>
+# LifeOS
 
-## Introduction
+A comprehensive personal life operating system built with Next.js, Prisma, and Clerk authentication.
 
-Clerk is a developer-first authentication and user management solution. It provides pre-built React components and hooks for sign-in, sign-up, user profile, and organization management. Clerk is designed to be easy to use and customize, and can be dropped into any React or Next.js application.
+## Overview
 
-This template allows you to get started with Clerk and Next.js (App Router) in a matter of minutes, and demonstrates features of Clerk such as:
+LifeOS is your all-in-one personal management system designed to help you maintain consistency, track progress, and gain insights into your daily life. Unlike Notion-based life management systems that require complex configuration, LifeOS provides a streamlined, purpose-built experience with:
 
-- Fully functional auth flow with sign-in, sign-up, and a protected page
-- Customized Clerk components with Tailwind CSS
-- Hooks for accessing user data and authentication state
-- Organizations for multi-tenant applications
+- 📝 **Daily Journaling**: Document your thoughts, experiences, and reflections
+- 🏆 **Habit Tracking**: Build consistency with customizable habit tracking
+- 🧠 **Mood Monitoring**: Track your emotional well-being over time
+- 📊 **Visual Analytics**: Understand patterns with heatmaps, streak calendars, and statistics
+- 🔄 **Daily Consistency**: Maintain your routines with a unified daily check-in process
+- 🔒 **Privacy-First**: Complete user management with secure authentication
+- 📱 **Responsive Design**: Works seamlessly across desktop and mobile devices
+
+## Tech Stack
+
+- **Frontend**: Next.js 15 (App Router), React 19, Tailwind CSS, shadcn/ui components
+- **Backend**: Next.js API routes, Prisma ORM
+- **Database**: PostgreSQL
+- **Authentication**: Clerk (user management, authentication)
+- **State Management**: React hooks and context
+- **Styling**: Tailwind CSS, shadcn/ui component system
 
 ## Demo
 
-A hosted demo of this example is available at https://clerk-nextjs-app-router.vercel.app/
+A hosted demo of this application will be available soon.
 
-## Deploy
+## Getting Started
 
-Easily deploy the template to Vercel with the button below. You will need to set the required environment variables in the Vercel dashboard.
+### Prerequisites
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fclerk%2Fnextjs-auth-starter-template&env=CLERK_SECRET_KEY,NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY&envDescription=Your%20Clerk%20application%20keys%2C%20accessible%20from%20dashboard.clerk.com.&envLink=https%3A%2F%2Fgithub.com%2Fclerk%2Fnextjs-auth-starter-template%3Ftab%3Dreadme-ov-file%23running-the-template&demo-url=https%3A%2F%2Fnextjs-auth-starter-template-kit.vercel.app%2F)
+- Node.js v20+
+- npm or yarn
+- PostgreSQL database
 
-## Running the template
+### Installation
 
-```bash
-git clone https://github.com/clerk/clerk-nextjs-demo-app-router
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/yourusername/life-os.git
+   cd life-os
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   Create a `.env` file with the following variables:
+
+   ```env
+   # Clerk Auth
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+   CLERK_SECRET_KEY=your_clerk_secret_key
+
+   # Database
+   DATABASE_URL="postgresql://username:password@localhost:5432/yourdbname?schema=public"
+   ```
+
+4. Set up the database:
+
+   ```bash
+   npx prisma migrate dev
+   ```
+
+5. Seed the database (optional):
+
+   ```bash
+   npx prisma db seed
+   ```
+
+6. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+7. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Core Features
+
+### User Authentication
+
+Powered by Clerk, the application offers a seamless authentication experience:
+
+- Email and password authentication
+- Social login options
+- User profiles
+- Secure session management
+
+### Journal System
+
+- Create daily journal entries with titles, content, and mood selection
+- View past entries with search and filter capabilities
+- One journal entry per day to encourage consistent reflection
+- Mood tracking and analysis
+
+### Habit Management
+
+- Create custom habits with names, descriptions, icons, and colors
+- Track habit completion alongside your daily journal entries
+- View habit streaks and performance statistics
+- Activate/deactivate habits as needed
+- Build consistency through visual progress indicators
+
+### Analytics Dashboard
+
+- View journal activity through a heatmap visualization
+- Track habit streaks and completion rates
+- Analyze mood distribution and trends
+- Get insights into your journaling and habit consistency
+- Make data-driven decisions about your routines
+
+## Project Structure
+
+```md
+├── app/                  # Next.js app router files
+│   ├── api/              # API routes for journal, habits, etc.
+│   ├── dashboard/        # Dashboard page
+│   ├── habits/           # Habit management pages
+│   ├── journal/          # Journal pages
+│   ├── sign-in/          # Authentication pages
+│   ├── sign-up/          
+│   └── page.tsx          # Home page
+├── components/           # React components
+│   ├── dashboard/        # Dashboard components
+│   ├── habits/           # Habit-related components
+│   ├── journal/          # Journal-related components
+│   ├── layout/           # Layout components
+│   ├── ui/               # UI components (shadcn)
+│   └── visualizations/   # Data visualization components
+├── hooks/                # Custom React hooks
+├── lib/                  # Utility functions and shared code
+├── prisma/               # Prisma schema and migrations
+│   ├── migrations/       # Database migrations
+│   ├── schema.prisma     # Database schema
+│   └── seed.ts           # Seed script for development data
+├── public/               # Static assets
 ```
 
-To run the example locally, you need to:
+## Deployment
 
-1. Sign up for a Clerk account at [https://clerk.com](https://go.clerk.com/31bREJU).
-2. Go to the [Clerk dashboard](https://go.clerk.com/4I5LXFj) and create an application.
-3. Set the required Clerk environment variables as shown in [the example `env` file](./.env.example).
-4. Go to "Organization Settings" in your sidebar and enable Organizations
-5. `npm install` the required dependencies.
-6. `npm run dev` to launch the development server.
+You can easily deploy this application on Vercel:
 
-## Learn more
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyourusername%2Flife-os)
 
-To learn more about Clerk and Next.js, check out the following resources:
+When deploying, make sure to set up the required environment variables in the Vercel dashboard.
 
-- [Quickstart: Get started with Next.js and Clerk](https://go.clerk.com/vgWhQ7B)
-- [Clerk Documentation](https://go.clerk.com/aNiTioa)
-- [Next.js Documentation](https://nextjs.org/docs)
+## Database Setup
 
-## Found an issue or have feedback?
+This project uses PostgreSQL with Prisma ORM. You'll need to:
 
-If you have found an issue with this repo or have feedback, please join our Discord and create a new thread inside of our [support](https://clerk.com/discord) channel.
+1. Create a PostgreSQL database
+2. Update the DATABASE_URL in your .env file
+3. Run migrations: `npx prisma migrate deploy`
 
-If it's a quick fix, such as a misspelled word or a broken link, feel free to skip creating a thread.
-Go ahead and create a [pull request](https://github.com/clerk/clerk-nextjs-demo-app-router/pulls) with the solution. :rocket:
+For local development, you can use:
 
-## Connect with us
+- Docker: `docker run --name postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres`
+- Railway, Supabase, or other hosted PostgreSQL services
 
-You can discuss ideas, ask questions, and meet others from the community in our [Discord](https://clerk.com/discord).
+## Contributing
 
-If you prefer, you can also find support through our [Twitter](https://twitter.com/ClerkDev), or you can [email](mailto:support@clerk.dev) us!
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- This project was built using [Clerk](https://clerk.com) for authentication
+- UI components from [shadcn/ui](https://ui.shadcn.com/)
+- Date handling with [date-fns](https://date-fns.org/)
+- Database managed with [Prisma](https://www.prisma.io/)

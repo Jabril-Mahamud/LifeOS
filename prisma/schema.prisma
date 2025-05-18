@@ -21,6 +21,8 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   posts         Post[]
+  journals      Journal[]
+  habits        Habit[]
   organizations OrganizationMember[]
 }
 
@@ -33,6 +35,52 @@ model Post {
   author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Journal {
+  id        String      @id @default(cuid())
+  title     String
+  content   String?
+  mood      String?     @default("neutral")
+  private   Boolean     @default(true)
+  date      DateTime    @default(now()) // Used for tracking daily journals
+  authorId  String
+  author    User        @relation(fields: [authorId], references: [id])
+  habitLogs HabitLog[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([authorId, date]) // Ensures only one journal entry per day per user
+}
+
+model Habit {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  icon        String?     // Emoji or icon identifier
+  color       String?     // Color for visualization
+  active      Boolean     @default(true)
+  authorId    String
+  author      User        @relation(fields: [authorId], references: [id])
+  habitLogs   HabitLog[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  @@unique([authorId, name]) // Prevents duplicate habit names for a user
+}
+
+model HabitLog {
+  id        String   @id @default(cuid())
+  completed Boolean  @default(false)
+  notes     String?
+  journalId String
+  journal   Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([journalId, habitId]) // One habit log per habit per journal entry
 }
 
 model Organization {
