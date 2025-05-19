@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 
+// GET /api/projects - Get all user projects
 export async function GET(req: NextRequest) {
   const authObject = await auth();
   const userId = authObject.userId;
@@ -11,55 +12,32 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Get the current user from Clerk
-    const clerkUser = await currentUser();
-    
-    if (!clerkUser) {
-      return NextResponse.json({ error: 'User not found in Clerk' }, { status: 404 });
-    }
-    
-    // Find or create user in our database based on Clerk ID
-    let dbUser = await prisma.user.findUnique({
+    // Find the user in our database
+    const dbUser = await prisma.user.findUnique({
       where: { clerkId: userId },
     });
 
-    // If we don't have this user in our database yet, create them
     if (!dbUser) {
-      // Get primary email from the Clerk user
-      const primaryEmail = clerkUser.emailAddresses.find(
-        email => email.id === clerkUser.primaryEmailAddressId
-      )?.emailAddress;
-      
-      if (!primaryEmail) {
-        return NextResponse.json({ error: 'User has no email address' }, { status: 400 });
-      }
-      
-      // Create a new user in our database with data from Clerk
-      dbUser = await prisma.user.create({
-        data: {
-          clerkId: userId,
-          email: primaryEmail,
-          firstName: clerkUser.firstName,
-          lastName: clerkUser.lastName,
-          profileImage: clerkUser.imageUrl,
-        },
-      });
-      
-      console.log('Created new user in database:', dbUser);
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Get user's posts
-    const posts = await prisma.post.findMany({
-      where: { authorId: dbUser.id },
-      orderBy: { createdAt: 'desc' },
+    // Get user's projects
+    const projects = await prisma.project.findMany({
+      where: { 
+        authorId: dbUser.id,
+        archived: false // Only show non-archived projects by default
+      },
+      orderBy: { createdAt: 'asc' },
+      include: {
+        tasks: {
+          orderBy: { createdAt: 'asc' },
+        },
+      },
     });
 
-    return NextResponse.json({ 
-      user: dbUser, 
-      posts,
-    });
+    return NextResponse.json({ projects });
   } catch (error) {
-    console.error('Error fetching user data:', error);
+    console.error('Error fetching projects:', error);
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }
@@ -67,6 +45,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
+// POST /api/projects - Create a new project
 export async function POST(req: NextRequest) {
   const authObject = await auth();
   const userId = authObject.userId;
@@ -76,11 +55,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { title, content } = await req.json();
+    const { name, description, color, icon } = await req.json();
     
-    if (!title) {
+    if (!name) {
       return NextResponse.json(
-        { error: 'Title is required' }, 
+        { error: 'Project name is required' }, 
         { status: 400 }
       );
     }
@@ -117,18 +96,35 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Create a new post
-    const post = await prisma.post.create({
+    // Check if project with this name already exists for the user
+    const existingProject = await prisma.project.findFirst({
+      where: {
+        authorId: dbUser.id,
+        name,
+      },
+    });
+
+    if (existingProject) {
+      return NextResponse.json(
+        { error: 'A project with this name already exists' }, 
+        { status: 400 }
+      );
+    }
+
+    // Create a new project
+    const project = await prisma.project.create({
       data: {
-        title,
-        content,
+        name,
+        description,
+        color,
+        icon,
         authorId: dbUser.id,
       },
     });
 
-    return NextResponse.json({ post }, { status: 201 });
+    return NextResponse.json({ project }, { status: 201 });
   } catch (error) {
-    console.error('Error creating post:', error);
+    console.error('Error creating project:', error);
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }

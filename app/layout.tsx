@@ -38,34 +38,31 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head />
-      <ClerkProvider
-        appearance={{
-          variables: { colorPrimary: "#000000" },
-          elements: {
-            formButtonPrimary:
-              "bg-card border border-black border-solid hover:bg-card hover:text-green",
-            socialButtonsBlockButton:
-              "bg-card border-gray-200 hover:bg-transparent hover:border-black text-green-600 hover:text-green",
-            socialButtonsBlockButtonText: "font-semibold",
-            formButtonReset:
-              "bg-card border border-solid border-gray-200 hover:bg-transparent hover:border-black text-green-500 hover:text-green",
-            membersPageInviteButton:
-              "bg-card border border-black border-solid hover:bg-card hover:text-green",
-            card: "bg-[#fafafa]",
-          },
-        }}
-      >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <body className="min-h-screen flex flex-col antialiased">
+      <body className="min-h-screen flex flex-col antialiased">
+        <ClerkProvider
+          appearance={{
+            variables: { colorPrimary: "#000000" },
+            elements: {
+              formButtonPrimary:
+                "bg-card border border-black border-solid hover:bg-card hover:text-green",
+              socialButtonsBlockButton:
+                "bg-card border-gray-200 hover:bg-transparent hover:border-black text-green-600 hover:text-green",
+              socialButtonsBlockButtonText: "font-semibold",
+              formButtonReset:
+                "bg-card border border-solid border-gray-200 hover:bg-transparent hover:border-black text-green-500 hover:text-green",
+              membersPageInviteButton:
+                "bg-card border border-black border-solid hover:bg-card hover:text-green",
+            },
+          }}
+        >
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <MainHeader />
-            <div className="flex-grow">
-              {children}
-            </div>
+            <div className="flex-grow">{children}</div>
             <Footer />
             <Toaster />
-          </body>
-        </ThemeProvider>
-      </ClerkProvider>
+          </ThemeProvider>
+        </ClerkProvider>
+      </body>
     </html>
   );
 }

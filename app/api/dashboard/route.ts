@@ -81,22 +81,17 @@ export async function GET(req: NextRequest) {
         authorId: dbUser.id,
       },
       orderBy: { date: 'desc' },
+      take: 10, // Only get the 10 most recent for dashboard
     });
 
     // Get mood distribution
     const moodCounts: Record<string, number> = {};
-    const totalEntries = allJournalEntries.length;
     
     allJournalEntries.forEach(entry => {
       const mood = entry.mood || 'neutral';
       moodCounts[mood] = (moodCounts[mood] || 0) + 1;
     });
     
-    const moodDistribution: Record<string, number> = {};
-    Object.entries(moodCounts).forEach(([mood, count]) => {
-      moodDistribution[mood] = Math.round((count / totalEntries) * 100);
-    });
-
     // Get recent moods (last 7 entries)
     const recentMoods = allJournalEntries.slice(0, 7).map(entry => entry.mood || 'neutral');
     
@@ -189,14 +184,96 @@ export async function GET(req: NextRequest) {
       };
     }));
 
+    // Get active projects with task counts
+    const projects = await prisma.project.findMany({
+      where: {
+        authorId: dbUser.id,
+        archived: false
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: {
+            tasks: {
+              where: {
+                status: {
+                  not: 'completed'
+                }
+              }
+            }
+          }
+        }
+      },
+      take: 5 // Limit to 5 recent projects for dashboard
+    });
+
+    // Get pending tasks due soon 
+    const upcomingTasks = await prisma.task.findMany({
+      where: {
+        authorId: dbUser.id,
+        status: {
+          not: 'completed'
+        },
+        dueDate: {
+          gte: new Date(), // Only future due dates
+        }
+      },
+      orderBy: {
+        dueDate: 'asc'
+      },
+      include: {
+        project: {
+          select: {
+            name: true,
+            color: true,
+            icon: true
+          }
+        }
+      },
+      take: 5 // Limit to 5 upcoming tasks
+    });
+
+    // Get recently completed tasks
+    const recentlyCompletedTasks = await prisma.task.findMany({
+      where: {
+        authorId: dbUser.id,
+        status: 'completed',
+        completedAt: {
+          gte: thirtyDaysAgo
+        }
+      },
+      orderBy: {
+        completedAt: 'desc'
+      },
+      include: {
+        project: {
+          select: {
+            name: true,
+            color: true,
+            icon: true
+          }
+        }
+      },
+      take: 5 // Limit to 5 recent completed tasks
+    });
+
     return NextResponse.json({
       habits: habitStats,
       journal: {
-        totalEntries,
+        totalEntries: journalActivityEntries.length,
         hasEntryToday: Boolean(todayEntry),
-        moodDistribution,
+        entries: allJournalEntries,
+        moodDistribution: moodCounts,
         recentMoods,
         heatmap: journalHeatmap
+      },
+      projects: {
+        list: projects,
+        total: projects.length,
+      },
+      tasks: {
+        upcoming: upcomingTasks,
+        recentlyCompleted: recentlyCompletedTasks
       }
     });
   } catch (error) {
