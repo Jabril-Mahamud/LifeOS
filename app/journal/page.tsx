@@ -1,9 +1,9 @@
-import { JournalList } from "@/components/journal/journal-list";
+import React from 'react'
 
-export default function JournalPage() {
+const page = () => {
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <JournalList />
-    </div>
-  );
+    <div>page</div>
+  )
 }
+
+export default page

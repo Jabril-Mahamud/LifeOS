@@ -51,14 +51,11 @@ export default function RootLayout({
               "bg-card border border-solid border-gray-200 hover:bg-transparent hover:border-black text-gray-500 hover:text-black",
             membersPageInviteButton:
               "bg-card border border-black border-solid hover:bg-card hover:text-black",
-            card: "bg-[#fafafa]",
           },
         }}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <body className="min-h-screen flex flex-col antialiased">
-            <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js" />
-            <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/autoloader/prism-autoloader.min.js" />
             <MainHeader />
             <div className="flex-grow">
               {children}
