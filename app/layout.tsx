@@ -4,6 +4,7 @@ import Script from "next/script";
 import { Metadata } from "next";
 import localFont from "next/font/local";
 import { MainHeader } from "@/components/layout/main-header";
+import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/layout/theme/theme-provider";
 
@@ -36,10 +37,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
-      <head>
-        <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js" />
-        <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/autoloader/prism-autoloader.min.js" />
-      </head>
+      <head />
       <ClerkProvider
         appearance={{
           variables: { colorPrimary: "#000000" },
@@ -59,37 +57,13 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <body className="min-h-screen flex flex-col antialiased">
+            <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js" />
+            <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/autoloader/prism-autoloader.min.js" />
             <MainHeader />
             <div className="flex-grow">
               {children}
             </div>
-            <footer className="py-6 border-t border-gray-200">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center">
-                  <div className="text-sm text-gray-500">
-                    © {new Date().getFullYear()} Daily Journal. All rights reserved.
-                  </div>
-                  <div className="flex space-x-6">
-                    <a
-                      href="https://clerk.com/docs"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-500 hover:text-gray-900"
-                    >
-                      Docs
-                    </a>
-                    <a
-                      href="https://github.com/clerk/nextjs-auth-starter-template"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-500 hover:text-gray-900"
-                    >
-                      GitHub
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </footer>
+            <Footer />
             <Toaster />
           </body>
         </ThemeProvider>
