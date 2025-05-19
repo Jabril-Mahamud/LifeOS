@@ -57,8 +57,6 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <body className="min-h-screen flex flex-col antialiased">
-            <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js" />
-            <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/autoloader/prism-autoloader.min.js" />
             <MainHeader />
             <div className="flex-grow">
               {children}
