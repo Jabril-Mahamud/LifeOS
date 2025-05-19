@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { UserButton, useUser } from "@clerk/nextjs";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/layout/theme/theme-toggle";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -15,12 +16,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Menu } from "lucide-react";
+import { Menu, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 
 export function MainHeader() {
   const pathname = usePathname();
   const { user } = useUser();
+  const { setTheme, theme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // After mounting, we can safely access the theme
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -34,7 +43,7 @@ export function MainHeader() {
   ];
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-background border-b border-border shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -46,7 +55,7 @@ export function MainHeader() {
                   viewBox="0 0 24 24" 
                   fill="none" 
                   xmlns="http://www.w3.org/2000/svg"
-                  className="text-black"
+                  className="text-foreground"
                 >
                   <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                   <path d="M12 12H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -56,7 +65,7 @@ export function MainHeader() {
                   <path d="M12 3V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                   <path d="M9 7H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
-                <span className="ml-2 text-lg font-semibold text-gray-900">Daily Journal</span>
+                <span className="ml-2 text-lg font-semibold text-foreground">Daily Journal</span>
               </Link>
             </div>
             
@@ -69,8 +78,8 @@ export function MainHeader() {
                     href={item.href}
                     className={`${
                       item.current
-                        ? 'border-black text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                        ? 'border-primary text-foreground'
+                        : 'border-transparent text-muted-foreground hover:border-muted hover:text-foreground'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
                     {item.name}
@@ -83,8 +92,10 @@ export function MainHeader() {
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             <SignedIn>
               <div className="flex items-center gap-4">
+                {mounted && <ThemeToggle />}
+                
                 {user && (
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-muted-foreground">
                     {user.firstName}
                   </span>
                 )}
@@ -101,6 +112,7 @@ export function MainHeader() {
             
             <SignedOut>
               <div className="flex items-center space-x-4">
+                {mounted && <ThemeToggle />}
                 <Link href="/sign-in">
                   <Button variant="ghost">Sign in</Button>
                 </Link>
@@ -126,11 +138,40 @@ export function MainHeader() {
                   <DropdownMenuSeparator />
                   {navigation.map((item) => (
                     <DropdownMenuItem key={item.name} asChild>
-                      <Link href={item.href} className={item.current ? 'bg-gray-50 font-semibold' : ''}>
+                      <Link href={item.href} className={item.current ? 'bg-muted font-semibold' : ''}>
                         {item.name}
                       </Link>
                     </DropdownMenuItem>
                   ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Theme</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setTheme("light")}>
+                    <Sun className="h-4 w-4 mr-2" />
+                    Light
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("dark")}>
+                    <Moon className="h-4 w-4 mr-2" />
+                    Dark
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("system")}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4 mr-2"
+                    >
+                      <rect x="2" y="3" width="20" height="14" rx="2" />
+                      <line x1="8" x2="16" y1="21" y2="21" />
+                      <line x1="12" x2="12" y1="17" y2="21" />
+                    </svg>
+                    System
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <div className="p-2">
                     <UserButton
@@ -147,11 +188,14 @@ export function MainHeader() {
             </SignedIn>
             
             <SignedOut>
-              <Link href="/sign-in">
-                <Button variant="ghost" className="text-gray-600 hover:text-gray-900 text-sm font-medium px-4 py-2">
-                  Sign in
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                {mounted && <ThemeToggle />}
+                <Link href="/sign-in">
+                  <Button variant="ghost" className="text-muted-foreground hover:text-foreground text-sm font-medium px-4 py-2">
+                    Sign in
+                  </Button>
+                </Link>
+              </div>
             </SignedOut>
           </div>
         </div>

@@ -9,6 +9,12 @@
     repeating-linear-gradient(90deg, transparent, transparent 11px, #f2f2f2 11px, #f2f2f2 12px);
 }
 
+.dark .background {
+  background: #121212;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 11px, #1a1a1a 11px, #1a1a1a 12px),
+    repeating-linear-gradient(90deg, transparent, transparent 11px, #1a1a1a 11px, #1a1a1a 12px);
+}
+
 .mask {
   mask-image: linear-gradient(
     to bottom,
@@ -18,8 +24,6 @@
     rgba(0, 0, 0, 0) 100%
   );
 }
-
-
 
 @layer base {
   :root {
@@ -75,15 +79,51 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+  
+  /* Colorful theme */
+  .colorful {
+    --background: 240 95% 98%;
+    --foreground: 268 75% 18%;
+    --card: 240 95% 99%;
+    --card-foreground: 268 75% 18%;
+    --popover: 240 95% 99%;
+    --popover-foreground: 268 75% 18%;
+    --primary: 268 75% 55%;
+    --primary-foreground: 240 95% 98%;
+    --secondary: 268 25% 90%;
+    --secondary-foreground: 268 75% 20%;
+    --muted: 268 20% 90%;
+    --muted-foreground: 268 30% 35%;
+    --accent: 191 85% 65%;
+    --accent-foreground: 268 75% 18%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 268 25% 85%;
+    --input: 268 25% 85%;
+    --ring: 268 75% 55%;
+    --chart-1: 268 75% 55%;
+    --chart-2: 191 85% 65%;
+    --chart-3: 335 85% 65%;
+    --chart-4: 45 85% 65%;
+    --chart-5: 135 85% 65%;
+  }
 }
-
-
 
 @layer base {
   * {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
   }
+}
+
+/* To make the theme transition smoother across all elements */
+.transition-colors, 
+.hover\:transition-colors, 
+.focus\:transition-colors,
+.active\:transition-colors {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
 }

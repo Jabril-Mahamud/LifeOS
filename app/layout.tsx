@@ -6,6 +6,7 @@ import { Metadata } from "next";
 import localFont from "next/font/local";
 import { MainHeader } from "@/components/layout/main-header";
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/components/layout/theme/theme-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://clerk-next-app.vercel.app/"),
@@ -31,7 +32,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html suppressHydrationWarning lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <head>
+        <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js" strategy="afterInteractive" />
+        <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/autoloader/prism-autoloader.min.js" strategy="afterInteractive" />
+      </head>
       <ClerkProvider
         appearance={{
           variables: { colorPrimary: "#000000" },
@@ -49,23 +54,28 @@ export default function RootLayout({
           },
         }}
       >
-
-          <body className={`min-h-screen flex flex-col antialiased bg-gray-50`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <body className={`min-h-screen flex flex-col antialiased bg-background text-foreground`}>
             <MainHeader />
             <div className="flex-grow">
               {children}
             </div>
-            <footer className="py-6 bg-white border-t border-gray-200">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <footer className="py-6 bg-background border-t border-border flex justify-between">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                 <div className="flex justify-between items-center">
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-muted-foreground">
                     © {new Date().getFullYear()} Daily Journal. All rights reserved.
                   </div>
                   <div className="flex space-x-6">
-                    <a href="https://clerk.com/docs" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-900">
+                    <a href="https://clerk.com/docs" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">
                       Docs
                     </a>
-                    <a href="https://github.com/clerk/nextjs-auth-starter-template" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-900">
+                    <a href="https://github.com/clerk/nextjs-auth-starter-template" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">
                       GitHub
                     </a>
                   </div>
@@ -74,10 +84,8 @@ export default function RootLayout({
             </footer>
             <Toaster />
           </body>
+        </ThemeProvider>
       </ClerkProvider>
-
-      <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js" />
-      <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/autoloader/prism-autoloader.min.js" />
     </html>
   );
 }
