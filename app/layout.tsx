@@ -43,14 +43,15 @@ export default function RootLayout({
           variables: { colorPrimary: "#000000" },
           elements: {
             formButtonPrimary:
-              "bg-card border border-black border-solid hover:bg-card hover:text-black",
+              "bg-card border border-black border-solid hover:bg-card hover:text-green",
             socialButtonsBlockButton:
-              "bg-card border-gray-200 hover:bg-transparent hover:border-black text-gray-600 hover:text-black",
+              "bg-card border-gray-200 hover:bg-transparent hover:border-black text-green-600 hover:text-green",
             socialButtonsBlockButtonText: "font-semibold",
             formButtonReset:
-              "bg-card border border-solid border-gray-200 hover:bg-transparent hover:border-black text-gray-500 hover:text-black",
+              "bg-card border border-solid border-gray-200 hover:bg-transparent hover:border-black text-green-500 hover:text-green",
             membersPageInviteButton:
-              "bg-card border border-black border-solid hover:bg-card hover:text-black",
+              "bg-card border border-black border-solid hover:bg-card hover:text-green",
+            card: "bg-[#fafafa]",
           },
         }}
       >
