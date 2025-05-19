@@ -139,7 +139,7 @@ export function HabitTracker({ habitLogs = [], onHabitLogsChange, date }: HabitT
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">
+        <div className="bg-card p-2 border border-gray-200 rounded shadow-sm text-xs">
           <p className="font-medium">{data.formattedDate}</p>
           <p className="text-gray-600">
             {data.completed ? 'Completed' : 'Not Completed'}
@@ -204,7 +204,7 @@ export function HabitTracker({ habitLogs = [], onHabitLogsChange, date }: HabitT
               className={cn(
                 "overflow-hidden transition-shadow duration-200",
                 isExpanded ? "shadow-md" : "shadow-sm",
-                habitLog.completed ? "bg-white" : "bg-white"
+                habitLog.completed ? "bg-card" : "bg-card"
               )}
               style={{ 
                 borderLeftWidth: '4px', 

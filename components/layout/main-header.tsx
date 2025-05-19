@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Menu } from "lucide-react";
+import { ThemeToggle } from "@/components/layout/theme/theme-toggle";
 
 export function MainHeader() {
   const pathname = usePathname();
@@ -34,7 +35,7 @@ export function MainHeader() {
   ];
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-background border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -46,7 +47,7 @@ export function MainHeader() {
                   viewBox="0 0 24 24" 
                   fill="none" 
                   xmlns="http://www.w3.org/2000/svg"
-                  className="text-black"
+                  className="text-foreground"
                 >
                   <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                   <path d="M12 12H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -56,7 +57,7 @@ export function MainHeader() {
                   <path d="M12 3V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                   <path d="M9 7H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
-                <span className="ml-2 text-lg font-semibold text-gray-900">Daily Journal</span>
+                <span className="ml-2 text-lg font-semibold text-foreground">Daily Journal</span>
               </Link>
             </div>
             
@@ -69,8 +70,8 @@ export function MainHeader() {
                     href={item.href}
                     className={`${
                       item.current
-                        ? 'border-black text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                        ? 'border-primary text-foreground'
+                        : 'border-transparent text-muted-foreground hover:border-gray-300 hover:text-foreground'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
                     {item.name}
@@ -81,10 +82,13 @@ export function MainHeader() {
           </div>
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
+            {/* Theme toggle */}
+            <ThemeToggle />
+
             <SignedIn>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 ml-4">
                 {user && (
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-muted-foreground">
                     {user.firstName}
                   </span>
                 )}
@@ -113,10 +117,13 @@ export function MainHeader() {
           
           {/* Mobile menu button */}
           <div className="flex items-center sm:hidden">
+            {/* Theme toggle for mobile */}
+            <ThemeToggle />
+            
             <SignedIn>
               <DropdownMenu open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-10 w-10">
+                  <Button variant="ghost" size="icon" className="h-10 w-10 ml-2">
                     <Menu className="h-5 w-5" />
                     <span className="sr-only">Open main menu</span>
                   </Button>
@@ -126,7 +133,7 @@ export function MainHeader() {
                   <DropdownMenuSeparator />
                   {navigation.map((item) => (
                     <DropdownMenuItem key={item.name} asChild>
-                      <Link href={item.href} className={item.current ? 'bg-gray-50 font-semibold' : ''}>
+                      <Link href={item.href} className={item.current ? 'bg-accent font-semibold' : ''}>
                         {item.name}
                       </Link>
                     </DropdownMenuItem>
@@ -148,7 +155,7 @@ export function MainHeader() {
             
             <SignedOut>
               <Link href="/sign-in">
-                <Button variant="ghost" className="text-gray-600 hover:text-gray-900 text-sm font-medium px-4 py-2">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground text-sm font-medium px-4 py-2">
                   Sign in
                 </Button>
               </Link>

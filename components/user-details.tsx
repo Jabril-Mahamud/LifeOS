@@ -29,7 +29,7 @@ function PointerC({ label }: { label: string }) {
         <div className="h-px bg-[#BFBFC4] w-[6.5rem]" />
         <div className="size-1 bg-[#BFBFC4] rotate-45 absolute right-0 top-1/2 -translate-y-1/2" />
       </div>
-      <div className="font-mono text-xs bg-black px-1.5 py-1 rounded-md text-white">
+      <div className="font-mono text-xs bg-card px-1.5 py-1 rounded-md text-white">
         {label}
       </div>
     </div>
@@ -65,7 +65,7 @@ export function UserDetails() {
 
   return (
     <div className="p-16 rounded-lg border border-[#EDEDED] bg-[#F1F1F2] background relative">
-      <div className="p-8 rounded-xl bg-white shadow-[0_5px_15px_rgba(0,0,0,0.08),0_15px_35px_-5px_rgba(25,28,33,0.2)] ring-1 ring-gray-950/5 max-w-[25rem]">
+      <div className="p-8 rounded-xl bg-card shadow-[0_5px_15px_rgba(0,0,0,0.08),0_15px_35px_-5px_rgba(25,28,33,0.2)] ring-1 ring-gray-950/5 max-w-[25rem]">
         <div className="flex flex-col items-center gap-2 mb-6">
           <div className="w-full relative flex justify-center">
             <img src={user.imageUrl} className="size-20 rounded-full" />
@@ -74,7 +74,7 @@ export function UserDetails() {
                 <div className="h-px bg-[#BFBFC4] w-[6.5rem]" />
                 <div className="size-1 bg-[#BFBFC4] rotate-45 absolute right-0 top-1/2 -translate-y-1/2" />
               </div>
-              <div className="font-mono text-xs bg-black px-1.5 py-1 rounded-md text-white">
+              <div className="font-mono text-xs bg-card px-1.5 py-1 rounded-md text-white">
                 user.imageUrl
               </div>
             </div>
@@ -87,10 +87,10 @@ export function UserDetails() {
                   <div className="h-px bg-[#BFBFC4] w-[6.5rem]" />
                   <div className="size-1 bg-[#BFBFC4] rotate-45 absolute right-0 top-1/2 -translate-y-1/2" />
                 </div>
-                <div className="font-mono text-xs bg-black px-1.5 py-1 rounded-md text-white">
+                <div className="font-mono text-xs bg-card px-1.5 py-1 rounded-md text-white">
                   user.firstName
                 </div>
-                <div className="font-mono text-xs bg-black px-1.5 py-1 rounded-md text-white -translate-x-3">
+                <div className="font-mono text-xs bg-card px-1.5 py-1 rounded-md text-white -translate-x-3">
                   user.lastName
                 </div>
               </div>

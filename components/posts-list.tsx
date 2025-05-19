@@ -81,7 +81,7 @@ export function PostsList() {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
+    <div className="bg-card p-6 rounded-lg shadow-sm">
       <h2 className="text-xl font-semibold mb-4">Your Posts</h2>
       
       <form onSubmit={handleSubmit} className="mb-6">
@@ -113,7 +113,7 @@ export function PostsList() {
         <button
           type="submit"
           disabled={isSubmitting || !title.trim()}
-          className="px-4 py-2 bg-black text-white rounded-md disabled:opacity-50"
+          className="px-4 py-2 bg-card text-white rounded-md disabled:opacity-50"
         >
           {isSubmitting ? 'Creating...' : 'Create Post'}
         </button>

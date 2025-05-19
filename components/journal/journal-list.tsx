@@ -217,7 +217,7 @@ export function JournalList() {
 
   if (error && !todayEntry && habitLogs.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-sm">
+      <div className="bg-card p-6 rounded-lg shadow-sm">
         <div className="p-4 text-center text-red-500 mb-4">{error}</div>
         {renderJournalContent()}
       </div>
@@ -269,7 +269,7 @@ export function JournalList() {
                       onEdit={handleEdit}
                     />
                   ) : (
-                    <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg border border-blue-200 shadow-sm">
+                    <form onSubmit={handleSubmit} className="bg-card p-4 rounded-lg border border-blue-200 shadow-sm">
                       <div className="mb-4">
                         <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
                           Entry Title
@@ -337,7 +337,7 @@ export function JournalList() {
                       <button
                         type="submit"
                         disabled={isSubmitting || !title.trim()}
-                        className="px-4 py-2 bg-black text-white rounded-md disabled:opacity-50"
+                        className="px-4 py-2 bg-card text-white rounded-md disabled:opacity-50"
                       >
                         {isSubmitting ? 'Saving...' : 'Save Today\'s Entry'}
                       </button>
@@ -461,7 +461,7 @@ export function JournalList() {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
+    <div className="bg-card p-6 rounded-lg shadow-sm">
       <h2 className="text-xl font-semibold mb-6">My Journal</h2>
       {renderJournalContent()}
     </div>

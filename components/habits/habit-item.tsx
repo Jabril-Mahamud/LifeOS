@@ -284,7 +284,7 @@ export function HabitItem({ habit, onUpdate, onDelete }: HabitItemProps) {
 
   return (
     <Card 
-      className={`mb-3 ${active ? 'bg-white' : 'bg-gray-50 opacity-70'}`}
+      className={`mb-3 ${active ? 'bg-card' : 'bg-gray-50 opacity-70'}`}
       style={{ borderLeft: `4px solid ${habit.color || '#4299e1'}` }}
     >
       <CardContent className="p-3 pt-4">

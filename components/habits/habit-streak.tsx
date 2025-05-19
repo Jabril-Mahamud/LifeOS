@@ -222,7 +222,7 @@ export function HabitStreak({
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">
+        <div className="bg-card p-2 border border-gray-200 rounded shadow-sm text-xs">
           <p className="font-medium">{label}</p>
           <p className="text-gray-600">
             {data.value ? "Completed" : "Not Completed"}
@@ -241,7 +241,7 @@ export function HabitStreak({
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">
+        <div className="bg-card p-2 border border-gray-200 rounded shadow-sm text-xs">
           <p className="font-medium">{label}</p>
           <p className="text-gray-600">
             Completed {data.value} of {data.total} times
