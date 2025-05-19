@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 import { UserButton, useUser } from "@clerk/nextjs";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/layout/theme/theme-toggle";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -16,20 +15,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Menu, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Menu } from "lucide-react";
+import { ThemeToggle } from "@/components/layout/theme/theme-toggle";
 
 export function MainHeader() {
   const pathname = usePathname();
   const { user } = useUser();
-  const { setTheme, theme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // After mounting, we can safely access the theme
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -43,7 +35,7 @@ export function MainHeader() {
   ];
 
   return (
-    <header className="bg-background border-b border-border shadow-sm">
+    <header className="bg-background border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -79,7 +71,7 @@ export function MainHeader() {
                     className={`${
                       item.current
                         ? 'border-primary text-foreground'
-                        : 'border-transparent text-muted-foreground hover:border-muted hover:text-foreground'
+                        : 'border-transparent text-muted-foreground hover:border-gray-300 hover:text-foreground'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
                     {item.name}
@@ -90,10 +82,11 @@ export function MainHeader() {
           </div>
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
+            {/* Theme toggle */}
+            <ThemeToggle />
+
             <SignedIn>
-              <div className="flex items-center gap-4">
-                {mounted && <ThemeToggle />}
-                
+              <div className="flex items-center gap-4 ml-4">
                 {user && (
                   <span className="text-sm text-muted-foreground">
                     {user.firstName}
@@ -112,7 +105,6 @@ export function MainHeader() {
             
             <SignedOut>
               <div className="flex items-center space-x-4">
-                {mounted && <ThemeToggle />}
                 <Link href="/sign-in">
                   <Button variant="ghost">Sign in</Button>
                 </Link>
@@ -125,10 +117,13 @@ export function MainHeader() {
           
           {/* Mobile menu button */}
           <div className="flex items-center sm:hidden">
+            {/* Theme toggle for mobile */}
+            <ThemeToggle />
+            
             <SignedIn>
               <DropdownMenu open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-10 w-10">
+                  <Button variant="ghost" size="icon" className="h-10 w-10 ml-2">
                     <Menu className="h-5 w-5" />
                     <span className="sr-only">Open main menu</span>
                   </Button>
@@ -138,40 +133,11 @@ export function MainHeader() {
                   <DropdownMenuSeparator />
                   {navigation.map((item) => (
                     <DropdownMenuItem key={item.name} asChild>
-                      <Link href={item.href} className={item.current ? 'bg-muted font-semibold' : ''}>
+                      <Link href={item.href} className={item.current ? 'bg-accent font-semibold' : ''}>
                         {item.name}
                       </Link>
                     </DropdownMenuItem>
                   ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Theme</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => setTheme("light")}>
-                    <Sun className="h-4 w-4 mr-2" />
-                    Light
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme("dark")}>
-                    <Moon className="h-4 w-4 mr-2" />
-                    Dark
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme("system")}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4 mr-2"
-                    >
-                      <rect x="2" y="3" width="20" height="14" rx="2" />
-                      <line x1="8" x2="16" y1="21" y2="21" />
-                      <line x1="12" x2="12" y1="17" y2="21" />
-                    </svg>
-                    System
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <div className="p-2">
                     <UserButton
@@ -188,14 +154,11 @@ export function MainHeader() {
             </SignedIn>
             
             <SignedOut>
-              <div className="flex items-center gap-2">
-                {mounted && <ThemeToggle />}
-                <Link href="/sign-in">
-                  <Button variant="ghost" className="text-muted-foreground hover:text-foreground text-sm font-medium px-4 py-2">
-                    Sign in
-                  </Button>
-                </Link>
-              </div>
+              <Link href="/sign-in">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground text-sm font-medium px-4 py-2">
+                  Sign in
+                </Button>
+              </Link>
             </SignedOut>
           </div>
         </div>

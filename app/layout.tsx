@@ -1,4 +1,3 @@
-// Update layout.tsx to include shadcn theme provider and toaster
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import Script from "next/script";
@@ -32,10 +31,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
-        <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js" strategy="afterInteractive" />
-        <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/autoloader/prism-autoloader.min.js" strategy="afterInteractive" />
+        <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js" />
+        <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/autoloader/prism-autoloader.min.js" />
       </head>
       <ClerkProvider
         appearance={{
@@ -54,28 +57,33 @@ export default function RootLayout({
           },
         }}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <body className={`min-h-screen flex flex-col antialiased bg-background text-foreground`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <body className="min-h-screen flex flex-col antialiased">
             <MainHeader />
             <div className="flex-grow">
               {children}
             </div>
-            <footer className="py-6 bg-background border-t border-border flex justify-between">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <footer className="py-6 border-t border-gray-200">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center">
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-gray-500">
                     © {new Date().getFullYear()} Daily Journal. All rights reserved.
                   </div>
                   <div className="flex space-x-6">
-                    <a href="https://clerk.com/docs" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">
+                    <a
+                      href="https://clerk.com/docs"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-500 hover:text-gray-900"
+                    >
                       Docs
                     </a>
-                    <a href="https://github.com/clerk/nextjs-auth-starter-template" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">
+                    <a
+                      href="https://github.com/clerk/nextjs-auth-starter-template"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-500 hover:text-gray-900"
+                    >
                       GitHub
                     </a>
                   </div>
