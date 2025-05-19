@@ -167,7 +167,7 @@ export function DashboardContent() {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">
+        <div className="bg-card p-2 border border-gray-200 rounded shadow-sm text-xs">
           <p className="font-medium">{label}</p>
           <p className="flex items-center">
             <span className="mr-1">Mood:</span>
@@ -910,7 +910,7 @@ export function DashboardContent() {
             ) : selectedHabitData ? (
               <div className="space-y-6">
                 {/* Selected Habit Detail */}
-                <div className="px-4 py-6 border border-gray-100 bg-white rounded-lg shadow-sm">
+                <div className="px-4 py-6 border border-gray-100 bg-card rounded-lg shadow-sm">
                   <div className="flex items-center mb-6">
                     <span
                       className="text-3xl mr-4"

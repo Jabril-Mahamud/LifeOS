@@ -82,7 +82,7 @@ export function HabitsList() {
           <CardTitle>Journal Habits</CardTitle>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="px-3 py-1 bg-black text-white rounded-md text-sm"
+            className="px-3 py-1 bg-card text-white rounded-md text-sm"
           >
             {showAddForm ? 'Cancel' : '+ New Habit'}
           </button>
