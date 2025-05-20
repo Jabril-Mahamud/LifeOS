@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   LayoutGrid,
@@ -42,7 +42,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
@@ -89,10 +88,11 @@ type ProjectStats = {
 };
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default function ProjectDetailPage({ params }: PageProps) {
+  const projectId = params.id; // Access the ID directly from params
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [stats, setStats] = useState<ProjectStats | null>(null);
@@ -100,15 +100,16 @@ export default function ProjectDetailPage({ params }: PageProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
-  const [projectsId, setProjectsId] = useState<string | null>(null);
   const router = useRouter();
 
   // Fetch project data
   useEffect(() => {
+    if (!projectId) return; // Check if projectId exists
+
     const fetchProjectData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/projects/${projectsId}/stats`);
+        const response = await fetch(`/api/projects/${projectId}/stats`);
         if (!response.ok) {
           throw new Error("Failed to fetch project data");
         }
@@ -130,12 +131,14 @@ export default function ProjectDetailPage({ params }: PageProps) {
     };
 
     fetchProjectData();
-  }, [projectsId]);
+  }, [projectId]);
 
   // Delete project
   const handleDeleteProject = async () => {
+    if (!projectId) return;
+
     try {
-      const response = await fetch(`/api/projects/${projectsId}`, {
+      const response = await fetch(`/api/projects/${projectId}`, {
         method: "DELETE",
       });
 
@@ -162,24 +165,26 @@ export default function ProjectDetailPage({ params }: PageProps) {
 
   // Archive/unarchive project
   const handleArchiveProject = async () => {
+    if (!projectId || !project) return;
+
     try {
-      const response = await fetch(`/api/projects/${projectsId}`, {
+      const response = await fetch(`/api/projects/${projectId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ archived: !project?.archived }),
+        body: JSON.stringify({ archived: !project.archived }),
       });
 
       if (!response.ok) {
         throw new Error(
-          `Failed to ${project?.archived ? "unarchive" : "archive"} project`
+          `Failed to ${project.archived ? "unarchive" : "archive"} project`
         );
       }
 
       toast({
         description: `Project ${
-          project?.archived ? "unarchived" : "archived"
+          project.archived ? "unarchived" : "archived"
         } successfully`,
       });
 
@@ -191,7 +196,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
       toast({
         title: "Error",
         description: `Failed to ${
-          project?.archived ? "unarchive" : "archive"
+          project.archived ? "unarchive" : "archive"
         } project. Please try again.`,
         variant: "destructive",
       });
@@ -614,7 +619,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem
-                onClick={() => router.push(`/projects/${projectsId}/edit`)}
+                onClick={() => router.push(`/projects/${projectId}/edit`)}
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Project
