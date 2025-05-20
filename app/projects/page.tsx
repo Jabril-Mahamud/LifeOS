@@ -2,26 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  LayoutGrid,
-  Plus,
-  Settings,
-  MoreHorizontal,
-  Edit,
-  Trash2,
-  Archive,
-  ListTodo,
-  CheckCircle2,
-  Clock,
-} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Plus, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -29,7 +10,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -51,23 +31,16 @@ type Project = {
   };
 };
 
-type ProjectWithStats = Project & {
-  stats: {
-    totalTasks: number;
-    completedTasks: number;
-    progressPercentage: number;
-    taskStatusCount: {
-      pending: number;
-      inProgress: number;
-      completed: number;
-    };
-    taskPriorityCount: {
-      high: number;
-      medium: number;
-      low: number;
-    };
-    upcomingTasks: number;
+type ProjectStats = {
+  totalTasks: number;
+  completedTasks: number;
+  progressPercentage: number;
+  taskStatusCount: {
+    pending: number;
+    inProgress: number;
+    completed: number;
   };
+  upcomingTasks: number;
 };
 
 export default function ProjectsPage() {
@@ -77,7 +50,7 @@ export default function ProjectsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("active");
   const [projectStats, setProjectStats] = useState<
-    Record<string, ProjectWithStats["stats"]>
+    Record<string, ProjectStats>
   >({});
   const router = useRouter();
 
@@ -113,8 +86,7 @@ export default function ProjectsPage() {
     } catch (error) {
       console.error("Error fetching projects:", error);
       toast({
-        title: "Error",
-        description: "Failed to load projects. Please try again.",
+        description: "Failed to load projects",
         variant: "destructive",
       });
     } finally {
@@ -166,30 +138,21 @@ export default function ProjectsPage() {
       }
 
       toast({
-        description: `Project ${
-          shouldArchive ? "archived" : "unarchived"
-        } successfully`,
+        description: `Project ${shouldArchive ? "archived" : "unarchived"}`,
       });
 
       fetchProjects();
     } catch (error) {
       console.error("Error updating project:", error);
       toast({
-        title: "Error",
-        description: `Failed to ${
-          shouldArchive ? "archive" : "unarchive"
-        } project. Please try again.`,
+        description: `Failed to ${shouldArchive ? "archive" : "unarchive"} project`,
         variant: "destructive",
       });
     }
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this project? This will remove all associated tasks."
-      )
-    ) {
+    if (!confirm("Delete this project? This will remove all associated tasks.")) {
       return;
     }
 
@@ -203,15 +166,14 @@ export default function ProjectsPage() {
       }
 
       toast({
-        description: "Project deleted successfully",
+        description: "Project deleted",
       });
 
       fetchProjects();
     } catch (error) {
       console.error("Error deleting project:", error);
       toast({
-        title: "Error",
-        description: "Failed to delete project. Please try again.",
+        description: "Failed to delete project",
         variant: "destructive",
       });
     }
@@ -232,245 +194,161 @@ export default function ProjectsPage() {
         project.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Helper function to generate a default color if none is provided
-  const getProjectColor = (project: Project) => {
-    if (project.color) return project.color;
-
-    // Generate a color based on project name
-    const colors = [
-      "#3b82f6", // blue
-      "#10b981", // emerald
-      "#f97316", // orange
-      "#8b5cf6", // violet
-      "#ec4899", // pink
-      "#06b6d4", // cyan
-      "#f59e0b", // amber
-      "#6366f1", // indigo
-    ];
-
-    const index = project.name.charCodeAt(0) % colors.length;
-    return colors[index];
-  };
-
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center">
-            <LayoutGrid className="h-6 w-6 mr-2" />
-            Projects
-          </h1>
-          <p className="text-muted-foreground">
-            Manage your projects and associated tasks
-          </p>
-        </div>
+    <div className="container mx-auto p-6 max-w-4xl">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <h1 className="text-2xl font-medium">Projects</h1>
 
-        <Button onClick={() => router.push("/projects/new")}>
+        <Button 
+          onClick={() => router.push("/projects/new")}
+          size="sm"
+          className="h-9"
+        >
           <Plus className="h-4 w-4 mr-2" />
           New Project
         </Button>
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-6">
         <Tabs
           defaultValue="active"
           onValueChange={setActiveTab}
           value={activeTab}
+          className="w-full"
         >
-          <TabsList>
-            <TabsTrigger value="active">
-              Active Projects ({projects.length})
-            </TabsTrigger>
-            <TabsTrigger value="archived">
-              Archived ({archivedProjects.length})
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="active" className="m-0">
+          <div className="flex justify-between items-center">
+            <TabsList>
+              <TabsTrigger value="active">
+                Active ({projects.length})
+              </TabsTrigger>
+              <TabsTrigger value="archived">
+                Archived ({archivedProjects.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <Input
+              placeholder="Search projects..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-xs ml-auto"
+            />
+          </div>
+
+          <TabsContent value="active" className="mt-6">
             {loading ? (
               <div className="text-center py-10">
                 <p className="text-muted-foreground">Loading projects...</p>
               </div>
             ) : filteredProjects.length === 0 ? (
               <div className="text-center py-10">
-                <p className="text-muted-foreground">No projects found</p>
+                <p className="text-muted-foreground mb-4">No projects found</p>
                 <Button
                   variant="outline"
-                  className="mt-4"
                   onClick={() => router.push("/projects/new")}
                 >
                   Create a new project
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="space-y-3">
                 {filteredProjects.map((project) => (
-                  <Card
+                  <div 
                     key={project.id}
-                    className="hover:shadow-md transition-shadow cursor-pointer"
+                    className="p-4 border-b last:border-0 hover:bg-accent/5 rounded-sm cursor-pointer transition-colors"
                     onClick={() => router.push(`/projects/${project.id}`)}
                   >
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center">
-                          <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center mr-2 text-white"
-                            style={{
-                              backgroundColor: getProjectColor(project),
+                    <div className="flex justify-between">
+                      <div>
+                        <h3 className="font-medium flex items-center gap-2">
+                          {project.icon && <span>{project.icon}</span>}
+                          {project.name}
+                        </h3>
+                        
+                        {project.description && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {project.description}
+                          </p>
+                        )}
+                      </div>
+                      
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          asChild
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[160px]">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/projects/${project.id}/edit`);
                             }}
                           >
-                            {project.icon ||
-                              project.name.charAt(0).toUpperCase()}
-                          </div>
-                          <CardTitle className="text-lg">
-                            {project.name}
-                          </CardTitle>
-                        </div>
+                            Edit
+                          </DropdownMenuItem>
 
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            asChild
-                            onClick={(e) => e.stopPropagation()}
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/tasks/new?projectId=${project.id}`);
+                            }}
                           >
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Open menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
+                            Add Task
+                          </DropdownMenuItem>
 
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                router.push(`/projects/${project.id}/edit`);
-                              }}
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
+                          <DropdownMenuSeparator />
 
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                router.push(
-                                  `/tasks/new?projectId=${project.id}`
-                                );
-                              }}
-                            >
-                              <Plus className="h-4 w-4 mr-2" />
-                              Add Task
-                            </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleArchiveProject(project.id, true);
+                            }}
+                          >
+                            Archive
+                          </DropdownMenuItem>
 
-                            <DropdownMenuSeparator />
-
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleArchiveProject(project.id, true);
-                              }}
-                            >
-                              <Archive className="h-4 w-4 mr-2" />
-                              Archive
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem
-                              className="text-red-500 focus:text-red-500"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteProject(project.id);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteProject(project.id);
+                            }}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    
+                    {projectStats[project.id] && (
+                      <div className="mt-3">
+                        <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+                          <span>Progress</span>
+                          <span>
+                            {projectStats[project.id].completedTasks} / {projectStats[project.id].totalTasks} tasks
+                          </span>
+                        </div>
+                        <Progress
+                          value={projectStats[project.id].progressPercentage}
+                          className="h-1"
+                        />
                       </div>
-
-                      {project.description && (
-                        <CardDescription className="line-clamp-2">
-                          {project.description}
-                        </CardDescription>
-                      )}
-                    </CardHeader>
-
-                    <CardContent>
-                      {projectStats[project.id] ? (
-                        <div className="space-y-3">
-                          <div className="flex justify-between text-sm">
-                            <span>Progress</span>
-                            <span>
-                              {projectStats[project.id].progressPercentage}%
-                            </span>
-                          </div>
-                          <Progress
-                            value={projectStats[project.id].progressPercentage}
-                            className="h-1.5"
-                          />
-
-                          <div className="flex justify-between text-sm mt-4">
-                            <div className="flex items-center">
-                              <ListTodo className="h-4 w-4 mr-1 text-muted-foreground" />
-                              <span className="text-muted-foreground">
-                                {
-                                  projectStats[project.id].taskStatusCount
-                                    .pending
-                                }{" "}
-                                pending
-                              </span>
-                            </div>
-
-                            <div className="flex items-center">
-                              <CheckCircle2 className="h-4 w-4 mr-1 text-green-500" />
-                              <span className="text-muted-foreground">
-                                {projectStats[project.id].completedTasks}{" "}
-                                completed
-                              </span>
-                            </div>
-                          </div>
-
-                          {projectStats[project.id].upcomingTasks > 0 && (
-                            <div className="flex items-center text-sm">
-                              <Clock className="h-4 w-4 mr-1 text-amber-500" />
-                              <span className="text-muted-foreground">
-                                {projectStats[project.id].upcomingTasks}{" "}
-                                upcoming
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="py-2 text-sm text-muted-foreground text-center">
-                          Loading project stats...
-                        </div>
-                      )}
-                    </CardContent>
-
-                    <CardFooter className="pt-0">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/tasks?projectId=${project.id}`);
-                        }}
-                      >
-                        View Tasks
-                      </Button>
-                    </CardFooter>
-                  </Card>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="archived" className="m-0">
+          <TabsContent value="archived" className="mt-6">
             {loading ? (
               <div className="text-center py-10">
                 <p className="text-muted-foreground">
@@ -484,99 +362,63 @@ export default function ProjectsPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="space-y-3">
                 {filteredArchivedProjects.map((project) => (
-                  <Card key={project.id} className="opacity-75">
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center">
-                          <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center mr-2 text-white"
-                            style={{
-                              backgroundColor: getProjectColor(project),
-                            }}
+                  <div 
+                    key={project.id}
+                    className="p-4 border-b last:border-0 opacity-60"
+                  >
+                    <div className="flex justify-between">
+                      <div>
+                        <h3 className="font-medium flex items-center gap-2">
+                          {project.icon && <span>{project.icon}</span>}
+                          {project.name}
+                        </h3>
+                        
+                        {project.description && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {project.description}
+                          </p>
+                        )}
+                      </div>
+                      
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
                           >
-                            {project.icon ||
-                              project.name.charAt(0).toUpperCase()}
-                          </div>
-                          <CardTitle className="text-lg">
-                            {project.name}
-                          </CardTitle>
-                        </div>
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[160px]">
+                          <DropdownMenuItem
+                            onClick={() => handleArchiveProject(project.id, false)}
+                          >
+                            Unarchive
+                          </DropdownMenuItem>
 
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Open menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleArchiveProject(project.id, false)
-                              }
-                            >
-                              <Archive className="h-4 w-4 mr-2" />
-                              Unarchive
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem
-                              className="text-red-500 focus:text-red-500"
-                              onClick={() => handleDeleteProject(project.id)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-
-                      {project.description && (
-                        <CardDescription className="line-clamp-2">
-                          {project.description}
-                        </CardDescription>
-                      )}
-                    </CardHeader>
-
-                    <CardContent>
-                      <div className="text-sm text-muted-foreground">
-                        This project is archived
-                      </div>
-                    </CardContent>
-
-                    <CardFooter className="pt-0">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => handleArchiveProject(project.id, false)}
-                      >
-                        Unarchive Project
-                      </Button>
-                    </CardFooter>
-                  </Card>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => handleDeleteProject(project.id)}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    
+                    <div className="mt-3 text-sm text-muted-foreground">
+                      This project is archived
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
           </TabsContent>
         </Tabs>
-
-        <div className="flex-1 max-w-xs ml-auto">
-          <Input
-            placeholder="Search projects..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full"
-          />
-        </div>
       </div>
     </div>
   );

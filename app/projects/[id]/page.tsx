@@ -8,25 +8,19 @@ import {
   Trash2,
   MoreHorizontal,
   Archive,
-  ListTodo,
   PlusCircle,
   CheckCircle2,
-  ChevronRight,
   Calendar,
   ArrowLeft,
 } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { CircularProgress } from "@/components/ui/circular-progress";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -88,11 +82,14 @@ type ProjectStats = {
 };
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
-
 export default function ProjectDetailPage({ params }: PageProps) {
-  const projectId = params.id; // Access the ID directly from params
+  // In this case, we don't need to use React.use() since we're directly receiving
+  // the params object in this client component
+  const resolvedParams = React.use(params);
+  const projectId = resolvedParams.id;
+
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [stats, setStats] = useState<ProjectStats | null>(null);

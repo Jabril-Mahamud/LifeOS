@@ -5,15 +5,9 @@ import { useRouter } from "next/navigation";
 import { 
   Filter, 
   ListTodo, 
-  Plus, 
-  CalendarIcon, 
-  CheckCircle2, 
-  Circle,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown
+  Plus
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskList } from "@/components/tasks/task-list";
@@ -34,7 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type Project = {
   id: string;
@@ -66,7 +59,7 @@ export default function TasksPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProject, setSelectedProject] = useState<string>("all");
   const [selectedPriority, setSelectedPriority] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("pending");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const router = useRouter();
 
   // Fetch tasks based on filters
@@ -88,7 +81,6 @@ export default function TasksPage() {
     } catch (error) {
       console.error("Error fetching tasks:", error);
       toast({
-        title: "Error",
         description: "Failed to load tasks. Please try again.",
         variant: "destructive",
       });
@@ -132,39 +124,26 @@ export default function TasksPage() {
     (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Handle status tab change
-  const handleStatusChange = (value: string) => {
-    setSelectedStatus(value);
-  };
-
-  // Calculate counts for different statuses
+  // Task counts
   const pendingCount = tasks.filter(task => task.status === "pending").length;
   const inProgressCount = tasks.filter(task => task.status === "in-progress").length;
   const completedCount = tasks.filter(task => task.status === "completed").length;
 
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center">
-            <ListTodo className="h-6 w-6 mr-2" />
-            Tasks
-          </h1>
-          <p className="text-muted-foreground">
-            Manage and organize your tasks
-          </p>
-        </div>
+    <div className="container mx-auto p-6 max-w-4xl">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <h1 className="text-2xl font-medium">Tasks</h1>
         
-        <Button onClick={() => router.push("/tasks/new")}>
+        <Button onClick={() => router.push("/tasks/new")} size="sm" className="h-9">
           <Plus className="h-4 w-4 mr-2" />
           New Task
         </Button>
       </div>
       
-      <Card>
+      <Card className="mb-8">
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex-1 max-w-md">
+            <div className="flex-1 w-full sm:max-w-md">
               <Input
                 placeholder="Search tasks..."
                 value={searchTerm}
@@ -173,10 +152,10 @@ export default function TasksPage() {
               />
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="h-9">
                     <Filter className="h-4 w-4 mr-2" />
                     Filter
                   </Button>
@@ -208,15 +187,12 @@ export default function TasksPage() {
                       All Priorities
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setSelectedPriority("high")}>
-                      <ArrowUp className="h-4 w-4 mr-2 text-red-500" />
                       High
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setSelectedPriority("medium")}>
-                      <ArrowUpDown className="h-4 w-4 mr-2 text-amber-500" />
                       Medium
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setSelectedPriority("low")}>
-                      <ArrowDown className="h-4 w-4 mr-2 text-blue-500" />
                       Low
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
@@ -225,16 +201,16 @@ export default function TasksPage() {
               
               <Select
                 value={selectedStatus}
-                onValueChange={handleStatusChange}
+                onValueChange={(value) => setSelectedStatus(value)}
               >
-                <SelectTrigger className="w-[130px]">
+                <SelectTrigger className="w-[130px] h-9">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="all">All Tasks ({tasks.length})</SelectItem>
+                  <SelectItem value="pending">Pending ({pendingCount})</SelectItem>
+                  <SelectItem value="in-progress">In Progress ({inProgressCount})</SelectItem>
+                  <SelectItem value="completed">Completed ({completedCount})</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -242,69 +218,10 @@ export default function TasksPage() {
         </CardHeader>
         
         <CardContent>
-          <Tabs defaultValue="pending" onValueChange={handleStatusChange} value={selectedStatus}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="pending" className="flex items-center gap-1">
-                <Circle className="h-4 w-4" />
-                Pending
-                <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs bg-secondary">
-                  {pendingCount}
-                </span>
-              </TabsTrigger>
-              
-              <TabsTrigger value="in-progress" className="flex items-center gap-1">
-                <ArrowUpDown className="h-4 w-4" />
-                In Progress
-                <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs bg-secondary">
-                  {inProgressCount}
-                </span>
-              </TabsTrigger>
-              
-              <TabsTrigger value="completed" className="flex items-center gap-1">
-                <CheckCircle2 className="h-4 w-4" />
-                Completed
-                <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs bg-secondary">
-                  {completedCount}
-                </span>
-              </TabsTrigger>
-              
-              <TabsTrigger value="all" className="flex items-center gap-1">
-                <ListTodo className="h-4 w-4" />
-                All
-                <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs bg-secondary">
-                  {tasks.length}
-                </span>
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="pending" className="m-0">
-              <TaskList 
-                tasks={filteredTasks.filter(task => task.status === "pending")}
-                onTaskUpdate={fetchTasks}
-              />
-            </TabsContent>
-            
-            <TabsContent value="in-progress" className="m-0">
-              <TaskList 
-                tasks={filteredTasks.filter(task => task.status === "in-progress")}
-                onTaskUpdate={fetchTasks}
-              />
-            </TabsContent>
-            
-            <TabsContent value="completed" className="m-0">
-              <TaskList 
-                tasks={filteredTasks.filter(task => task.status === "completed")}
-                onTaskUpdate={fetchTasks}
-              />
-            </TabsContent>
-            
-            <TabsContent value="all" className="m-0">
-              <TaskList 
-                tasks={filteredTasks}
-                onTaskUpdate={fetchTasks}
-              />
-            </TabsContent>
-          </Tabs>
+          <TaskList 
+            tasks={filteredTasks}
+            onTaskUpdate={fetchTasks}
+          />
         </CardContent>
       </Card>
     </div>

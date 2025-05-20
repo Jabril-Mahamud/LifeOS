@@ -258,7 +258,7 @@ export function JournalList() {
           </TabsList>
         </Tabs>
         
-        <div className="flex-1 max-w-xs ml-auto">
+        <div className="flex-1 max-w-xs ml-auto p-5">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
