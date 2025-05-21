@@ -28,8 +28,8 @@ export function CircularProgress({
   icon,
   ...props
 }: CircularProgressProps) {
-  // Ensure value is between 0 and 100
-  const normalizedValue = Math.min(Math.max(value, 0), 100);
+  // Ensure value is between 0 and 100 and is a number
+  const normalizedValue = isNaN(value) ? 0 : Math.min(Math.max(value, 0), 100);
   
   // Calculate SVG parameters
   const sizeMap = {
@@ -108,7 +108,7 @@ export function CircularProgress({
           stroke={color}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
+          strokeDashoffset={String(strokeDashoffset)} 
           strokeLinecap="round"
         />
       </svg>
