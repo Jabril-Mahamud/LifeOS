@@ -51,19 +51,20 @@ export default function RootLayout({
               "bg-card border border-solid border-gray-200 hover:bg-transparent hover:border-black text-gray-500 hover:text-black",
             membersPageInviteButton:
               "bg-card border border-black border-solid hover:bg-card hover:text-black",
-            card: "bg-[#fafafa]",
           },
         }}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <body className="min-h-screen flex flex-col antialiased">
             <MainHeader />
-            <div className="flex-grow">{children}</div>
+            <div className="flex-grow">
+              {children}
+            </div>
             <Footer />
             <Toaster />
-          </ThemeProvider>
-        </ClerkProvider>
-      </body>
+          </body>
+        </ThemeProvider>
+      </ClerkProvider>
     </html>
   );
 }
