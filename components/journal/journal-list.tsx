@@ -39,6 +39,7 @@ import {
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from "date-fns";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MarkdownRenderer } from "@/components/journal/markdown-renderer";
 
 type Journal = {
   id: string;
@@ -235,11 +236,12 @@ export function JournalList() {
       </CardHeader>
       
       <CardContent>
-        {journal.content ? (
-          <p className="text-muted-foreground line-clamp-3">{journal.content}</p>
-        ) : (
-          <p className="text-muted-foreground italic">No content</p>
-        )}
+        <MarkdownRenderer 
+          content={journal.content || ""} 
+          truncate={true}
+          maxLines={3}
+          className="prose-sm"
+        />
       </CardContent>
     </Card>
   );
@@ -359,9 +361,14 @@ export function JournalList() {
                           <span className="text-xs line-clamp-1">{journalEntry.title}</span>
                         </div>
                         {journalEntry.content && (
-                          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                            {journalEntry.content}
-                          </p>
+                          <div className="mt-1">
+                            <MarkdownRenderer 
+                              content={journalEntry.content} 
+                              truncate={true}
+                              maxLines={2}
+                              className="text-xs prose-xs"
+                            />
+                          </div>
                         )}
                       </div>
                     )}

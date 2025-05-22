@@ -1,6 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
-import Script from "next/script";
 import { Metadata } from "next";
 import localFont from "next/font/local";
 import { MainHeader } from "@/components/layout/main-header";
@@ -37,34 +36,33 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
-      <head />
-      <ClerkProvider
-        appearance={{
-          variables: { colorPrimary: "#000000" },
-          elements: {
-            formButtonPrimary:
-              "bg-card border border-black border-solid hover:bg-card hover:text-black",
-            socialButtonsBlockButton:
-              "bg-card border-gray-200 hover:bg-transparent hover:border-black text-gray-600 hover:text-black",
-            socialButtonsBlockButtonText: "font-semibold",
-            formButtonReset:
-              "bg-card border border-solid border-gray-200 hover:bg-transparent hover:border-black text-gray-500 hover:text-black",
-            membersPageInviteButton:
-              "bg-card border border-black border-solid hover:bg-card hover:text-black",
-          },
-        }}
-      >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <body className="min-h-screen flex flex-col antialiased">
+      <body className="min-h-screen flex flex-col antialiased">
+        <ClerkProvider
+          appearance={{
+            variables: { colorPrimary: "#000000" },
+            elements: {
+              formButtonPrimary:
+                "bg-card border border-black border-solid hover:bg-card hover:text-black",
+              socialButtonsBlockButton:
+                "bg-card border-gray-200 hover:bg-transparent hover:border-black text-gray-600 hover:text-black",
+              socialButtonsBlockButtonText: "font-semibold",
+              formButtonReset:
+                "bg-card border border-solid border-gray-200 hover:bg-transparent hover:border-black text-gray-500 hover:text-black",
+              membersPageInviteButton:
+                "bg-card border border-black border-solid hover:bg-card hover:text-black",
+            },
+          }}
+        >
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <MainHeader />
             <div className="flex-grow">
               {children}
             </div>
             <Footer />
             <Toaster />
-          </body>
-        </ThemeProvider>
-      </ClerkProvider>
+          </ThemeProvider>
+        </ClerkProvider>
+      </body>
     </html>
   );
 }

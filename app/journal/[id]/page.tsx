@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { toast } from "@/hooks/use-toast";
+import { MarkdownRenderer } from "@/components/journal/markdown-renderer";
 
 type Journal = {
   id: string;
@@ -221,12 +222,8 @@ export default function JournalDetailPage({ params }: PageProps) {
           </div>
         </CardHeader>
         
-        <CardContent className="prose prose-sm dark:prose-invert max-w-none">
-          {journal.content ? (
-            <div className="whitespace-pre-wrap">{journal.content}</div>
-          ) : (
-            <p className="text-muted-foreground italic">No content</p>
-          )}
+        <CardContent>
+          <MarkdownRenderer content={journal.content || ""} />
         </CardContent>
         
         {journal.habitLogs && journal.habitLogs.length > 0 && (

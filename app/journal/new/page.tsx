@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { HabitTracker } from "@/components/habits/habit-tracker";
 import { toast } from "@/hooks/use-toast";
 import { Habit } from "@/lib/types/habits";
+import { MarkdownHelpInline } from "@/components/journal/markdown-help";
 
 
 type JournalFormData = {
@@ -161,7 +162,7 @@ export default function NewJournal() {
                 {existingEntry ? "Edit Your Journal" : "Write Your Journal"}
               </CardTitle>
               <CardDescription>
-                Record your thoughts, experiences, and reflections for today
+                Record your thoughts, experiences, and reflections for today. You can use Markdown for rich formatting.
               </CardDescription>
             </CardHeader>
             
@@ -204,10 +205,18 @@ export default function NewJournal() {
                   <Label htmlFor="content">Journal Entry</Label>
                   <Textarea
                     id="content"
-                    placeholder="Write your thoughts, experiences, and reflections for today..."
+                    placeholder="Write your thoughts, experiences, and reflections for today...
+
+You can use Markdown formatting:
+- **Bold text** and *italic text*
+- # Headers and ## Subheaders
+- - Bullet points and 1. Numbered lists
+- > Quotes for emphasis
+- `code snippets` and links [like this](https://example.com)"
                     className="min-h-[200px]"
                     {...register("content")}
                   />
+                  <MarkdownHelpInline />
                 </div>
               </CardContent>
               

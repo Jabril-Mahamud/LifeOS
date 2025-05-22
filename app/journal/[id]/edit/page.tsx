@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { HabitTracker } from "@/components/habits/habit-tracker";
 import { toast } from "@/hooks/use-toast";
 import { Habit } from "@/lib/types/habits";
+import { MarkdownHelpInline } from "@/components/journal/markdown-help";
 
 type JournalFormData = {
   title: string;
@@ -173,7 +174,7 @@ export default function EditJournal({ params }: PageProps) {
                 Edit Your Journal
               </CardTitle>
               <CardDescription>
-                Update your thoughts, experiences, and reflections
+                Update your thoughts, experiences, and reflections. You can use Markdown for rich formatting.
               </CardDescription>
             </CardHeader>
             
@@ -216,10 +217,18 @@ export default function EditJournal({ params }: PageProps) {
                   <Label htmlFor="content">Journal Entry</Label>
                   <Textarea
                     id="content"
-                    placeholder="Write your thoughts, experiences, and reflections..."
+                    placeholder="Write your thoughts, experiences, and reflections...
+
+You can use Markdown formatting:
+- **Bold text** and *italic text*
+- # Headers and ## Subheaders
+- - Bullet points and 1. Numbered lists
+- > Quotes for emphasis
+- `code snippets` and links [like this](https://example.com)"
                     className="min-h-[200px]"
                     {...register("content")}
                   />
+                  <MarkdownHelpInline />
                 </div>
               </CardContent>
               
