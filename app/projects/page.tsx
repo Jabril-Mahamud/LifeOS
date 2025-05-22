@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, MoreHorizontal } from "lucide-react";
+import { Plus, MoreHorizontal, Archive, ArchiveRestore } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -194,15 +195,165 @@ export default function ProjectsPage() {
         project.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  // Project card component
+  const ProjectCard = ({ project, isArchived = false }: { project: Project; isArchived?: boolean }) => {
+    const stats = projectStats[project.id];
+    
+    return (
+      <Card 
+        className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:border-accent border-2 ${
+          isArchived ? 'opacity-60' : ''
+        }`}
+        onClick={() => router.push(`/projects/${project.id}`)}
+      >
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              {project.icon && (
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-lg shrink-0"
+                  style={{ backgroundColor: project.color || '#6b7280' }}
+                >
+                  {project.icon}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <CardTitle className="text-lg truncate">{project.name}</CardTitle>
+                {project.description && (
+                  <CardDescription className="line-clamp-2 mt-1">
+                    {project.description}
+                  </CardDescription>
+                )}
+              </div>
+            </div>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                asChild
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 shrink-0"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[160px]">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/projects/${project.id}/edit`);
+                  }}
+                >
+                  Edit
+                </DropdownMenuItem>
+
+                {!isArchived && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/tasks/new?projectId=${project.id}`);
+                    }}
+                  >
+                    Add Task
+                  </DropdownMenuItem>
+                )}
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleArchiveProject(project.id, !isArchived);
+                  }}
+                >
+                  {isArchived ? (
+                    <>
+                      <ArchiveRestore className="h-4 w-4 mr-2" />
+                      Unarchive
+                    </>
+                  ) : (
+                    <>
+                      <Archive className="h-4 w-4 mr-2" />
+                      Archive
+                    </>
+                  )}
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteProject(project.id);
+                  }}
+                >
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="pt-0">
+          {!isArchived && stats && (
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Progress</span>
+                <span className="font-medium">
+                  {stats.completedTasks} / {stats.totalTasks} tasks
+                </span>
+              </div>
+              <Progress
+                value={stats.progressPercentage}
+                className="h-2"
+                style={{
+                  backgroundColor: project.color ? `${project.color}20` : undefined,
+                }}
+              />
+              
+              {stats.totalTasks > 0 && (
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{stats.taskStatusCount.pending} pending</span>
+                  <span>{stats.taskStatusCount.inProgress} in progress</span>
+                  <span>{stats.taskStatusCount.completed} completed</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {isArchived && (
+            <div className="text-sm text-muted-foreground">
+              This project is archived
+            </div>
+          )}
+          
+          {!isArchived && (!stats || stats.totalTasks === 0) && (
+            <div className="text-sm text-muted-foreground">
+              No tasks yet • Click to add tasks
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="container mx-auto p-6 max-w-6xl">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <h1 className="text-2xl font-medium">Projects</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Projects</h1>
+          <p className="text-muted-foreground mt-1">
+            Organize your work and track progress
+          </p>
+        </div>
 
         <Button 
           onClick={() => router.push("/projects/new")}
-          size="sm"
-          className="h-9"
+          size="default"
+          className="h-10"
         >
           <Plus className="h-4 w-4 mr-2" />
           New Project
@@ -250,99 +401,9 @@ export default function ProjectsPage() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProjects.map((project) => (
-                  <div 
-                    key={project.id}
-                    className="p-4 border-b last:border-0 hover:bg-accent/5 rounded-sm cursor-pointer transition-colors"
-                    onClick={() => router.push(`/projects/${project.id}`)}
-                  >
-                    <div className="flex justify-between">
-                      <div>
-                        <h3 className="font-medium flex items-center gap-2">
-                          {project.icon && <span>{project.icon}</span>}
-                          {project.name}
-                        </h3>
-                        
-                        {project.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {project.description}
-                          </p>
-                        )}
-                      </div>
-                      
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          asChild
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[160px]">
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/projects/${project.id}/edit`);
-                            }}
-                          >
-                            Edit
-                          </DropdownMenuItem>
-
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/tasks/new?projectId=${project.id}`);
-                            }}
-                          >
-                            Add Task
-                          </DropdownMenuItem>
-
-                          <DropdownMenuSeparator />
-
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleArchiveProject(project.id, true);
-                            }}
-                          >
-                            Archive
-                          </DropdownMenuItem>
-
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteProject(project.id);
-                            }}
-                          >
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    
-                    {projectStats[project.id] && (
-                      <div className="mt-3">
-                        <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
-                          <span>Progress</span>
-                          <span>
-                            {projectStats[project.id].completedTasks} / {projectStats[project.id].totalTasks} tasks
-                          </span>
-                        </div>
-                        <Progress
-                          value={projectStats[project.id].progressPercentage}
-                          className="h-1"
-                        />
-                      </div>
-                    )}
-                  </div>
+                  <ProjectCard key={project.id} project={project} />
                 ))}
               </div>
             )}
@@ -362,58 +423,9 @@ export default function ProjectsPage() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredArchivedProjects.map((project) => (
-                  <div 
-                    key={project.id}
-                    className="p-4 border-b last:border-0 opacity-60"
-                  >
-                    <div className="flex justify-between">
-                      <div>
-                        <h3 className="font-medium flex items-center gap-2">
-                          {project.icon && <span>{project.icon}</span>}
-                          {project.name}
-                        </h3>
-                        
-                        {project.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {project.description}
-                          </p>
-                        )}
-                      </div>
-                      
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[160px]">
-                          <DropdownMenuItem
-                            onClick={() => handleArchiveProject(project.id, false)}
-                          >
-                            Unarchive
-                          </DropdownMenuItem>
-
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => handleDeleteProject(project.id)}
-                          >
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    
-                    <div className="mt-3 text-sm text-muted-foreground">
-                      This project is archived
-                    </div>
-                  </div>
+                  <ProjectCard key={project.id} project={project} isArchived />
                 ))}
               </div>
             )}

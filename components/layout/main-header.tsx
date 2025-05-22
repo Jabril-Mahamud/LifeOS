@@ -15,7 +15,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu } from "lucide-react";
+import { 
+  Menu, 
+  ChevronDown, 
+  FileEdit, 
+  CheckCircle2, 
+  Plus, 
+  LayoutGrid, 
+  ListTodo,
+  BarChart3
+} from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme/theme-toggle";
 
 export function MainHeader() {
@@ -28,21 +37,72 @@ export function MainHeader() {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  const navigation = [
-    {
-      name: "Dashboard",
-      href: "/dashboard",
-      current: pathname === "/dashboard",
-    },
+  // Check if current path is in journal/habits system
+  const isJournalHabitsActive = () => {
+    return pathname.startsWith('/journal') || pathname.startsWith('/habits');
+  };
+
+  // Check if current path is in projects/tasks system
+  const isProjectsTasksActive = () => {
+    return pathname.startsWith('/projects') || pathname.startsWith('/tasks');
+  };
+
+  // Journal & Habits navigation items
+  const journalHabitsItems = [
     {
       name: "Journal",
       href: "/journal",
-      current: pathname === "/journal" || pathname === "/habits",
+      icon: FileEdit,
+      description: "View all journal entries"
     },
-    { name: "Manage Habits", href: "/habits", current: false }, // Secondary item, not highlighted in nav
-    { name: "Manage Projects", href: "/projects", current: false },
-    { name: "Manage Tasks", href: "/tasks", current: false },
+    {
+      name: "Manage Habits",
+      href: "/habits",
+      icon: CheckCircle2,
+      description: "Track and manage habits"
+    },
+    {
+      name: "New Journal Entry",
+      href: "/journal/new",
+      icon: Plus,
+      description: "Write a new journal entry"
+    },
+    {
+      name: "New Habit",
+      href: "/habits/new",
+      icon: Plus,
+      description: "Create a new habit"
+    },
   ];
+
+  // Projects & Tasks navigation items
+  const projectsTasksItems = [
+    {
+      name: "Projects",
+      href: "/projects",
+      icon: LayoutGrid,
+      description: "View all projects"
+    },
+    {
+      name: "Tasks",
+      href: "/tasks",
+      icon: ListTodo,
+      description: "View all tasks"
+    },
+    {
+      name: "New Project",
+      href: "/projects/new",
+      icon: Plus,
+      description: "Create a new project"
+    },
+    {
+      name: "New Task",
+      href: "/tasks/new",
+      icon: Plus,
+      description: "Create a new task"
+    },
+  ];
+
   return (
     <header className="bg-background border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -102,7 +162,7 @@ export function MainHeader() {
                   />
                 </svg>
                 <span className="ml-2 text-lg font-semibold text-foreground">
-                  Daily Journal
+                  LifeOS
                 </span>
               </Link>
             </div>
@@ -110,21 +170,92 @@ export function MainHeader() {
             {/* Desktop Navigation */}
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <SignedIn>
-                {navigation
-                  .filter((item) => item.name !== "Manage Habits")
-                  .map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
+                {/* Dashboard Link */}
+                <Link
+                  href="/dashboard"
+                  className={`${
+                    pathname === "/dashboard"
+                      ? "border-primary text-foreground"
+                      : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-foreground"
+                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Dashboard
+                </Link>
+
+                {/* Journal & Habits Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
                       className={`${
-                        item.current
+                        isJournalHabitsActive()
                           ? "border-primary text-foreground"
                           : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-foreground"
-                      } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                      } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-16`}
                     >
-                      {item.name}
-                    </Link>
-                  ))}
+                      <FileEdit className="h-4 w-4 mr-2" />
+                      Journal & Habits
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56">
+                    <DropdownMenuLabel>Journal & Habits</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {journalHabitsItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <Link href={item.href} className="flex items-start gap-2 p-2">
+                            <Icon className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                            <div className="flex flex-col">
+                              <span className="font-medium">{item.name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {item.description}
+                              </span>
+                            </div>
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Projects & Tasks Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`${
+                        isProjectsTasksActive()
+                          ? "border-primary text-foreground"
+                          : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-foreground"
+                      } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-16`}
+                    >
+                      <LayoutGrid className="h-4 w-4 mr-2" />
+                      Projects & Tasks
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56">
+                    <DropdownMenuLabel>Projects & Tasks</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {projectsTasksItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <Link href={item.href} className="flex items-start gap-2 p-2">
+                            <Icon className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                            <div className="flex flex-col">
+                              <span className="font-medium">{item.name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {item.description}
+                              </span>
+                            </div>
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </SignedIn>
             </div>
           </div>
@@ -185,22 +316,66 @@ export function MainHeader() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-56 mt-2 rounded-md"
+                  className="w-64 mt-2 rounded-md"
                 >
                   <DropdownMenuLabel>Navigation</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {navigation.map((item) => (
-                    <DropdownMenuItem key={item.name} asChild>
-                      <Link
-                        href={item.href}
-                        className={
-                          item.current ? "bg-accent font-semibold" : ""
-                        }
-                      >
-                        {item.name}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
+                  
+                  {/* Dashboard */}
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/dashboard"
+                      className={`flex items-center gap-2 ${
+                        pathname === "/dashboard" ? "bg-accent font-semibold" : ""
+                      }`}
+                    >
+                      <BarChart3 className="h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs">Journal & Habits</DropdownMenuLabel>
+                  
+                  {/* Journal & Habits Items */}
+                  {journalHabitsItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <DropdownMenuItem key={item.name} asChild>
+                        <Link
+                          href={item.href}
+                          className={`flex items-center gap-2 ${
+                            pathname === item.href ? "bg-accent font-semibold" : ""
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                          {item.name}
+                        </Link>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                  
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs">Projects & Tasks</DropdownMenuLabel>
+                  
+                  {/* Projects & Tasks Items */}
+                  {projectsTasksItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <DropdownMenuItem key={item.name} asChild>
+                        <Link
+                          href={item.href}
+                          className={`flex items-center gap-2 ${
+                            pathname === item.href ? "bg-accent font-semibold" : ""
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                          {item.name}
+                        </Link>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                  
                   <DropdownMenuSeparator />
                   <div className="p-2">
                     <UserButton
