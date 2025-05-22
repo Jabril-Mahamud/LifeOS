@@ -1,345 +1,297 @@
 "use client";
 
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { CheckCircle2, Circle, Calendar, BarChart } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { HabitHeatmapCalendar } from "@/components/habits/habit-heatmap-calendar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarIcon, AlertCircle, TrendingUp, CheckCircle2, ChevronDown } from "lucide-react";
-import { 
-  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, 
-  Tooltip, LineChart, Line, CartesianGrid
-} from 'recharts';
-import { cn } from "@/lib/utils";
 
 type Habit = {
   id: string;
   name: string;
-  description: string | null;
   icon: string | null;
   color: string | null;
-  active: boolean;
+  streak?: number;
+  completionRate?: number;
+  streakData?: Array<{
+    date: string;
+    completed: boolean;
+  }>;
 };
 
-// Consistent with the type in JournalEntry - id is optional
-type HabitLogForm = {
-  id?: string;
+type HabitLog = {
+  id: string;
   habitId: string;
   completed: boolean;
   notes: string | null;
 };
 
-type HabitTrackerProps = {
-  habitLogs?: HabitLogForm[];
-  onHabitLogsChange?: (habitLogs: HabitLogForm[]) => void;
-  date?: string; // Add date parameter for past entries
+type Journal = {
+  id: string;
+  hasEntryToday: boolean;
+  todayEntry?: {
+    id: string;
+    habitLogs: HabitLog[];
+  };
 };
 
-export function HabitTracker({ habitLogs = [], onHabitLogsChange, date }: HabitTrackerProps) {
-  const [habits, setHabits] = useState<Habit[]>([]);
-  const [trackedHabits, setTrackedHabits] = useState<HabitLogForm[]>(habitLogs);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [expandedHabit, setExpandedHabit] = useState<string | null>(null);
-  
-  // Format date for display
-  const entryDate = date ? new Date(date) : new Date();
-  const formattedDate = format(entryDate, 'MMM d, yyyy');
-  const isToday = isSameDay(entryDate, new Date());
+type HabitTrackerProps = {
+  habits?: Habit[];
+  journalData?: Journal;
+  onHabitsUpdated?: () => void;
+  showTitle?: boolean;
+  showVisualization?: boolean;
+};
 
+export function HabitTracker({ 
+  habits = [], 
+  journalData, 
+  onHabitsUpdated,
+  showTitle = false,
+  showVisualization = true
+}: HabitTrackerProps) {
+  const [loading, setLoading] = useState(false);
+  const [updatingHabitId, setUpdatingHabitId] = useState<string | null>(null);
+  const [completionStatus, setCompletionStatus] = useState<Record<string, boolean>>({});
+  const [activeTab, setActiveTab] = useState<string>("today");
+  const router = useRouter();
+
+  // Initialize completion status from journal data
   useEffect(() => {
-    fetchHabits();
-  }, []);
-
-  useEffect(() => {
-    // When habitLogs prop changes, update trackedHabits state
-    if (habitLogs.length > 0) {
-      setTrackedHabits(habitLogs);
-    }
-  }, [habitLogs]);
-
-  useEffect(() => {
-    if (onHabitLogsChange) {
-      onHabitLogsChange(trackedHabits);
-    }
-  }, [trackedHabits, onHabitLogsChange]);
-
-  async function fetchHabits() {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/habits');
+    if (journalData?.hasEntryToday && journalData.todayEntry) {
+      const status: Record<string, boolean> = {};
+      habits.forEach(habit => {
+        status[habit.id] = false;
+      });
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch habits');
-      }
+      journalData.todayEntry.habitLogs.forEach(log => {
+        status[log.habitId] = log.completed;
+      });
       
-      const data = await response.json();
-      const activeHabits = (data.habits || []).filter((h: Habit) => h.active);
-      setHabits(activeHabits);
-      
-      // Initialize habit logs for any habits that don't have logs yet
-      const currentHabitIds = trackedHabits.map(log => log.habitId);
-      const newHabitLogs = [...trackedHabits];
-      
-      // Add any missing habits
-      for (const habit of activeHabits) {
-        if (!currentHabitIds.includes(habit.id)) {
-          newHabitLogs.push({
-            habitId: habit.id,
-            completed: false,
-            notes: null
-          });
-        }
-      }
-      
-      // Only update tracked habits if we don't have preexisting logs from props
-      if (habitLogs.length === 0) {
-        setTrackedHabits(newHabitLogs);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error fetching habits:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  function toggleHabit(habitId: string) {
-    setTrackedHabits(trackedHabits.map(log => {
-      if (log.habitId === habitId) {
-        return { ...log, completed: !log.completed };
-      }
-      return log;
-    }));
-  }
-
-  function updateHabitNotes(habitId: string, notes: string) {
-    setTrackedHabits(trackedHabits.map(log => {
-      if (log.habitId === habitId) {
-        return { ...log, notes };
-      }
-      return log;
-    }));
-  }
-
-  // Toggle expanded state for a habit
-  function toggleExpanded(habitId: string) {
-    if (expandedHabit === habitId) {
-      setExpandedHabit(null);
+      setCompletionStatus(status);
     } else {
-      setExpandedHabit(habitId);
+      const status: Record<string, boolean> = {};
+      habits.forEach(habit => {
+        status[habit.id] = false;
+      });
+      setCompletionStatus(status);
     }
-  }
+  }, [habits, journalData]);
 
-  // Custom tooltip for habit history chart
-  const HabitHistoryTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-card p-2 border border-gray-200 rounded shadow-sm text-xs">
-          <p className="font-medium">{data.formattedDate}</p>
-          <p className="text-gray-600">
-            {data.completed ? 'Completed' : 'Not Completed'}
-          </p>
-        </div>
-      );
+  // Toggle habit completion
+  const toggleHabitCompletion = async (habitId: string) => {
+    if (!journalData?.hasEntryToday) {
+      toast({
+        description: "Create today's journal entry first",
+      });
+      router.push("/journal/new");
+      return;
     }
-    return null;
+    
+    setUpdatingHabitId(habitId);
+    setLoading(true);
+    
+    // Update local state immediately
+    const newStatus = !completionStatus[habitId];
+    setCompletionStatus(prev => ({
+      ...prev,
+      [habitId]: newStatus
+    }));
+    
+    try {
+      const response = await fetch(`/api/habits/${habitId}/log`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          completed: newStatus,
+          notes: null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update");
+      }
+      
+      if (onHabitsUpdated) {
+        onHabitsUpdated();
+      }
+    } catch (error) {
+      // Revert on error
+      setCompletionStatus(prev => ({
+        ...prev,
+        [habitId]: !newStatus
+      }));
+      
+      toast({
+        description: "Failed to update habit status",
+      });
+    } finally {
+      setUpdatingHabitId(null);
+      setLoading(false);
+    }
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-      </div>
-    );
-  }
+  // Filter habits with streak data for the visualization
+  const habitsWithData = habits.filter(habit => 
+    habit.streakData && habit.streakData.length > 0
+  );
 
-  if (error) {
-    return (
-      <Card className="p-4 text-center text-red-500 border-red-200">
-        <p>{error}</p>
-      </Card>
-    );
-  }
+  // Check if there's enough data for visualization
+  const hasEnoughData = habitsWithData.length > 0;
 
   if (habits.length === 0) {
+    return <div className="text-sm text-muted-foreground">No habits to track</div>;
+  }
+
+  if (!journalData?.hasEntryToday) {
     return (
-      <Card className="p-6 text-center border-dashed">
-        <p className="mb-4 text-gray-500">You haven't created any habits yet.</p>
-        <Button asChild variant="outline">
-          <Link href="/habits">
-            Set Up Your Habits
-          </Link>
-        </Button>
-      </Card>
+      <div className="text-sm text-muted-foreground">
+        Create a journal entry to track habits
+      </div>
     );
   }
 
   return (
-    <div className="mb-4">
-      {!isToday && (
-        <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-          <CalendarIcon className="w-4 h-4" />
-          <span>Tracking habits for {formattedDate}</span>
-        </div>
+    <div className="space-y-6">
+      {/* Tab Navigation */}
+      {showVisualization && hasEnoughData && (
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="today">
+              <Calendar className="h-4 w-4 mr-2" />
+              Today's Habits
+            </TabsTrigger>
+            <TabsTrigger value="insights">
+              <BarChart className="h-4 w-4 mr-2" />
+              Habit Insights
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="today" className="space-y-4 mt-4">
+            {/* Today's Habits List */}
+            <div className="space-y-3">
+              {habits.map((habit) => {
+                const isCompleted = completionStatus[habit.id] || false;
+                const isUpdating = updatingHabitId === habit.id;
+                
+                return (
+                  <div 
+                    key={habit.id} 
+                    className="flex items-center justify-between p-3 hover:bg-accent/20 rounded-md border"
+                    onClick={() => !isUpdating && toggleHabitCompletion(habit.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`${isUpdating ? 'opacity-50' : ''}`}>
+                        {isCompleted ? (
+                          <CheckCircle2 
+                            className="h-5 w-5" 
+                            style={{ color: habit.color || 'currentColor' }}
+                          />
+                        ) : (
+                          <Circle className="h-5 w-5 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div>
+                        <span className="font-medium">
+                          {habit.icon && <span className="mr-1">{habit.icon}</span>}
+                          {habit.name}
+                        </span>
+                        
+                        {habit.streak !== undefined && (
+                          <div className="flex items-center mt-1 text-xs text-muted-foreground">
+                            <span>Current streak: {habit.streak} days</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {habit.completionRate !== undefined && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-20">
+                          <Progress value={habit.completionRate} className="h-1.5" />
+                        </div>
+                        <span className="text-xs text-muted-foreground w-8 text-right">
+                          {habit.completionRate}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Quick Visualization Teaser */}
+            {hasEnoughData && (
+              <div className="mt-6 p-4 bg-muted/30 rounded-lg border border-dashed text-center">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Want to see your habit patterns over time?
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setActiveTab("insights")}
+                >
+                  <BarChart className="h-4 w-4 mr-2" />
+                  View Insights
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="insights" className="mt-4">
+            {/* Habit Visualization */}
+            <HabitHeatmapCalendar 
+              habits={habitsWithData}
+              title="Your Habit Patterns"
+            />
+          </TabsContent>
+        </Tabs>
       )}
       
-      <div className="space-y-3">
-        {habits.map(habit => {
-          const habitLog = trackedHabits.find(log => log.habitId === habit.id);
-          if (!habitLog) return null;
-          
-          const isExpanded = expandedHabit === habit.id;
-          const habitColor = habit.color || '#4299e1';
-          
-          return (
-            <Card 
-              key={habit.id} 
-              className={cn(
-                "overflow-hidden transition-shadow duration-200",
-                isExpanded ? "shadow-md" : "shadow-sm",
-                habitLog.completed ? "bg-card" : "bg-card"
-              )}
-              style={{ 
-                borderLeftWidth: '4px', 
-                borderLeftColor: habitColor,
-                borderColor: habitLog.completed ? cn(habitColor, "40") : undefined
-              }}
-            >
-              <CardContent className="p-3">
-                <div className="flex items-center mb-2 justify-between">
-                  <div className="flex items-center">
-                    <div className="relative h-5 w-5 mr-2">
-                      <Checkbox
-                        id={`habit-${habit.id}`}
-                        checked={habitLog.completed}
-                        onCheckedChange={() => toggleHabit(habit.id)}
-                        className={cn(
-                          "h-5 w-5",
-                          habitLog.completed && "bg-[var(--color)] border-[var(--color)]"
-                        )}
-                        style={{ "--color": habitColor } as any}
-                      />
-                      {habitLog.completed && (
-                        <div className="absolute inset-0 flex items-center justify-center animation-pulse">
-                          <CheckCircle2 className="h-4 w-4 text-white" />
-                        </div>
-                      )}
-                    </div>
-                    <label 
-                      htmlFor={`habit-${habit.id}`}
-                      className="flex items-center cursor-pointer"
-                    >
-                      <span className="text-lg mr-2">{habit.icon}</span>
-                      <span className={cn(
-                        "font-medium transition-all duration-200",
-                        habitLog.completed ? "text-gray-600" : "text-gray-800"
-                      )}>
-                        {habit.name}
-                      </span>
-                    </label>
-                  </div>
-                  
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() => toggleExpanded(habit.id)}
-                    aria-label={isExpanded ? "Collapse" : "Expand"}
-                  >
-                    <ChevronDown className={cn(
-                      "h-4 w-4 transition-transform",
-                      isExpanded ? "rotate-180" : "rotate-0"
-                    )} />
-                  </Button>
-                </div>
-                
-                {isExpanded && (
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <div className="text-xs font-medium text-gray-500 mb-2">
-                      Notes
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-md">
-                      <p className="text-sm text-gray-600">
-                        Add notes about your habit when you mark it as completed.
-                      </p>
-                    </div>
-                  </div>
-                )}
-                
-                {habitLog.completed && (
-                  <div className={cn(
-                    "pl-7 mt-2 transition-all duration-200",
-                    isExpanded ? "mt-3" : ""
-                  )}>
-                    <Textarea
-                      placeholder="Add notes about this habit (optional)"
-                      value={habitLog.notes || ''}
-                      onChange={(e) => updateHabitNotes(habit.id, e.target.value)}
-                      className="w-full text-sm resize-none"
-                      rows={2}
+      {/* Simple Habit List Only (when visualization is disabled or not enough data) */}
+      {(!showVisualization || !hasEnoughData) && (
+        <div className="space-y-3">
+          {habits.map((habit) => {
+            const isCompleted = completionStatus[habit.id] || false;
+            const isUpdating = updatingHabitId === habit.id;
+            
+            return (
+              <div 
+                key={habit.id} 
+                className="flex items-center p-3 hover:bg-accent/20 rounded-md border"
+                onClick={() => !isUpdating && toggleHabitCompletion(habit.id)}
+              >
+                <div className={`mr-3 ${isUpdating ? 'opacity-50' : ''}`}>
+                  {isCompleted ? (
+                    <CheckCircle2 
+                      className="h-5 w-5" 
+                      style={{ color: habit.color || 'currentColor' }}
                     />
-                  </div>
+                  ) : (
+                    <Circle className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+                <span className="text-sm font-medium">
+                  {habit.icon && <span className="mr-1">{habit.icon}</span>}
+                  {habit.name}
+                </span>
+                
+                {habit.streak !== undefined && (
+                  <Badge variant="outline" className="ml-auto">
+                    {habit.streak} day streak
+                  </Badge>
                 )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-      
-      <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="text-sm font-medium text-gray-700">Today's Progress</h4>
-          <div className="text-sm font-medium">
-            {trackedHabits.filter(h => h.completed).length}/{trackedHabits.length} completed
-          </div>
+              </div>
+            );
+          })}
         </div>
-        
-        <div className="h-10">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={[{
-                name: 'Habits',
-                completed: trackedHabits.filter(h => h.completed).length,
-                total: trackedHabits.length
-              }]}
-              layout="vertical"
-              margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-            >
-              <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" hide />
-              <Bar 
-                dataKey="total" 
-                stackId="a" 
-                fill="#E5E7EB" 
-                radius={[4, 4, 4, 4]}
-              />
-              <Bar 
-                dataKey="completed" 
-                stackId="a" 
-                fill="#10B981" 
-                radius={[4, 0, 0, 4]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        
-        {trackedHabits.some(h => h.completed) ? (
-          <p className="text-xs text-gray-600 mt-2">
-            Great progress! Keep up the good work.
-          </p>
-        ) : (
-          <p className="text-xs text-gray-600 mt-2">
-            Start tracking your habits for today by checking the boxes above.
-          </p>
-        )}
-      </div>
+      )}
     </div>
   );
 }

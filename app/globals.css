@@ -39,8 +39,8 @@
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 270 60% 95%;
+    --accent-foreground: 270 80% 15%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
@@ -66,8 +66,8 @@
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;
     --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 270 35% 25%;
+    --accent-foreground: 270 60% 85%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 14.9%;
@@ -94,8 +94,8 @@
     --secondary-foreground: 268 75% 20%;
     --muted: 268 20% 90%;
     --muted-foreground: 268 30% 35%;
-    --accent: 191 85% 65%;
-    --accent-foreground: 268 75% 18%;
+    --accent: 280 65% 75%;
+    --accent-foreground: 280 85% 25%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     --border: 268 25% 85%;
@@ -126,4 +126,342 @@
   transition-property: background-color, border-color, color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
+}
+
+/* Enhanced accent color usage */
+@layer components {
+  /* Focus states with accent color */
+  .focus-accent:focus-visible {
+    @apply ring-2 ring-accent ring-offset-2 ring-offset-background;
+  }
+  
+  /* Interactive elements with accent hover */
+  .hover-accent:hover {
+    @apply bg-accent text-accent-foreground;
+  }
+  
+  /* Active states with accent */
+  .active-accent:active,
+  .active-accent[data-state="active"],
+  .active-accent[aria-selected="true"] {
+    @apply bg-accent text-accent-foreground;
+  }
+  
+  /* Accent borders for highlights */
+  .border-accent-subtle {
+    @apply border-accent/20;
+  }
+  
+  /* Accent text for emphasis */
+  .text-accent-emphasis {
+    @apply text-accent-foreground font-medium;
+  }
+  
+  /* Selected states */
+  .selected-accent {
+    @apply bg-accent/10 border-accent/30 text-accent-foreground;
+  }
+  
+  /* Progress indicators */
+  .progress-accent {
+    background: linear-gradient(90deg, hsl(var(--accent)) 0%, hsl(var(--accent)) var(--progress, 0%), hsl(var(--muted)) var(--progress, 0%), hsl(var(--muted)) 100%);
+  }
+  
+  /* Notification dots */
+  .notification-dot {
+    @apply bg-accent border-2 border-background;
+  }
+  
+  /* Tags and badges */
+  .tag-accent {
+    @apply bg-accent/15 text-accent-foreground border border-accent/25 hover:bg-accent/25;
+  }
+}
+
+/* Specific UI component accent enhancements */
+@layer utilities {
+  /* Navigation active states */
+  .nav-item-active {
+    @apply bg-accent text-accent-foreground;
+  }
+  
+  /* Button variants with accent */
+  .btn-accent {
+    @apply bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-accent;
+  }
+  
+  .btn-accent-ghost {
+    @apply text-accent-foreground hover:bg-accent/10 focus-visible:ring-accent;
+  }
+  
+  .btn-accent-outline {
+    @apply border-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-accent;
+  }
+  
+  /* Input focus states */
+  .input-accent:focus {
+    @apply ring-accent border-accent;
+  }
+  
+  /* Checkbox and radio accent states */
+  .checkbox-accent:checked,
+  .radio-accent:checked {
+    @apply bg-accent border-accent;
+  }
+  
+  /* Progress bars */
+  .progress-bar-accent {
+    @apply bg-accent;
+  }
+  
+  /* Scrollbar accent (webkit only) */
+  .scrollbar-accent::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--accent));
+  }
+  
+  .scrollbar-accent::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--accent) / 0.8);
+  }
+  
+  /* Selection highlight */
+  .selection-accent::selection {
+    background-color: hsl(var(--accent) / 0.3);
+    color: hsl(var(--accent-foreground));
+  }
+  
+  /* Calendar and date picker accents */
+  .calendar-accent [aria-selected="true"] {
+    @apply bg-accent text-accent-foreground;
+  }
+  
+  .calendar-accent [data-today="true"] {
+    @apply border-accent border-2;
+  }
+  
+  /* Table row hover with accent */
+  .table-hover-accent tbody tr:hover {
+    @apply bg-accent/5;
+  }
+  
+  /* Sidebar active item */
+  .sidebar-item-active {
+    @apply bg-accent/10 border-r-2 border-accent text-accent-foreground;
+  }
+  
+  /* Loading states with accent */
+  .loading-accent {
+    background: linear-gradient(90deg, transparent, hsl(var(--accent) / 0.4), transparent);
+    animation: shimmer 1.5s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  
+  /* Tooltip with accent */
+  .tooltip-accent {
+    @apply bg-accent text-accent-foreground;
+  }
+  
+  /* Switch/toggle accent */
+  .switch-accent[data-state="checked"] {
+    @apply bg-accent;
+  }
+  
+  /* Slider accent */
+  .slider-accent [data-orientation="horizontal"] [role="slider"] {
+    @apply border-accent bg-accent;
+  }
+  
+  /* Tabs accent */
+  .tabs-accent [data-state="active"] {
+    @apply border-b-accent text-accent-foreground;
+  }
+  
+  /* Badge variants */
+  .badge-accent {
+    @apply bg-accent text-accent-foreground hover:bg-accent/90;
+  }
+  
+  .badge-accent-outline {
+    @apply border-accent text-accent-foreground hover:bg-accent/10;
+  }
+  
+  /* Card hover effects */
+  .card-hover-accent:hover {
+    @apply border-accent/40 shadow-lg shadow-accent/5;
+  }
+  
+  /* Link hover states */
+  .link-accent:hover {
+    @apply text-accent-foreground;
+  }
+  
+  /* Status indicators */
+  .status-accent {
+    @apply bg-accent/20 text-accent-foreground;
+  }
+  
+  /* Gradient overlays */
+  .gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--accent) / 0.1) 0%, hsl(var(--accent) / 0.05) 100%);
+  }
+}
+
+/* Syntax highlighting for code blocks */
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-subst {
+  color: hsl(var(--primary));
+  font-weight: bold;
+}
+
+.hljs-number,
+.hljs-literal,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag .hljs-attr {
+  color: #0891b2;
+}
+
+.hljs-string,
+.hljs-doctag {
+  color: #16a34a;
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-selector-id {
+  color: hsl(var(--accent-foreground)); /* Using accent here */
+  font-weight: bold;
+}
+
+.hljs-subst {
+  font-weight: normal;
+}
+
+.hljs-type,
+.hljs-class .hljs-title {
+  color: #7c3aed;
+  font-weight: bold;
+}
+
+.hljs-tag,
+.hljs-name,
+.hljs-attribute {
+  color: #dc2626;
+  font-weight: normal;
+}
+
+.hljs-regexp,
+.hljs-link {
+  color: #16a34a;
+}
+
+.hljs-symbol,
+.hljs-bullet {
+  color: #0891b2;
+}
+
+.hljs-built_in,
+.hljs-builtin-name {
+  color: hsl(var(--accent-foreground)); /* Using accent here */
+}
+
+.hljs-meta {
+  color: hsl(var(--muted-foreground));
+  font-weight: bold;
+}
+
+.hljs-deletion {
+  background: #ef4444;
+}
+
+.hljs-addition {
+  background: #22c55e;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+/* Dark mode adjustments */
+.dark .hljs {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+.dark .hljs-comment,
+.dark .hljs-quote {
+  color: hsl(var(--muted-foreground));
+}
+
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-subst {
+  color: hsl(var(--primary));
+}
+
+.dark .hljs-number,
+.dark .hljs-literal,
+.dark .hljs-variable,
+.dark .hljs-template-variable,
+.dark .hljs-tag .hljs-attr {
+  color: #06b6d4;
+}
+
+.dark .hljs-string,
+.dark .hljs-doctag {
+  color: #22c55e;
+}
+
+.dark .hljs-title,
+.dark .hljs-section,
+.dark .hljs-selector-id {
+  color: hsl(var(--accent-foreground)); /* Using accent here */
+}
+
+.dark .hljs-type,
+.dark .hljs-class .hljs-title {
+  color: #a78bfa;
+}
+
+.dark .hljs-tag,
+.dark .hljs-name,
+.dark .hljs-attribute {
+  color: #f87171;
+}
+
+.dark .hljs-regexp,
+.dark .hljs-link {
+  color: #22c55e;
+}
+
+.dark .hljs-symbol,
+.dark .hljs-bullet {
+  color: #06b6d4;
+}
+
+.dark .hljs-built_in,
+.dark .hljs-builtin-name {
+  color: hsl(var(--accent-foreground)); /* Using accent here */
 }

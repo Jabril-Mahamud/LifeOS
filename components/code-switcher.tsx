@@ -30,7 +30,7 @@ export function CodeSwitcher() {
 
   return (
     <div className={clsx(organization ? "h-[54.625rem]" : "h-[41.625rem]")}>
-      <div className="w-full bg-[#F7F7F8] rounded-md p-[0.1875rem] flex gap-1.5">
+      <div className="w-full rounded-md p-[0.1875rem] flex gap-1.5">
         {typesToShow.map((type) => (
           <button
             className={clsx(
@@ -54,7 +54,7 @@ export function CodeSwitcher() {
           </SyntaxHighlighter>
         </div>
         <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-white to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-[#EEEEF0]" />
+        <div className="absolute bottom-0 left-0 right-0 h-px" />
       </div>
     </div>
   );

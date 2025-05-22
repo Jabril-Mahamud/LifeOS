@@ -6,7 +6,7 @@ import Link from "next/link"
 export default function Home() {
   return (
     <>
-      <main className="min-h-screen flex flex-col items-center justify-center px-4">
+      <main className="min-h-[85vh] flex flex-col items-center justify-center px-4 py-8">
         <div className="max-w-[75rem] w-full mx-auto text-center">
           <h1 className="text-5xl font-bold mb-6">Personal Journal & Habit Tracker</h1>
           <p className="text-xl mb-8 text-muted-foreground">

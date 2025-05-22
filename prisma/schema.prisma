@@ -24,6 +24,8 @@ model User {
   journals      Journal[]
   habits        Habit[]
   organizations OrganizationMember[]
+  tasks       Task[]
+  projects    Project[]
 }
 
 model Post {
@@ -105,3 +107,43 @@ model OrganizationMember {
 
   @@unique([userId, organizationId])
 }
+
+// Add these models to your existing prisma/schema.prisma file
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  color       String?   // Color for visual identification
+  icon        String?   // Icon identifier
+  completed   Boolean   @default(false)
+  archived    Boolean   @default(false)
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+  tasks       Task[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([authorId, name]) // Prevents duplicate project names for a user
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      String    @default("pending") // pending, in-progress, completed
+  priority    String    @default("medium")  // low, medium, high
+  dueDate     DateTime?
+  completedAt DateTime?
+  projectId   String?
+  project     Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Update the User model to include the relation to Projects and Tasks
+// Add these lines to your existing User model
+// projects    Project[]
+// tasks       Task[]

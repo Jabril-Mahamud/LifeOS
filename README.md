@@ -179,3 +179,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - Date handling with [date-fns](https://date-fns.org/)
 - Database managed with [Prisma](https://www.prisma.io/)
+
+### Todo
+
+- [] Add some pastel colours maybe #dbcf0
