@@ -38,24 +38,25 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head />
-      <body className="min-h-screen flex flex-col antialiased">
-        <ClerkProvider
-          appearance={{
-            variables: { colorPrimary: "#000000" },
-            elements: {
-              formButtonPrimary:
-                "bg-card border border-black border-solid hover:bg-card hover:text-green",
-              socialButtonsBlockButton:
-                "bg-card border-gray-200 hover:bg-transparent hover:border-black text-green-600 hover:text-green",
-              socialButtonsBlockButtonText: "font-semibold",
-              formButtonReset:
-                "bg-card border border-solid border-gray-200 hover:bg-transparent hover:border-black text-green-500 hover:text-green",
-              membersPageInviteButton:
-                "bg-card border border-black border-solid hover:bg-card hover:text-green",
-            },
-          }}
-        >
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <ClerkProvider
+        appearance={{
+          variables: { colorPrimary: "#000000" },
+          elements: {
+            formButtonPrimary:
+              "bg-card border border-black border-solid hover:bg-card hover:text-black",
+            socialButtonsBlockButton:
+              "bg-card border-gray-200 hover:bg-transparent hover:border-black text-gray-600 hover:text-black",
+            socialButtonsBlockButtonText: "font-semibold",
+            formButtonReset:
+              "bg-card border border-solid border-gray-200 hover:bg-transparent hover:border-black text-gray-500 hover:text-black",
+            membersPageInviteButton:
+              "bg-card border border-black border-solid hover:bg-card hover:text-black",
+            card: "bg-[#fafafa]",
+          },
+        }}
+      >
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <body className="min-h-screen flex flex-col antialiased">
             <MainHeader />
             <div className="flex-grow">{children}</div>
             <Footer />
