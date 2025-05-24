@@ -104,7 +104,7 @@ export function MainHeader() {
   ];
 
   return (
-    <header className="bg-background border-b">
+    <header className="bg-background border-b border-purple-100/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -116,52 +116,52 @@ export function MainHeader() {
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="text-foreground"
+                  className="text-purple-300"
                 >
                   <path
                     d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="1.5"
                     strokeLinecap="round"
                   />
                   <path
                     d="M12 12H15"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="1.5"
                     strokeLinecap="round"
                   />
                   <path
                     d="M12 16H15"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="1.5"
                     strokeLinecap="round"
                   />
                   <path
                     d="M9 12H9.01"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="1.5"
                     strokeLinecap="round"
                   />
                   <path
                     d="M9 16H9.01"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="1.5"
                     strokeLinecap="round"
                   />
                   <path
                     d="M12 3V7"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="1.5"
                     strokeLinecap="round"
                   />
                   <path
                     d="M9 7H15"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="1.5"
                     strokeLinecap="round"
                   />
                 </svg>
-                <span className="ml-2 text-lg font-semibold text-foreground">
+                <span className="ml-2 text-lg font-medium text-foreground">
                   LifeOS
                 </span>
               </Link>
@@ -175,11 +175,11 @@ export function MainHeader() {
                   href="/dashboard"
                   className={`${
                     pathname === "/dashboard"
-                      ? "border-primary text-foreground"
-                      : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-foreground"
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                      ? "border-purple-300 text-foreground"
+                      : "border-transparent text-muted-foreground hover:border-purple-200 hover:text-foreground"
+                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors`}
                 >
-                  <BarChart3 className="h-4 w-4 mr-2" />
+                  <BarChart3 className="h-4 w-4 mr-2 text-purple-300" />
                   Dashboard
                 </Link>
 
@@ -189,24 +189,24 @@ export function MainHeader() {
                     <button
                       className={`${
                         isJournalHabitsActive()
-                          ? "border-primary text-foreground"
-                          : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-foreground"
-                      } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-16`}
+                          ? "border-purple-300 text-foreground"
+                          : "border-transparent text-muted-foreground hover:border-purple-200 hover:text-foreground"
+                      } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-16 transition-colors`}
                     >
-                      <FileEdit className="h-4 w-4 mr-2" />
+                      <FileEdit className="h-4 w-4 mr-2 text-purple-300" />
                       Journal & Habits
-                      <ChevronDown className="h-3 w-3 ml-1" />
+                      <ChevronDown className="h-3 w-3 ml-1 text-purple-300" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-56">
-                    <DropdownMenuLabel>Journal & Habits</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+                  <DropdownMenuContent align="start" className="w-56 border-purple-100/30">
+                    <DropdownMenuLabel className="text-purple-400">Journal & Habits</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-purple-100/30" />
                     {journalHabitsItems.map((item) => {
                       const Icon = item.icon;
                       return (
                         <DropdownMenuItem key={item.name} asChild>
-                          <Link href={item.href} className="flex items-start gap-2 p-2">
-                            <Icon className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                          <Link href={item.href} className="flex items-start gap-2 p-2 hover:bg-purple-50/50">
+                            <Icon className="h-4 w-4 mt-0.5 text-purple-300" />
                             <div className="flex flex-col">
                               <span className="font-medium">{item.name}</span>
                               <span className="text-xs text-muted-foreground">
@@ -226,24 +226,24 @@ export function MainHeader() {
                     <button
                       className={`${
                         isProjectsTasksActive()
-                          ? "border-primary text-foreground"
-                          : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-foreground"
-                      } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-16`}
+                          ? "border-purple-300 text-foreground"
+                          : "border-transparent text-muted-foreground hover:border-purple-200 hover:text-foreground"
+                      } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-16 transition-colors`}
                     >
-                      <LayoutGrid className="h-4 w-4 mr-2" />
+                      <LayoutGrid className="h-4 w-4 mr-2 text-purple-300" />
                       Projects & Tasks
-                      <ChevronDown className="h-3 w-3 ml-1" />
+                      <ChevronDown className="h-3 w-3 ml-1 text-purple-300" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-56">
-                    <DropdownMenuLabel>Projects & Tasks</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+                  <DropdownMenuContent align="start" className="w-56 border-purple-100/30">
+                    <DropdownMenuLabel className="text-purple-400">Projects & Tasks</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-purple-100/30" />
                     {projectsTasksItems.map((item) => {
                       const Icon = item.icon;
                       return (
                         <DropdownMenuItem key={item.name} asChild>
-                          <Link href={item.href} className="flex items-start gap-2 p-2">
-                            <Icon className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                          <Link href={item.href} className="flex items-start gap-2 p-2 hover:bg-purple-50/50">
+                            <Icon className="h-4 w-4 mt-0.5 text-purple-300" />
                             <div className="flex flex-col">
                               <span className="font-medium">{item.name}</span>
                               <span className="text-xs text-muted-foreground">
@@ -285,10 +285,14 @@ export function MainHeader() {
             <SignedOut>
               <div className="flex items-center space-x-4">
                 <Link href="/sign-in">
-                  <Button variant="ghost">Sign in</Button>
+                  <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-purple-50/50">
+                    Sign in
+                  </Button>
                 </Link>
                 <Link href="/sign-up">
-                  <Button>Sign up</Button>
+                  <Button className="bg-purple-300 hover:bg-purple-400 text-white border-0">
+                    Sign up
+                  </Button>
                 </Link>
               </div>
             </SignedOut>
@@ -308,34 +312,34 @@ export function MainHeader() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-10 w-10 ml-2"
+                    className="h-10 w-10 ml-2 hover:bg-purple-50/50"
                   >
-                    <Menu className="h-5 w-5" />
+                    <Menu className="h-5 w-5 text-purple-300" />
                     <span className="sr-only">Open main menu</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-64 mt-2 rounded-md"
+                  className="w-64 mt-2 rounded-md border-purple-100/30"
                 >
-                  <DropdownMenuLabel>Navigation</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-purple-400">Navigation</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-purple-100/30" />
                   
                   {/* Dashboard */}
                   <DropdownMenuItem asChild>
                     <Link
                       href="/dashboard"
-                      className={`flex items-center gap-2 ${
-                        pathname === "/dashboard" ? "bg-accent font-semibold" : ""
+                      className={`flex items-center gap-2 hover:bg-purple-50/50 ${
+                        pathname === "/dashboard" ? "bg-purple-50/70 font-semibold" : ""
                       }`}
                     >
-                      <BarChart3 className="h-4 w-4" />
+                      <BarChart3 className="h-4 w-4 text-purple-300" />
                       Dashboard
                     </Link>
                   </DropdownMenuItem>
                   
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs">Journal & Habits</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-purple-100/30" />
+                  <DropdownMenuLabel className="text-xs text-purple-400">Journal & Habits</DropdownMenuLabel>
                   
                   {/* Journal & Habits Items */}
                   {journalHabitsItems.map((item) => {
@@ -344,19 +348,19 @@ export function MainHeader() {
                       <DropdownMenuItem key={item.name} asChild>
                         <Link
                           href={item.href}
-                          className={`flex items-center gap-2 ${
-                            pathname === item.href ? "bg-accent font-semibold" : ""
+                          className={`flex items-center gap-2 hover:bg-purple-50/50 ${
+                            pathname === item.href ? "bg-purple-50/70 font-semibold" : ""
                           }`}
                         >
-                          <Icon className="h-4 w-4" />
+                          <Icon className="h-4 w-4 text-purple-300" />
                           {item.name}
                         </Link>
                       </DropdownMenuItem>
                     );
                   })}
                   
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs">Projects & Tasks</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-purple-100/30" />
+                  <DropdownMenuLabel className="text-xs text-purple-400">Projects & Tasks</DropdownMenuLabel>
                   
                   {/* Projects & Tasks Items */}
                   {projectsTasksItems.map((item) => {
@@ -365,18 +369,18 @@ export function MainHeader() {
                       <DropdownMenuItem key={item.name} asChild>
                         <Link
                           href={item.href}
-                          className={`flex items-center gap-2 ${
-                            pathname === item.href ? "bg-accent font-semibold" : ""
+                          className={`flex items-center gap-2 hover:bg-purple-50/50 ${
+                            pathname === item.href ? "bg-purple-50/70 font-semibold" : ""
                           }`}
                         >
-                          <Icon className="h-4 w-4" />
+                          <Icon className="h-4 w-4 text-purple-300" />
                           {item.name}
                         </Link>
                       </DropdownMenuItem>
                     );
                   })}
                   
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="bg-purple-100/30" />
                   <div className="p-2">
                     <UserButton
                       afterSignOutUrl="/"
@@ -395,7 +399,7 @@ export function MainHeader() {
               <Link href="/sign-in">
                 <Button
                   variant="ghost"
-                  className="text-muted-foreground hover:text-foreground text-sm font-medium px-4 py-2"
+                  className="text-muted-foreground hover:text-foreground hover:bg-purple-50/50 text-sm font-medium px-4 py-2"
                 >
                   Sign in
                 </Button>
