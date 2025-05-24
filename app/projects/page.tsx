@@ -2,10 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, MoreHorizontal, Archive, ArchiveRestore } from "lucide-react";
+import { 
+  Plus, 
+  MoreHorizontal, 
+  Archive, 
+  ArchiveRestore,
+  AlertCircle,
+  RefreshCw,
+  FolderOpen,
+  Search
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -44,26 +54,49 @@ type ProjectStats = {
   upcomingTasks: number;
 };
 
+type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [archivedProjects, setArchivedProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingState, setLoadingState] = useState<LoadingState>('loading');
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("active");
-  const [projectStats, setProjectStats] = useState<
-    Record<string, ProjectStats>
-  >({});
+  const [projectStats, setProjectStats] = useState<Record<string, ProjectStats>>({});
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
   const router = useRouter();
 
-  // Fetch projects
-  const fetchProjects = async () => {
-    setLoading(true);
+  // Fetch projects with better error handling
+  const fetchProjects = async (isRetry = false) => {
+    if (isRetry) {
+      setRetryCount(prev => prev + 1);
+      setIsRetrying(true);
+    } else {
+      setLoadingState('loading');
+    }
+    
+    setError(null);
+    
     try {
       const response = await fetch("/api/projects");
+      
       if (!response.ok) {
-        throw new Error("Failed to fetch projects");
+        if (response.status === 404) {
+          throw new Error("Projects not found. This might be your first time here!");
+        } else if (response.status >= 500) {
+          throw new Error("Server error. Please try again later.");
+        } else {
+          throw new Error(`Failed to fetch projects (${response.status})`);
+        }
       }
+      
       const data = await response.json();
+      
+      if (!data || !Array.isArray(data.projects)) {
+        throw new Error("Invalid data format received from server");
+      }
 
       // Separate active and archived projects
       const active: Project[] = [];
@@ -79,37 +112,44 @@ export default function ProjectsPage() {
 
       setProjects(active);
       setArchivedProjects(archived);
+      setLoadingState('success');
+      setRetryCount(0);
+      setIsRetrying(false);
 
-      // Fetch stats for each active project
-      active.forEach((project) => {
-        fetchProjectStats(project.id);
-      });
+      // Fetch stats for each active project (don't block on this)
+      if (active.length > 0) {
+        active.forEach((project) => {
+          fetchProjectStats(project.id);
+        });
+      }
     } catch (error) {
       console.error("Error fetching projects:", error);
-      toast({
-        description: "Failed to load projects",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+      setError(error instanceof Error ? error.message : "An unexpected error occurred");
+      setLoadingState('error');
+      setIsRetrying(false);
+      
+      // Set empty arrays on error to prevent crashes
+      setProjects([]);
+      setArchivedProjects([]);
     }
   };
 
-  // Fetch stats for a single project
+  // Fetch stats for a single project (non-blocking)
   const fetchProjectStats = async (projectId: string) => {
     try {
       const response = await fetch(`/api/projects/${projectId}/stats`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch project stats");
+      if (response.ok) {
+        const data = await response.json();
+        if (data.stats) {
+          setProjectStats((prev) => ({
+            ...prev,
+            [projectId]: data.stats,
+          }));
+        }
       }
-      const data = await response.json();
-
-      setProjectStats((prev) => ({
-        ...prev,
-        [projectId]: data.stats,
-      }));
     } catch (error) {
       console.error(`Error fetching stats for project ${projectId}:`, error);
+      // Don't show error for stats as they're supplementary
     }
   };
 
@@ -340,6 +380,110 @@ export default function ProjectsPage() {
     );
   };
 
+  // Error state
+  if (loadingState === 'error') {
+    return (
+      <div className="container mx-auto p-6 max-w-6xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">Projects</h1>
+            <p className="text-muted-foreground mt-1">
+              Organize your work and track progress
+            </p>
+          </div>
+          <Button onClick={() => router.push("/projects/new")} size="default" className="h-10">
+            <Plus className="h-4 w-4 mr-2" />
+            New Project
+          </Button>
+        </div>
+
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => fetchProjects(true)}
+              disabled={isRetrying}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+              {retryCount > 0 ? `Retry (${retryCount})` : 'Retry'}
+            </Button>
+          </AlertDescription>
+        </Alert>
+
+        {/* Fallback empty state */}
+        <Card className="text-center py-10">
+          <CardContent>
+            <FolderOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">Unable to load projects</h3>
+            <p className="text-muted-foreground mb-4">
+              There was a problem loading your projects. You can still create a new one.
+            </p>
+            <Button onClick={() => router.push("/projects/new")}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create your first project
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (loadingState === 'loading') {
+    return (
+      <div className="container mx-auto p-6 max-w-6xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">Projects</h1>
+            <p className="text-muted-foreground mt-1">
+              Organize your work and track progress
+            </p>
+          </div>
+          <Button disabled size="default" className="h-10">
+            <Plus className="h-4 w-4 mr-2" />
+            New Project
+          </Button>
+        </div>
+
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex gap-2">
+            <div className="h-10 w-32 bg-muted animate-pulse rounded" />
+          </div>
+          <div className="h-9 w-64 bg-muted animate-pulse rounded" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i} className="overflow-hidden">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-10 h-10 bg-muted animate-pulse rounded-lg" />
+                    <div>
+                      <div className="h-5 w-32 bg-muted animate-pulse rounded mb-2" />
+                      <div className="h-4 w-48 bg-muted animate-pulse rounded" />
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-3">
+                  <div className="h-4 bg-muted animate-pulse rounded" />
+                  <div className="h-2 bg-muted animate-pulse rounded" />
+                  <div className="h-3 bg-muted animate-pulse rounded" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Success state (may have empty data)
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -377,28 +521,66 @@ export default function ProjectsPage() {
               </TabsTrigger>
             </TabsList>
 
-            <Input
-              placeholder="Search projects..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-xs ml-auto"
-            />
+            <div className="relative max-w-xs ml-auto">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search projects..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
           </div>
 
           <TabsContent value="active" className="mt-6">
-            {loading ? (
-              <div className="text-center py-10">
-                <p className="text-muted-foreground">Loading projects...</p>
-              </div>
-            ) : filteredProjects.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-muted-foreground mb-4">No projects found</p>
-                <Button
-                  variant="outline"
-                  onClick={() => router.push("/projects/new")}
-                >
-                  Create a new project
-                </Button>
+            {filteredProjects.length === 0 ? (
+              <div className="text-center py-16">
+                {searchTerm ? (
+                  <>
+                    <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No projects found</h3>
+                    <p className="text-muted-foreground mb-4">
+                      No projects match your search "{searchTerm}"
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setSearchTerm("")}
+                    >
+                      Clear search
+                    </Button>
+                  </>
+                ) : projects.length === 0 ? (
+                  <>
+                    <FolderOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-xl font-medium mb-2">No projects yet</h3>
+                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                      Projects help you organize related tasks and track progress toward your goals. Create your first project to get started.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Button onClick={() => router.push("/projects/new")}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create your first project
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => router.push("/tasks/new")}
+                      >
+                        Create a task instead
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-medium mb-2">All projects are archived</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Unarchive some projects or create a new one
+                    </p>
+                    <Button onClick={() => router.push("/projects/new")}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create new project
+                    </Button>
+                  </>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -410,17 +592,31 @@ export default function ProjectsPage() {
           </TabsContent>
 
           <TabsContent value="archived" className="mt-6">
-            {loading ? (
-              <div className="text-center py-10">
-                <p className="text-muted-foreground">
-                  Loading archived projects...
-                </p>
-              </div>
-            ) : filteredArchivedProjects.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-muted-foreground">
-                  No archived projects found
-                </p>
+            {filteredArchivedProjects.length === 0 ? (
+              <div className="text-center py-16">
+                {searchTerm ? (
+                  <>
+                    <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No archived projects found</h3>
+                    <p className="text-muted-foreground mb-4">
+                      No archived projects match your search "{searchTerm}"
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setSearchTerm("")}
+                    >
+                      Clear search
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Archive className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No archived projects</h3>
+                    <p className="text-muted-foreground">
+                      Archived projects will appear here
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

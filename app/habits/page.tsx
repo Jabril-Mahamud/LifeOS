@@ -13,6 +13,9 @@ import {
   BarChart4,
   Eye,
   EyeOff,
+  AlertCircle,
+  RefreshCw,
+  BookOpen
 } from "lucide-react";
 import {
   Card,
@@ -26,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { HabitTracker } from "@/components/habits/habit-tracker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CircularProgress } from "@/components/ui/circular-progress";
@@ -44,31 +48,55 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Habit, Journal } from "@/lib/types/habits";
 
+type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+
 export default function HabitsPage() {
+  const [habits, setHabits] = useState<Habit[]>([]);
   const [inactiveHabits, setInactiveHabits] = useState<Habit[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [journalData, setJournalData] = useState<Journal | null>(null);
+  const [loadingState, setLoadingState] = useState<LoadingState>('loading');
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteHabitId, setDeleteHabitId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
   const router = useRouter();
-  const [habits, setHabits] = useState<Habit[]>([]);
-  const [journalData, setJournalData] = useState<Journal | null>(null);
 
-  // Fetch habits
-  const fetchHabits = async () => {
-    setLoading(true);
+  // Fetch habits with better error handling
+  const fetchHabits = async (isRetry = false) => {
+    if (isRetry) {
+      setRetryCount(prev => prev + 1);
+      setIsRetrying(true);
+    } else {
+      setLoadingState('loading');
+    }
+    
+    setError(null);
+    
     try {
       const response = await fetch("/api/habits");
+      
       if (!response.ok) {
-        throw new Error("Failed to fetch habits");
+        if (response.status === 404) {
+          throw new Error("Habits not found. This might be your first time here!");
+        } else if (response.status >= 500) {
+          throw new Error("Server error. Please try again later.");
+        } else {
+          throw new Error(`Failed to fetch habits (${response.status})`);
+        }
       }
+      
       const data = await response.json();
+      
+      if (!data || !Array.isArray(data.habits)) {
+        throw new Error("Invalid data format received from server");
+      }
 
       // Separate active and inactive habits
       const active: Habit[] = [];
@@ -84,58 +112,87 @@ export default function HabitsPage() {
 
       setHabits(active);
       setInactiveHabits(inactive);
+      setLoadingState('success');
+      setRetryCount(0);
+      setIsRetrying(false);
     } catch (error) {
       console.error("Error fetching habits:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load habits. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+      setError(error instanceof Error ? error.message : "An unexpected error occurred");
+      setLoadingState('error');
+      setIsRetrying(false);
+      
+      // Fallback to empty arrays on error to prevent crashes
+      setHabits([]);
+      setInactiveHabits([]);
     }
   };
 
-  // Fetch journal data for today
+  // Fetch journal data with error handling
   const fetchJournalData = async () => {
     try {
       const response = await fetch("/api/journal");
+      
       if (!response.ok) {
-        throw new Error("Failed to fetch journal data");
+        // Journal data is optional, so we don't treat this as a critical error
+        console.warn("Could not fetch journal data:", response.status);
+        return;
       }
+      
       const data = await response.json();
 
       setJournalData({
-        id: data.id || "some-default-id", // or data.id from API if available
+        id: data.id || "temp-id",
         hasEntryToday: Boolean(data.todayEntry),
         todayEntry: data.todayEntry
           ? {
               id: data.todayEntry.id,
-              habitLogs: data.todayEntry.habitLogs || [],
+              habitLogs: Array.isArray(data.todayEntry.habitLogs) ? data.todayEntry.habitLogs : [],
             }
           : undefined,
       });
     } catch (error) {
       console.error("Error fetching journal data:", error);
+      // Don't show error for journal data as it's supplementary
     }
   };
 
-  // Fetch habit stats
+  // Fetch habit stats with error handling
   const fetchHabitStats = async () => {
+    if (habits.length === 0) return;
+    
     try {
       const updatedHabits = [...habits];
+      let hasErrors = false;
 
       for (const habit of updatedHabits) {
-        const response = await fetch(`/api/habits/${habit.id}/stats`);
-        if (response.ok) {
-          const data = await response.json();
-          habit.streak = data.stats.currentStreak;
-          habit.completionRate = data.stats.completionRate;
-          habit.streakData = data.dailyLogs;
+        try {
+          const response = await fetch(`/api/habits/${habit.id}/stats`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.stats) {
+              habit.streak = data.stats.currentStreak || 0;
+              habit.completionRate = data.stats.completionRate || 0;
+              habit.streakData = Array.isArray(data.dailyLogs) ? data.dailyLogs : [];
+            }
+          } else {
+            hasErrors = true;
+            console.warn(`Failed to fetch stats for habit ${habit.id}`);
+          }
+        } catch (error) {
+          hasErrors = true;
+          console.error(`Error fetching stats for habit ${habit.id}:`, error);
         }
       }
 
       setHabits([...updatedHabits]);
+      
+      if (hasErrors) {
+        toast({
+          title: "Warning",
+          description: "Some habit statistics could not be loaded",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Error fetching habit stats:", error);
     }
@@ -147,16 +204,15 @@ export default function HabitsPage() {
       await fetchHabits();
       await fetchJournalData();
     };
-
     loadData();
   }, []);
 
   // Fetch stats when habits are loaded
   useEffect(() => {
-    if (habits.length > 0) {
+    if (habits.length > 0 && loadingState === 'success') {
       fetchHabitStats();
     }
-  }, [habits.length]);
+  }, [habits.length, loadingState]);
 
   // Toggle habit active status
   const toggleHabitActive = async (habitId: string, currentActive: boolean) => {
@@ -238,6 +294,98 @@ export default function HabitsPage() {
         habit.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  // Error state
+  if (loadingState === 'error') {
+    return (
+      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center">
+              <CheckCircle2 className="h-6 w-6 mr-2" />
+              Habits
+            </h1>
+            <p className="text-muted-foreground">
+              Track and manage your daily habits
+            </p>
+          </div>
+          <Button onClick={() => router.push("/habits/new")}>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            New Habit
+          </Button>
+        </div>
+
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => fetchHabits(true)}
+              disabled={isRetrying}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+              {retryCount > 0 ? `Retry (${retryCount})` : 'Retry'}
+            </Button>
+          </AlertDescription>
+        </Alert>
+
+        {/* Fallback empty state */}
+        <Card className="text-center py-10">
+          <CardContent>
+            <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">Unable to load habits</h3>
+            <p className="text-muted-foreground mb-4">
+              There was a problem loading your habits. You can still create a new one.
+            </p>
+            <Button onClick={() => router.push("/habits/new")}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Create your first habit
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (loadingState === 'loading') {
+    return (
+      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center">
+              <CheckCircle2 className="h-6 w-6 mr-2" />
+              Habits
+            </h1>
+            <p className="text-muted-foreground">
+              Track and manage your daily habits
+            </p>
+          </div>
+          <Button disabled>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            New Habit
+          </Button>
+        </div>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="h-6 bg-muted animate-pulse rounded mb-2" />
+            <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="h-16 bg-muted animate-pulse rounded" />
+              <div className="h-16 bg-muted animate-pulse rounded" />
+              <div className="h-16 bg-muted animate-pulse rounded" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Success state (may have empty data)
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -274,9 +422,17 @@ export default function HabitsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="text-center py-4">
-              <p className="text-muted-foreground">Loading habits...</p>
+          {habits.length === 0 ? (
+            <div className="text-center py-8">
+              <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">No habits to track yet</h3>
+              <p className="text-muted-foreground mb-4">
+                Create your first habit to start building positive routines
+              </p>
+              <Button onClick={() => router.push("/habits/new")}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Create your first habit
+              </Button>
             </div>
           ) : (
             <HabitTracker
@@ -316,20 +472,47 @@ export default function HabitsPage() {
           </div>
 
           <TabsContent value="active" className="mt-6">
-            {loading ? (
+            {filteredHabits.length === 0 ? (
               <div className="text-center py-10">
-                <p className="text-muted-foreground">Loading habits...</p>
-              </div>
-            ) : filteredHabits.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-muted-foreground">No active habits found</p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => router.push("/habits/new")}
-                >
-                  Create a new habit
-                </Button>
+                {searchTerm ? (
+                  <>
+                    <h3 className="text-lg font-medium mb-2">No habits found</h3>
+                    <p className="text-muted-foreground mb-4">
+                      No habits match your search "{searchTerm}"
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setSearchTerm("")}
+                    >
+                      Clear search
+                    </Button>
+                  </>
+                ) : habits.length === 0 ? (
+                  <>
+                    <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No active habits</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Start building positive routines by creating your first habit
+                    </p>
+                    <Button onClick={() => router.push("/habits/new")}>
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      Create your first habit
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-medium mb-2">All habits are inactive</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Activate some habits to start tracking them
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => router.push("/habits/new")}
+                    >
+                      Create new habit
+                    </Button>
+                  </>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -431,7 +614,7 @@ export default function HabitsPage() {
                       <div className="mt-4">
                         <div className="flex justify-between text-xs mb-1">
                           <span>Last 30 days</span>
-                          <span>{habit.completionRate || 0}% completed</span>
+                          <span>{Math.round(habit.completionRate || 0)}% completed</span>
                         </div>
                         <Progress
                           value={habit.completionRate || 0}
@@ -457,15 +640,30 @@ export default function HabitsPage() {
           </TabsContent>
 
           <TabsContent value="inactive" className="mt-6">
-            {loading ? (
+            {filteredInactiveHabits.length === 0 ? (
               <div className="text-center py-10">
-                <p className="text-muted-foreground">Loading habits...</p>
-              </div>
-            ) : filteredInactiveHabits.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-muted-foreground">
-                  No inactive habits found
-                </p>
+                {searchTerm ? (
+                  <>
+                    <h3 className="text-lg font-medium mb-2">No inactive habits found</h3>
+                    <p className="text-muted-foreground mb-4">
+                      No inactive habits match your search "{searchTerm}"
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setSearchTerm("")}
+                    >
+                      Clear search
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No inactive habits</h3>
+                    <p className="text-muted-foreground">
+                      All your habits are currently active
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

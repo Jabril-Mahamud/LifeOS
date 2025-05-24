@@ -14,12 +14,15 @@ import {
   Plus, 
   PlusCircle,
   BarChart4, 
-  ChevronRight 
+  ChevronRight,
+  AlertCircle,
+  RefreshCw
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -100,51 +103,119 @@ type DashboardData = {
   };
 };
 
+type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+
 export default function Dashboard() {
-  const [loading, setLoading] = useState(true);
+  const [loadingState, setLoadingState] = useState<LoadingState>('loading');
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await fetch("/api/dashboard");
-        if (!response.ok) {
-          throw new Error("Failed to fetch dashboard data");
+  const fetchDashboardData = async (isRetry = false) => {
+    if (isRetry) {
+      setRetryCount(prev => prev + 1);
+      setIsRetrying(true);
+    } else {
+      setLoadingState('loading');
+    }
+    
+    setError(null);
+    
+    try {
+      const response = await fetch("/api/dashboard");
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Dashboard data not found. Please check your account setup.");
+        } else if (response.status >= 500) {
+          throw new Error("Server error. Please try again later.");
+        } else {
+          throw new Error(`Failed to fetch dashboard data (${response.status})`);
         }
-        const data = await response.json();
-        setDashboardData(data);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
       }
-    };
+      
+      const data = await response.json();
+      
+      // Validate that we have the expected data structure
+      if (!data || typeof data !== 'object') {
+        throw new Error("Invalid data format received from server");
+      }
+      
+      // Set default empty states if data is missing
+      const safeData: DashboardData = {
+        habits: Array.isArray(data.habits) ? data.habits : [],
+        journal: {
+          totalEntries: data.journal?.totalEntries || 0,
+          hasEntryToday: data.journal?.hasEntryToday || false,
+          entries: Array.isArray(data.journal?.entries) ? data.journal.entries : [],
+          moodDistribution: data.journal?.moodDistribution || {},
+          recentMoods: Array.isArray(data.journal?.recentMoods) ? data.journal.recentMoods : [],
+          heatmap: Array.isArray(data.journal?.heatmap) ? data.journal.heatmap : []
+        },
+        projects: {
+          list: Array.isArray(data.projects?.list) ? data.projects.list : [],
+          total: data.projects?.total || 0
+        },
+        tasks: {
+          upcoming: Array.isArray(data.tasks?.upcoming) ? data.tasks.upcoming : [],
+          recentlyCompleted: Array.isArray(data.tasks?.recentlyCompleted) ? data.tasks.recentlyCompleted : []
+        }
+      };
+      
+      setDashboardData(safeData);
+      setLoadingState('success');
+      setRetryCount(0);
+      setIsRetrying(false);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      setError(error instanceof Error ? error.message : "An unexpected error occurred");
+      setLoadingState('error');
+      setIsRetrying(false);
+    }
+  };
 
+  useEffect(() => {
     fetchDashboardData();
   }, []);
 
   // Format a date string for display
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, "MMMM d, yyyy");
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return "Invalid date";
+      }
+      return format(date, "MMMM d, yyyy");
+    } catch {
+      return "Invalid date";
+    }
   };
 
   // Format a date to show "Today", "Tomorrow", or the formatted date
   const formatRelativeDate = (dateString: string | null) => {
     if (!dateString) return "No date";
     
-    const date = new Date(dateString);
-    const today = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 1);
-    
-    if (format(date, "yyyy-MM-dd") === format(today, "yyyy-MM-dd")) {
-      return "Today";
-    } else if (format(date, "yyyy-MM-dd") === format(tomorrow, "yyyy-MM-dd")) {
-      return "Tomorrow";
-    } else {
-      return format(date, "MMM d, yyyy");
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return "Invalid date";
+      }
+      
+      const today = new Date();
+      const tomorrow = new Date();
+      tomorrow.setDate(today.getDate() + 1);
+      
+      if (format(date, "yyyy-MM-dd") === format(today, "yyyy-MM-dd")) {
+        return "Today";
+      } else if (format(date, "yyyy-MM-dd") === format(tomorrow, "yyyy-MM-dd")) {
+        return "Tomorrow";
+      } else {
+        return format(date, "MMM d, yyyy");
+      }
+    } catch {
+      return "Invalid date";
     }
   };
 
@@ -162,7 +233,7 @@ export default function Dashboard() {
         {task.status === "completed" ? (
           <CheckCircle2 className="h-4 w-4 text-green-500" />
         ) : (
-          <Circle className={`h-4 w-4 ${priorityColors[task.priority as keyof typeof priorityColors]}`} />
+          <Circle className={`h-4 w-4 ${priorityColors[task.priority as keyof typeof priorityColors] || 'text-muted-foreground'}`} />
         )}
         <span className={task.status === "completed" ? "line-through text-muted-foreground" : ""}>{task.title}</span>
       </div>
@@ -189,15 +260,19 @@ export default function Dashboard() {
   );
 
   // Loading state
-  if (loading) {
+  if (loadingState === 'loading') {
     return (
       <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <Skeleton className="h-9 w-24" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Skeleton className="h-[200px] rounded-xl" />
           <Skeleton className="h-[200px] rounded-xl" />
           <Skeleton className="h-[200px] rounded-xl" />
-          <Skeleton className="h-[300px] rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Skeleton className="h-[300px] rounded-xl" />
           <Skeleton className="h-[300px] rounded-xl" />
         </div>
@@ -205,6 +280,103 @@ export default function Dashboard() {
     );
   }
 
+  // Error state
+  if (loadingState === 'error') {
+    return (
+      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+        </div>
+        
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => fetchDashboardData(true)}
+              disabled={isRetrying}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+              {retryCount > 0 ? `Retry (${retryCount})` : 'Retry'}
+            </Button>
+          </AlertDescription>
+        </Alert>
+
+        {/* Fallback minimal UI */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <FileEdit className="h-5 w-5 mr-2" />
+                Journal
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">Unable to load journal data</p>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => router.push("/journal/new")}
+              >
+                Write new entry
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <CheckCircle2 className="h-5 w-5 mr-2" />
+                Habits
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">Unable to load habits data</p>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => router.push("/habits")}
+              >
+                Manage habits
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <LayoutGrid className="h-5 w-5 mr-2" />
+                Projects
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">Unable to load projects data</p>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => router.push("/projects")}
+              >
+                View projects
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Success state with data
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
       <div className="flex justify-between items-center">
@@ -251,21 +423,22 @@ export default function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {dashboardData?.journal.hasEntryToday ? (
+            {dashboardData?.journal.hasEntryToday && dashboardData.journal.entries.length > 0 ? (
               <div className="flex flex-col">
                 <div className="text-sm font-medium mb-1">Today's entry</div>
-                {dashboardData.journal.entries[0] && (
-                  <div className="text-sm text-muted-foreground">
-                    <span className="mr-2">{dashboardData.journal.entries[0].title}</span>
-                    <span className="text-xs opacity-70">
-                      {formatDate(dashboardData.journal.entries[0].date)}
-                    </span>
-                  </div>
-                )}
+                <div className="text-sm text-muted-foreground">
+                  <span className="mr-2">{dashboardData.journal.entries[0].title}</span>
+                  <span className="text-xs opacity-70">
+                    {formatDate(dashboardData.journal.entries[0].date)}
+                  </span>
+                </div>
               </div>
             ) : (
               <div className="text-sm text-muted-foreground">
-                No entry for today yet
+                {dashboardData?.journal.totalEntries === 0 
+                  ? "No journal entries yet. Start writing to track your thoughts and progress!"
+                  : "No entry for today yet"
+                }
               </div>
             )}
           </CardContent>
@@ -275,7 +448,7 @@ export default function Dashboard() {
               size="sm" 
               className="w-full"
               onClick={() => router.push(
-                dashboardData?.journal.hasEntryToday 
+                dashboardData?.journal.hasEntryToday && dashboardData.journal.entries.length > 0
                   ? `/journal/${dashboardData.journal.entries[0].id}` 
                   : "/journal/new"
               )}
@@ -309,7 +482,7 @@ export default function Dashboard() {
               ))
             ) : (
               <div className="text-sm text-muted-foreground">
-                No active habits to track
+                No active habits to track. Create your first habit to start building healthy routines!
               </div>
             )}
           </CardContent>
@@ -318,9 +491,9 @@ export default function Dashboard() {
               variant="outline" 
               size="sm" 
               className="w-full"
-              onClick={() => router.push("/habits")}
+              onClick={() => router.push(dashboardData?.habits.length === 0 ? "/habits/new" : "/habits")}
             >
-              Manage habits
+              {dashboardData?.habits.length === 0 ? "Create first habit" : "Manage habits"}
             </Button>
           </CardFooter>
         </Card>
@@ -355,7 +528,7 @@ export default function Dashboard() {
               ))
             ) : (
               <div className="text-sm text-muted-foreground">
-                No active projects
+                No active projects. Create a project to organize your tasks and goals!
               </div>
             )}
           </CardContent>
@@ -364,9 +537,9 @@ export default function Dashboard() {
               variant="outline" 
               size="sm" 
               className="w-full"
-              onClick={() => router.push("/projects")}
+              onClick={() => router.push(dashboardData?.projects.list.length === 0 ? "/projects/new" : "/projects")}
             >
-              View all projects
+              {dashboardData?.projects.list.length === 0 ? "Create first project" : "View all projects"}
             </Button>
           </CardFooter>
         </Card>
@@ -399,7 +572,7 @@ export default function Dashboard() {
                   dashboardData.tasks.upcoming.map((task) => renderTaskItem(task))
                 ) : (
                   <div className="text-sm text-muted-foreground p-2">
-                    No upcoming tasks
+                    No upcoming tasks. Create a task to get started with your work!
                   </div>
                 )}
               </TabsContent>
@@ -476,7 +649,7 @@ export default function Dashboard() {
                   ))
                 ) : (
                   <div className="text-sm text-muted-foreground p-2">
-                    No journal entries yet
+                    No journal entries yet. Start writing to capture your thoughts and experiences!
                   </div>
                 )}
               </TabsContent>

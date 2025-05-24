@@ -33,7 +33,7 @@ const colorOptions = [
 // Common emoji icons for habits
 const iconOptions = [
   "🏃", "💪", "🧘", "💧", "🥗", "🍎", "📚", "✍️", 
-  "💭", "🛌", "⏰", "💊", "🚶", "🧠", "🌱", "🧹"
+  "💭", "🛌", "⏰", "💊", "🚶", "🧠", "🌱", "🧹",
 ];
 
 export default function NewHabit() {
