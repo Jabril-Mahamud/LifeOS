@@ -9,39 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Habit, HabitTrackerJournal, HabitWithStats, Journal } from "@/lib/types";
 
-type Habit = {
-  id: string;
-  name: string;
-  icon: string | null;
-  color: string | null;
-  streak?: number;
-  completionRate?: number;
-  streakData?: Array<{
-    date: string;
-    completed: boolean;
-  }>;
-};
-
-type HabitLog = {
-  id: string;
-  habitId: string;
-  completed: boolean;
-  notes: string | null;
-};
-
-type Journal = {
-  id: string;
-  hasEntryToday: boolean;
-  todayEntry?: {
-    id: string;
-    habitLogs: HabitLog[];
-  };
-};
 
 type HabitTrackerProps = {
-  habits?: Habit[];
-  journalData?: Journal;
+  habits?: HabitWithStats[];
+  journalData?: HabitTrackerJournal;
   onHabitsUpdated?: () => void;
   showTitle?: boolean;
   showVisualization?: boolean;

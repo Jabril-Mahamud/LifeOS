@@ -24,32 +24,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
-
-type Project = {
-  id: string;
-  name: string;
-  color: string | null;
-  icon: string | null;
-};
-
-type Task = {
-  id: string;
-  title: string;
-  description: string | null;
-  status: string;
-  priority: string;
-  dueDate: string | null;
-  completedAt: string | null;
-  projectId: string | null;
-  project: {
-    name: string;
-    color: string | null;
-    icon: string | null;
-  } | null;
-};
+import { Task, TaskWithProject } from "@/lib/types";
 
 type TaskListProps = {
-  tasks: Task[];
+  tasks: TaskWithProject[];
   onTaskUpdate: () => void;
 };
 

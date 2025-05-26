@@ -27,27 +27,9 @@ import {
 import { format } from "date-fns";
 import { toast } from "@/hooks/use-toast";
 import { MarkdownRenderer } from "@/components/journal/markdown-renderer";
+import { Journal, JournalWithHabitLogs } from "@/lib/types";
 
-type Journal = {
-  id: string;
-  title: string;
-  content: string | null;
-  mood: string | null;
-  date: string;
-  createdAt: string;
-  updatedAt: string;
-  habitLogs: Array<{
-    id: string;
-    completed: boolean;
-    notes: string | null;
-    habit: {
-      id: string;
-      name: string;
-      icon: string | null;
-      color: string | null;
-    };
-  }>;
-};
+
 
 // Correct Next.js page props interface
 interface PageProps {
@@ -55,7 +37,7 @@ interface PageProps {
 }
 
 export default function JournalDetailPage({ params }: PageProps) {
-  const [journal, setJournal] = useState<Journal | null>(null);
+  const [journal, setJournal] = useState<JournalWithHabitLogs | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [journalId, setJournalId] = useState<string | null>(null);

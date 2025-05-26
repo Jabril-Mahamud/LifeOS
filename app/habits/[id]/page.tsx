@@ -36,30 +36,8 @@ import {
   subMonths,
   addMonths,
 } from "date-fns";
+import { DailyLog, Habit, HabitStats } from "@/lib/types";
 
-type Habit = {
-  id: string;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  color: string | null;
-  active: boolean;
-  createdAt: string;
-};
-
-type HabitStats = {
-  totalDays: number;
-  completedDays: number;
-  currentStreak: number;
-  longestStreak: number;
-  completionRate: number;
-};
-
-type DailyLog = {
-  date: string;
-  completed: boolean;
-  notes: string | null;
-};
 
 // Correct Next.js page props interface
 interface PageProps {

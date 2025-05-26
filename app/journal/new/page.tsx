@@ -4,39 +4,38 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FileEdit, ArrowLeft, Save, Smile, Frown, Meh } from "lucide-react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { HabitTracker } from "@/components/habits/habit-tracker";
 import { toast } from "@/hooks/use-toast";
-import { Habit } from "@/lib/types/habits";
 import { MarkdownHelpInline } from "@/components/journal/markdown-help";
 
-
-type JournalFormData = {
-  title: string;
-  content: string;
-  mood: string;
-};
-
-// Mood options
-const moodOptions = [
-  { value: "happy", label: "Happy", icon: <Smile className="h-5 w-5" /> },
-  { value: "neutral", label: "Neutral", icon: <Meh className="h-5 w-5" /> },
-  { value: "sad", label: "Sad", icon: <Frown className="h-5 w-5" /> },
-];
+import { Habit, JournalFormData, MoodType, MOOD_OPTIONS } from "@/lib/types";
 
 export default function NewJournal() {
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(true);
   const [habits, setHabits] = useState<Habit[]>([]);
-  const [selectedMood, setSelectedMood] = useState("neutral");
+  const [selectedMood, setSelectedMood] = useState<MoodType>("neutral");
   const [existingEntry, setExistingEntry] = useState<any>(null);
   const router = useRouter();
-  
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<JournalFormData>({
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<JournalFormData>({
     defaultValues: {
       title: `Journal for ${new Date().toLocaleDateString()}`,
       content: "",
@@ -55,7 +54,7 @@ export default function NewJournal() {
           throw new Error("Failed to fetch journal data");
         }
         const journalData = await journalResponse.json();
-        
+
         if (journalData.todayEntry) {
           // If entry exists, pre-fill form
           setExistingEntry(journalData.todayEntry);
@@ -63,19 +62,20 @@ export default function NewJournal() {
           setValue("content", journalData.todayEntry.content || "");
           setValue("mood", journalData.todayEntry.mood || "neutral");
           setSelectedMood(journalData.todayEntry.mood || "neutral");
-          
+
           toast({
-            description: "You already have a journal entry for today. You can edit it here.",
+            description:
+              "You already have a journal entry for today. You can edit it here.",
           });
         }
-        
+
         // Fetch habits
         const habitsResponse = await fetch("/api/habits");
         if (!habitsResponse.ok) {
           throw new Error("Failed to fetch habits");
         }
         const habitsData = await habitsResponse.json();
-        
+
         // Only use active habits
         setHabits(habitsData.habits.filter((habit: any) => habit.active));
       } catch (error) {
@@ -97,15 +97,15 @@ export default function NewJournal() {
   const onSubmit = async (data: JournalFormData) => {
     // Update data with current mood
     data.mood = selectedMood;
-    
+
     setLoading(true);
     try {
-      const url = existingEntry 
-        ? `/api/journal/${existingEntry.id}` 
+      const url = existingEntry
+        ? `/api/journal/${existingEntry.id}`
         : "/api/journal";
-      
+
       const method = existingEntry ? "PATCH" : "POST";
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -120,21 +120,24 @@ export default function NewJournal() {
       }
 
       const responseData = await response.json();
-      
+
       toast({
         title: "Success",
-        description: existingEntry 
-          ? "Journal entry updated successfully!" 
+        description: existingEntry
+          ? "Journal entry updated successfully!"
           : "Journal entry created successfully!",
       });
-      
+
       // Redirect to journal page
       router.push("/journal");
     } catch (error) {
       console.error("Error saving journal entry:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save journal entry",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to save journal entry",
         variant: "destructive",
       });
     } finally {
@@ -152,7 +155,7 @@ export default function NewJournal() {
           {existingEntry ? "Edit Journal Entry" : "New Journal Entry"}
         </h1>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
           <Card>
@@ -162,34 +165,41 @@ export default function NewJournal() {
                 {existingEntry ? "Edit Your Journal" : "Write Your Journal"}
               </CardTitle>
               <CardDescription>
-                Record your thoughts, experiences, and reflections for today. You can use Markdown for rich formatting.
+                Record your thoughts, experiences, and reflections for today.
+                You can use Markdown for rich formatting.
               </CardDescription>
             </CardHeader>
-            
+
             <form onSubmit={handleSubmit(onSubmit)}>
               <CardContent className="space-y-4">
                 {/* Title */}
                 <div className="space-y-2">
-                  <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="title">
+                    Title <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="title"
                     placeholder="Enter a title for your journal entry"
                     {...register("title", { required: "Title is required" })}
                   />
                   {errors.title && (
-                    <p className="text-xs text-red-500">{errors.title.message}</p>
+                    <p className="text-xs text-red-500">
+                      {errors.title.message}
+                    </p>
                   )}
                 </div>
-                
+
                 {/* Mood Selection */}
                 <div className="space-y-2">
                   <Label>Mood</Label>
                   <div className="flex gap-2">
-                    {moodOptions.map((mood) => (
+                    {MOOD_OPTIONS.map((mood) => (
                       <Button
                         key={mood.value}
                         type="button"
-                        variant={selectedMood === mood.value ? "default" : "outline"}
+                        variant={
+                          selectedMood === mood.value ? "default" : "outline"
+                        }
                         className="flex-1"
                         onClick={() => setSelectedMood(mood.value)}
                       >
@@ -199,7 +209,7 @@ export default function NewJournal() {
                     ))}
                   </div>
                 </div>
-                
+
                 {/* Content */}
                 <div className="space-y-2">
                   <Label htmlFor="content">Journal Entry</Label>
@@ -219,9 +229,13 @@ You can use Markdown formatting:
                   <MarkdownHelpInline />
                 </div>
               </CardContent>
-              
+
               <CardFooter className="flex justify-between">
-                <Button variant="outline" type="button" onClick={() => router.back()}>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => router.back()}
+                >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={loading}>
@@ -232,7 +246,7 @@ You can use Markdown formatting:
             </form>
           </Card>
         </div>
-        
+
         {/* Habits Section */}
         <div className="md:col-span-1">
           <Card>
@@ -249,10 +263,12 @@ You can use Markdown formatting:
                 </div>
               ) : habits.length === 0 ? (
                 <div className="text-center py-4">
-                  <p className="text-muted-foreground">No active habits to track</p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <p className="text-muted-foreground">
+                    No active habits to track
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="mt-2"
                     onClick={() => router.push("/habits/new")}
                   >
@@ -260,15 +276,17 @@ You can use Markdown formatting:
                   </Button>
                 </div>
               ) : (
-                <HabitTracker 
-                  habits={habits} 
+                <HabitTracker
+                  habits={habits}
                   journalData={{
                     id: "today",
                     hasEntryToday: Boolean(existingEntry),
-                    todayEntry: existingEntry ? {
-                      id: existingEntry.id,
-                      habitLogs: existingEntry.habitLogs || []
-                    } : undefined
+                    todayEntry: existingEntry
+                      ? {
+                          id: existingEntry.id,
+                          habitLogs: existingEntry.habitLogs || [],
+                        }
+                      : undefined,
                   }}
                   showTitle={false}
                 />

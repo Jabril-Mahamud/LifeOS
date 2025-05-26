@@ -20,22 +20,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { HabitWithStats } from "@/lib/types";
 
-type HabitData = {
-  id: string;
-  name: string;
-  icon: string | null;
-  color: string | null;
-  streak?: number;
-  completionRate?: number;
-  streakData?: Array<{
-    date: string;
-    completed: boolean;
-  }>;
-};
 
 interface HeatmapCalendarProps {
-  habits: HabitData[];
+  habits: HabitWithStats[];
   title?: string;
   className?: string;
 }

@@ -32,78 +32,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// Types for our dashboard data
-type Habit = {
-  id: string;
-  name: string;
-  icon: string | null;
-  color: string | null;
-  streak: number;
-  completionRate: number;
-  streakData: Array<{
-    date: string;
-    completed: boolean;
-  }>;
-};
-
-type Project = {
-  id: string;
-  name: string;
-  color: string | null;
-  icon: string | null;
-  _count: {
-    tasks: number;
-  };
-};
-
-type Task = {
-  id: string;
-  title: string;
-  dueDate: string | null;
-  priority: string;
-  status: string;
-  completedAt: string | null;
-  project: {
-    name: string;
-    color: string | null;
-    icon: string | null;
-  } | null;
-};
-
-type Journal = {
-  id: string;
-  title: string;
-  content: string | null;
-  mood: string | null;
-  date: string;
-};
-
-type DashboardData = {
-  habits: Habit[];
-  journal: {
-    totalEntries: number;
-    hasEntryToday: boolean;
-    entries: Journal[];
-    moodDistribution: Record<string, number>;
-    recentMoods: string[];
-    heatmap: Array<{
-      date: string;
-      mood: string;
-      count: number;
-    }>;
-  };
-  projects: {
-    list: Project[];
-    total: number;
-  };
-  tasks: {
-    upcoming: Task[];
-    recentlyCompleted: Task[];
-  };
-};
-
-type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+import { DashboardData, LoadingState, TaskWithProject } from "@/lib/types";
 
 export default function Dashboard() {
   const [loadingState, setLoadingState] = useState<LoadingState>('loading');
@@ -227,7 +156,7 @@ export default function Dashboard() {
   };
 
   // Render task item
-  const renderTaskItem = (task: Task) => (
+  const renderTaskItem = (task: TaskWithProject) => (
     <div key={task.id} className="flex items-center justify-between p-2 hover:bg-accent/50 rounded-md">
       <div className="flex items-center space-x-2">
         {task.status === "completed" ? (
