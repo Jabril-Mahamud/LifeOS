@@ -11,21 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { HabitTracker } from "@/components/habits/habit-tracker";
 import { toast } from "@/hooks/use-toast";
-import { Habit } from "@/lib/types/habits";
 import { MarkdownHelpInline } from "@/components/journal/markdown-help";
+import { Habit, JournalFormData, MOOD_OPTIONS, MoodType } from "@/lib/types";
 
-type JournalFormData = {
-  title: string;
-  content: string;
-  mood: string;
-};
 
-// Mood options
-const moodOptions = [
-  { value: "happy", label: "Happy", icon: <Smile className="h-5 w-5" /> },
-  { value: "neutral", label: "Neutral", icon: <Meh className="h-5 w-5" /> },
-  { value: "sad", label: "Sad", icon: <Frown className="h-5 w-5" /> },
-];
+
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -35,7 +25,7 @@ export default function EditJournal({ params }: PageProps) {
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(true);
   const [habits, setHabits] = useState<Habit[]>([]);
-  const [selectedMood, setSelectedMood] = useState("neutral");
+  const [selectedMood, setSelectedMood] = useState<MoodType>("neutral");
   const [journalId, setJournalId] = useState<string | null>(null);
   const [journalData, setJournalData] = useState<any>(null);
   const router = useRouter();
@@ -197,7 +187,7 @@ export default function EditJournal({ params }: PageProps) {
                 <div className="space-y-2">
                   <Label>Mood</Label>
                   <div className="flex gap-2">
-                    {moodOptions.map((mood) => (
+                    {MOOD_OPTIONS.map((mood) => (
                       <Button
                         key={mood.value}
                         type="button"

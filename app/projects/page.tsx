@@ -26,35 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-type Project = {
-  id: string;
-  name: string;
-  description: string | null;
-  color: string | null;
-  icon: string | null;
-  completed: boolean;
-  archived: boolean;
-  createdAt: string;
-  updatedAt: string;
-  _count?: {
-    tasks: number;
-  };
-};
-
-type ProjectStats = {
-  totalTasks: number;
-  completedTasks: number;
-  progressPercentage: number;
-  taskStatusCount: {
-    pending: number;
-    inProgress: number;
-    completed: number;
-  };
-  upcomingTasks: number;
-};
-
-type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+import { LoadingState, Project, ProjectStats } from "@/lib/types";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);

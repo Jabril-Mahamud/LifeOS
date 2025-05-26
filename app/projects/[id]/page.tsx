@@ -40,46 +40,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-
-type Project = {
-  id: string;
-  name: string;
-  description: string | null;
-  color: string | null;
-  icon: string | null;
-  completed: boolean;
-  archived: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type Task = {
-  id: string;
-  title: string;
-  description: string | null;
-  status: string;
-  priority: string;
-  dueDate: string | null;
-  completedAt: string | null;
-  projectId: string | null;
-};
-
-type ProjectStats = {
-  totalTasks: number;
-  completedTasks: number;
-  progressPercentage: number;
-  taskStatusCount: {
-    pending: number;
-    inProgress: number;
-    completed: number;
-  };
-  taskPriorityCount: {
-    high: number;
-    medium: number;
-    low: number;
-  };
-  upcomingTasks: number;
-};
+import { Project, ProjectStats, Task } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ id: string }>;

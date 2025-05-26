@@ -4,39 +4,21 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { CheckCircle2, ArrowLeft } from "lucide-react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
-
-type HabitFormData = {
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  active: boolean;
-};
-
-// Predefined colors for habit selection
-const colorOptions = [
-  { name: "Blue", value: "#3b82f6" },
-  { name: "Emerald", value: "#10b981" },
-  { name: "Orange", value: "#f97316" },
-  { name: "Violet", value: "#8b5cf6" },
-  { name: "Pink", value: "#ec4899" },
-  { name: "Cyan", value: "#06b6d4" },
-  { name: "Amber", value: "#f59e0b" },
-  { name: "Indigo", value: "#6366f1" },
-];
-
-// Common emoji icons for habits
-const iconOptions = [
-  "🏃", "💪", "🧘", "💧", "🥗", "🍎", "📚", "✍️", 
-  "💭", "🛌", "⏰", "💊", "🚶", "🧠", "🌱", "🧹"
-];
+import { COLOR_OPTIONS, HABIT_ICONS, HabitFormData } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -46,17 +28,22 @@ export default function EditHabit({ params }: PageProps) {
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(true);
   const router = useRouter();
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0].value);
-  const [selectedIcon, setSelectedIcon] = useState(iconOptions[0]);
+  const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0].value);
+  const [selectedIcon, setSelectedIcon] = useState(HABIT_ICONS[0]);
   const [active, setActive] = useState(true);
   const [habitId, setHabitId] = useState<string | null>(null);
-  
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<HabitFormData>({
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<HabitFormData>({
     defaultValues: {
       name: "",
       description: "",
-      icon: iconOptions[0],
-      color: colorOptions[0].value,
+      icon: HABIT_ICONS[0],
+      color: COLOR_OPTIONS[0].value,
       active: true,
     },
   });
@@ -82,17 +69,17 @@ export default function EditHabit({ params }: PageProps) {
           throw new Error("Failed to fetch habit data");
         }
         const data = await response.json();
-        
+
         // Set form values
         setValue("name", data.habit.name);
         setValue("description", data.habit.description || "");
-        setValue("icon", data.habit.icon || iconOptions[0]);
-        setValue("color", data.habit.color || colorOptions[0].value);
+        setValue("icon", data.habit.icon || HABIT_ICONS[0]);
+        setValue("color", data.habit.color || COLOR_OPTIONS[0].value);
         setValue("active", data.habit.active);
-        
+
         // Set state values
-        setSelectedIcon(data.habit.icon || iconOptions[0]);
-        setSelectedColor(data.habit.color || colorOptions[0].value);
+        setSelectedIcon(data.habit.icon || HABIT_ICONS[0]);
+        setSelectedColor(data.habit.color || COLOR_OPTIONS[0].value);
         setActive(data.habit.active);
       } catch (error) {
         console.error("Error fetching habit data:", error);
@@ -111,12 +98,12 @@ export default function EditHabit({ params }: PageProps) {
 
   const onSubmit = async (data: HabitFormData) => {
     if (!habitId) return;
-    
+
     // Update data with current selections
     data.icon = selectedIcon;
     data.color = selectedColor;
     data.active = active;
-    
+
     setLoading(true);
     try {
       const response = await fetch(`/api/habits/${habitId}`, {
@@ -136,13 +123,14 @@ export default function EditHabit({ params }: PageProps) {
         title: "Success",
         description: "Habit updated successfully!",
       });
-      
+
       router.push("/habits");
     } catch (error) {
       console.error("Error updating habit:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update habit",
+        description:
+          error instanceof Error ? error.message : "Failed to update habit",
         variant: "destructive",
       });
     } finally {
@@ -171,7 +159,7 @@ export default function EditHabit({ params }: PageProps) {
         </Button>
         <h1 className="text-2xl font-bold ml-2">Edit Habit</h1>
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle className="text-xl flex items-center">
@@ -182,12 +170,14 @@ export default function EditHabit({ params }: PageProps) {
             Update your habit tracking information
           </CardDescription>
         </CardHeader>
-        
+
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
             {/* Habit Name */}
             <div className="space-y-2">
-              <Label htmlFor="name">Habit Name <span className="text-red-500">*</span></Label>
+              <Label htmlFor="name">
+                Habit Name <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="name"
                 placeholder="Enter habit name (e.g., 'Drink water', 'Read', 'Exercise')"
@@ -197,7 +187,7 @@ export default function EditHabit({ params }: PageProps) {
                 <p className="text-xs text-red-500">{errors.name.message}</p>
               )}
             </div>
-            
+
             {/* Description */}
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
@@ -208,12 +198,12 @@ export default function EditHabit({ params }: PageProps) {
                 {...register("description")}
               />
             </div>
-            
+
             {/* Icon Selection */}
             <div className="space-y-2">
               <Label>Habit Icon</Label>
               <div className="grid grid-cols-8 gap-2">
-                {iconOptions.map((icon) => (
+                {HABIT_ICONS.map((icon) => (
                   <Button
                     key={icon}
                     type="button"
@@ -226,28 +216,32 @@ export default function EditHabit({ params }: PageProps) {
                 ))}
               </div>
             </div>
-            
+
             {/* Color Selection */}
             <div className="space-y-2">
               <Label>Habit Color</Label>
               <div className="grid grid-cols-8 gap-2">
-                {colorOptions.map((color) => (
+                {COLOR_OPTIONS.map((color) => (
                   <Button
                     key={color.value}
                     type="button"
                     variant="outline"
                     className="h-10 w-10 p-0 rounded-full border-2"
-                    style={{ 
+                    style={{
                       backgroundColor: color.value,
-                      borderColor: selectedColor === color.value ? "white" : color.value,
-                      outline: selectedColor === color.value ? `2px solid ${color.value}` : "none"
+                      borderColor:
+                        selectedColor === color.value ? "white" : color.value,
+                      outline:
+                        selectedColor === color.value
+                          ? `2px solid ${color.value}`
+                          : "none",
                     }}
                     onClick={() => setSelectedColor(color.value)}
                   />
                 ))}
               </div>
             </div>
-            
+
             {/* Active Status */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -259,13 +253,19 @@ export default function EditHabit({ params }: PageProps) {
                 />
               </div>
               <p className="text-sm text-muted-foreground">
-                {active ? "This habit is active and will be tracked" : "This habit is inactive and won't appear in daily tracking"}
+                {active
+                  ? "This habit is active and will be tracked"
+                  : "This habit is inactive and won't appear in daily tracking"}
               </p>
             </div>
           </CardContent>
-          
+
           <CardFooter className="flex justify-between">
-            <Button variant="outline" type="button" onClick={() => router.back()}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => router.back()}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>

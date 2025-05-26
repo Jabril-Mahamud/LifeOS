@@ -10,44 +10,21 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
+import { COLOR_OPTIONS, PROJECT_ICONS, ProjectFormData } from "@/lib/types";
 
-type ProjectFormData = {
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-};
-
-// Predefined colors for project selection
-const colorOptions = [
-  { name: "Blue", value: "#3b82f6" },
-  { name: "Emerald", value: "#10b981" },
-  { name: "Orange", value: "#f97316" },
-  { name: "Violet", value: "#8b5cf6" },
-  { name: "Pink", value: "#ec4899" },
-  { name: "Cyan", value: "#06b6d4" },
-  { name: "Amber", value: "#f59e0b" },
-  { name: "Indigo", value: "#6366f1" },
-];
-
-// Common emoji icons for projects
-const iconOptions = [
-  "📚", "🏠", "💼", "🏋️", "💻", "🎨", "🎓", "🎯", 
-  "🚀", "🌱", "🔍", "📝", "📊", "📈", "🧠", "⚙️"
-];
 
 export default function NewProject() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0].value);
-  const [selectedIcon, setSelectedIcon] = useState(iconOptions[0]);
+  const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0].value);
+  const [selectedIcon, setSelectedIcon] = useState(PROJECT_ICONS[0]);
   
   const { register, handleSubmit, formState: { errors } } = useForm<ProjectFormData>({
     defaultValues: {
       name: "",
       description: "",
-      icon: iconOptions[0],
-      color: colorOptions[0].value,
+      icon: PROJECT_ICONS[0],
+      color: COLOR_OPTIONS[0].value,
     },
   });
 
@@ -132,7 +109,7 @@ export default function NewProject() {
             <div className="space-y-2">
               <Label>Project Icon</Label>
               <div className="grid grid-cols-8 gap-2">
-                {iconOptions.map((icon) => (
+                {PROJECT_ICONS.map((icon) => (
                   <Button
                     key={icon}
                     type="button"
@@ -150,7 +127,7 @@ export default function NewProject() {
             <div className="space-y-2">
               <Label>Project Color</Label>
               <div className="grid grid-cols-8 gap-2">
-                {colorOptions.map((color) => (
+                {COLOR_OPTIONS.map((color) => (
                   <Button
                     key={color.value}
                     type="button"
