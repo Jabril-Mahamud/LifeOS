@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  Filter, 
-  ListTodo, 
+import {
+  Filter,
+  ListTodo,
   Plus,
   AlertCircle,
   RefreshCw,
   CheckSquare,
-  Search
+  Search,
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,36 +33,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-
-type Project = {
-  id: string;
-  name: string;
-  color: string | null;
-  icon: string | null;
-};
-
-type Task = {
-  id: string;
-  title: string;
-  description: string | null;
-  status: string;
-  priority: string;
-  dueDate: string | null;
-  completedAt: string | null;
-  projectId: string | null;
-  project: {
-    name: string;
-    color: string | null;
-    icon: string | null;
-  } | null;
-};
-
-type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+import { LoadingState, Project, TaskWithProject } from "@/lib/types";
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<TaskWithProject[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [loadingState, setLoadingState] = useState<LoadingState>('loading');
+  const [loadingState, setLoadingState] = useState<LoadingState>("loading");
   const [projectsLoading, setProjectsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -76,49 +52,57 @@ export default function TasksPage() {
   // Fetch tasks based on filters with better error handling
   const fetchTasks = async (isRetry = false) => {
     if (isRetry) {
-      setRetryCount(prev => prev + 1);
+      setRetryCount((prev) => prev + 1);
       setIsRetrying(true);
     } else {
-      setLoadingState('loading');
+      setLoadingState("loading");
     }
-    
+
     setError(null);
-    
+
     try {
       // Build query params
       const params = new URLSearchParams();
-      if (selectedProject !== "all") params.append("projectId", selectedProject);
-      if (selectedPriority !== "all") params.append("priority", selectedPriority);
+      if (selectedProject !== "all")
+        params.append("projectId", selectedProject);
+      if (selectedPriority !== "all")
+        params.append("priority", selectedPriority);
       if (selectedStatus !== "all") params.append("status", selectedStatus);
-      
-      const response = await fetch(`/api/tasks${params.toString() ? `?${params.toString()}` : ""}`);
-      
+
+      const response = await fetch(
+        `/api/tasks${params.toString() ? `?${params.toString()}` : ""}`
+      );
+
       if (!response.ok) {
         if (response.status === 404) {
-          throw new Error("Tasks not found. This might be your first time here!");
+          throw new Error(
+            "Tasks not found. This might be your first time here!"
+          );
         } else if (response.status >= 500) {
           throw new Error("Server error. Please try again later.");
         } else {
           throw new Error(`Failed to fetch tasks (${response.status})`);
         }
       }
-      
+
       const data = await response.json();
-      
+
       if (!data || !Array.isArray(data.tasks)) {
         throw new Error("Invalid data format received from server");
       }
-      
+
       setTasks(data.tasks);
-      setLoadingState('success');
+      setLoadingState("success");
       setRetryCount(0);
       setIsRetrying(false);
     } catch (error) {
       console.error("Error fetching tasks:", error);
-      setError(error instanceof Error ? error.message : "An unexpected error occurred");
-      setLoadingState('error');
+      setError(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
+      setLoadingState("error");
       setIsRetrying(false);
-      
+
       // Set empty array on error to prevent crashes
       setTasks([]);
     }
@@ -129,15 +113,15 @@ export default function TasksPage() {
     setProjectsLoading(true);
     try {
       const response = await fetch("/api/projects");
-      
+
       if (!response.ok) {
         console.warn("Could not fetch projects:", response.status);
         setProjects([]);
         return;
       }
-      
+
       const data = await response.json();
-      
+
       if (data && Array.isArray(data.projects)) {
         setProjects(data.projects);
       } else {
@@ -158,35 +142,45 @@ export default function TasksPage() {
       await fetchProjects();
       await fetchTasks();
     };
-    
+
     loadData();
   }, []);
 
   // Refetch when filters change
   useEffect(() => {
-    if (loadingState !== 'loading') {
+    if (loadingState !== "loading") {
       fetchTasks();
     }
   }, [selectedProject, selectedPriority, selectedStatus]);
 
   // Filter tasks by search term
-  const filteredTasks = tasks.filter(task => 
-    task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredTasks = tasks.filter(
+    (task) =>
+      task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (task.description &&
+        task.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Task counts
-  const pendingCount = tasks.filter(task => task.status === "pending").length;
-  const inProgressCount = tasks.filter(task => task.status === "in-progress").length;
-  const completedCount = tasks.filter(task => task.status === "completed").length;
+  const pendingCount = tasks.filter((task) => task.status === "pending").length;
+  const inProgressCount = tasks.filter(
+    (task) => task.status === "in-progress"
+  ).length;
+  const completedCount = tasks.filter(
+    (task) => task.status === "completed"
+  ).length;
 
   // Error state
-  if (loadingState === 'error') {
+  if (loadingState === "error") {
     return (
       <div className="container mx-auto p-6 max-w-4xl">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <h1 className="text-2xl font-medium">Tasks</h1>
-          <Button onClick={() => router.push("/tasks/new")} size="sm" className="h-9">
+          <Button
+            onClick={() => router.push("/tasks/new")}
+            size="sm"
+            className="h-9"
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Task
           </Button>
@@ -196,14 +190,16 @@ export default function TasksPage() {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
             <span>{error}</span>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => fetchTasks(true)}
               disabled={isRetrying}
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
-              {retryCount > 0 ? `Retry (${retryCount})` : 'Retry'}
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${isRetrying ? "animate-spin" : ""}`}
+              />
+              {retryCount > 0 ? `Retry (${retryCount})` : "Retry"}
             </Button>
           </AlertDescription>
         </Alert>
@@ -214,7 +210,8 @@ export default function TasksPage() {
             <ListTodo className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">Unable to load tasks</h3>
             <p className="text-muted-foreground mb-4">
-              There was a problem loading your tasks. You can still create a new one.
+              There was a problem loading your tasks. You can still create a new
+              one.
             </p>
             <Button onClick={() => router.push("/tasks/new")}>
               <Plus className="h-4 w-4 mr-2" />
@@ -227,7 +224,7 @@ export default function TasksPage() {
   }
 
   // Loading state
-  if (loadingState === 'loading') {
+  if (loadingState === "loading") {
     return (
       <div className="container mx-auto p-6 max-w-4xl">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -237,7 +234,7 @@ export default function TasksPage() {
             New Task
           </Button>
         </div>
-        
+
         <Card className="mb-8">
           <CardHeader className="pb-3">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -250,7 +247,7 @@ export default function TasksPage() {
               </div>
             </div>
           </CardHeader>
-          
+
           <CardContent>
             <div className="space-y-4">
               <div className="h-16 bg-muted animate-pulse rounded" />
@@ -268,13 +265,17 @@ export default function TasksPage() {
     <div className="container mx-auto p-6 max-w-4xl">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <h1 className="text-2xl font-medium">Tasks</h1>
-        
-        <Button onClick={() => router.push("/tasks/new")} size="sm" className="h-9">
+
+        <Button
+          onClick={() => router.push("/tasks/new")}
+          size="sm"
+          className="h-9"
+        >
           <Plus className="h-4 w-4 mr-2" />
           New Task
         </Button>
       </div>
-      
+
       <Card className="mb-8">
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -287,7 +288,7 @@ export default function TasksPage() {
                 className="w-full pl-9"
               />
             </div>
-            
+
             <div className="flex gap-2 w-full sm:w-auto">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -299,9 +300,11 @@ export default function TasksPage() {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>Filter Tasks</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  
+
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="text-xs">Project</DropdownMenuLabel>
+                    <DropdownMenuLabel className="text-xs">
+                      Project
+                    </DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => setSelectedProject("all")}>
                       All Projects
                     </DropdownMenuItem>
@@ -311,7 +314,7 @@ export default function TasksPage() {
                       </DropdownMenuItem>
                     ) : projects.length > 0 ? (
                       projects.map((project) => (
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           key={project.id}
                           onClick={() => setSelectedProject(project.id)}
                         >
@@ -324,27 +327,37 @@ export default function TasksPage() {
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuGroup>
-                  
+
                   <DropdownMenuSeparator />
-                  
+
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="text-xs">Priority</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => setSelectedPriority("all")}>
+                    <DropdownMenuLabel className="text-xs">
+                      Priority
+                    </DropdownMenuLabel>
+                    <DropdownMenuItem
+                      onClick={() => setSelectedPriority("all")}
+                    >
                       All Priorities
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedPriority("high")}>
+                    <DropdownMenuItem
+                      onClick={() => setSelectedPriority("high")}
+                    >
                       High
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedPriority("medium")}>
+                    <DropdownMenuItem
+                      onClick={() => setSelectedPriority("medium")}
+                    >
                       Medium
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedPriority("low")}>
+                    <DropdownMenuItem
+                      onClick={() => setSelectedPriority("low")}
+                    >
                       Low
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
+
               <Select
                 value={selectedStatus}
                 onValueChange={(value) => setSelectedStatus(value)}
@@ -353,16 +366,24 @@ export default function TasksPage() {
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Tasks ({tasks.length})</SelectItem>
-                  <SelectItem value="pending">Pending ({pendingCount})</SelectItem>
-                  <SelectItem value="in-progress">In Progress ({inProgressCount})</SelectItem>
-                  <SelectItem value="completed">Completed ({completedCount})</SelectItem>
+                  <SelectItem value="all">
+                    All Tasks ({tasks.length})
+                  </SelectItem>
+                  <SelectItem value="pending">
+                    Pending ({pendingCount})
+                  </SelectItem>
+                  <SelectItem value="in-progress">
+                    In Progress ({inProgressCount})
+                  </SelectItem>
+                  <SelectItem value="completed">
+                    Completed ({completedCount})
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           {tasks.length === 0 && !searchTerm ? (
             // No tasks at all
@@ -370,15 +391,16 @@ export default function TasksPage() {
               <CheckSquare className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-xl font-medium mb-2">No tasks yet</h3>
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Get organized by creating your first task. Break down your work into manageable pieces and track your progress.
+                Get organized by creating your first task. Break down your work
+                into manageable pieces and track your progress.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button onClick={() => router.push("/tasks/new")}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create your first task
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => router.push("/projects/new")}
                 >
                   Create a project first
@@ -394,10 +416,7 @@ export default function TasksPage() {
                 No tasks match your search "{searchTerm}"
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button
-                  variant="outline"
-                  onClick={() => setSearchTerm("")}
-                >
+                <Button variant="outline" onClick={() => setSearchTerm("")}>
                   Clear search
                 </Button>
                 <Button onClick={() => router.push("/tasks/new")}>
@@ -410,7 +429,9 @@ export default function TasksPage() {
             // No tasks matching filters
             <div className="text-center py-12">
               <Filter className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No tasks match your filters</h3>
+              <h3 className="text-lg font-medium mb-2">
+                No tasks match your filters
+              </h3>
               <p className="text-muted-foreground mb-4">
                 Try adjusting your filters or create a new task
               </p>
@@ -433,10 +454,7 @@ export default function TasksPage() {
             </div>
           ) : (
             // Show tasks
-            <TaskList 
-              tasks={filteredTasks}
-              onTaskUpdate={fetchTasks}
-            />
+            <TaskList tasks={filteredTasks} onTaskUpdate={fetchTasks} />
           )}
         </CardContent>
       </Card>

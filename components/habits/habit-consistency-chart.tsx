@@ -13,24 +13,15 @@ import { format, subDays, startOfDay, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-type HabitData = {
-  id: string;
-  name: string;
-  icon: string | null;
-  color: string | null;
-  streakData: Array<{
-    date: string;
-    completed: boolean;
-  }>;
-};
+import { HabitWithStats } from "@/lib/types";
 
 interface HabitConsistencyChartProps {
-  habits: HabitData[];
+  habits: HabitWithStats[];
   daysToShow?: number;
   title?: string;
   showLegend?: boolean;
 }
+
 
 export function HabitConsistencyChart({
   habits,
@@ -61,7 +52,7 @@ export function HabitConsistencyChart({
       
       habits.forEach(habit => {
         // Find if there's a streak data entry for this date
-        const entry = habit.streakData?.find(entry => entry.date === date);
+        const entry = habit.streakData?.find((entry: { date: string; completed: boolean }) => entry.date === date);
         // Set value as 1 if completed, 0 if not
         dataPoint[habit.name] = entry?.completed ? 100 : 0;
       });
@@ -93,7 +84,7 @@ export function HabitConsistencyChart({
   };
 
   // Check if at least one habit has streak data
-  const hasData = habits.some(habit => habit.streakData?.length > 0);
+  const hasData = habits.some(habit => habit.streakData && habit.streakData.length > 0);
 
   // Generate the chart data
   const chartData = formatChartData();

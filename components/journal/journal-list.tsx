@@ -40,16 +40,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from "
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MarkdownRenderer } from "@/components/journal/markdown-renderer";
-
-type Journal = {
-  id: string;
-  title: string;
-  content: string | null;
-  mood: string | null;
-  date: string;
-  createdAt: string;
-  updatedAt: string;
-};
+import { Journal } from "@/lib/types";
 
 export function JournalList() {
   const [journals, setJournals] = useState<Journal[]>([]);

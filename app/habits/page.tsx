@@ -51,14 +51,14 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Habit, Journal } from "@/lib/types/habits";
+import { Habit, HabitTrackerJournal, HabitWithStats, Journal } from "@/lib/types/";
 
 type LoadingState = 'idle' | 'loading' | 'success' | 'error';
 
 export default function HabitsPage() {
-  const [habits, setHabits] = useState<Habit[]>([]);
-  const [inactiveHabits, setInactiveHabits] = useState<Habit[]>([]);
-  const [journalData, setJournalData] = useState<Journal | null>(null);
+  const [habits, setHabits] = useState<HabitWithStats[]>([]);
+  const [inactiveHabits, setInactiveHabits] = useState<HabitWithStats[]>([]);
+  const [journalData, setJournalData] = useState<HabitTrackerJournal | null>(null);
   const [loadingState, setLoadingState] = useState<LoadingState>('loading');
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
