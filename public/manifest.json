@@ -13,106 +13,62 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
+      "src": "/icons/android/android-launchericon-72-72.png",
       "sizes": "72x72",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-96x96.png",
+      "src": "/icons/android/android-launchericon-96-96.png",
       "sizes": "96x96",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-144x144.png",
+      "src": "/icons/android/android-launchericon-144-144.png",
       "sizes": "144x144",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icons/android/android-launchericon-192-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icons/android/android-launchericon-512-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "New Journal Entry",
-      "short_name": "New Entry",
-      "description": "Create a new journal entry",
-      "url": "/journal/new",
-      "icons": [
-        {
-          "src": "/icons/shortcut-journal.png",
-          "sizes": "96x96"
-        }
-      ]
+      "purpose": "any"
     },
     {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "description": "View your dashboard",
-      "url": "/dashboard",
-      "icons": [
-        {
-          "src": "/icons/shortcut-dashboard.png",
-          "sizes": "96x96"
-        }
-      ]
+      "src": "/icons/android/android-launchericon-192-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
-      "name": "Habits",
-      "short_name": "Habits",
-      "description": "Track your habits",
-      "url": "/habits",
-      "icons": [
-        {
-          "src": "/icons/shortcut-habits.png",
-          "sizes": "96x96"
-        }
-      ]
+      "src": "/icons/android/android-launchericon-512-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "/screenshots/desktop-1.png",
-      "sizes": "1280x720",
+      "src": "/icons/screenshots/desktop-screenshot.png",
+      "sizes": "2872x1620",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Dashboard view"
+      "label": "LifeOS Dashboard - Desktop View"
     },
     {
-      "src": "/screenshots/mobile-1.png",
-      "sizes": "390x844",
+      "src": "/icons/screenshots/mobile-screenshot.png",
+      "sizes": "427x923",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Mobile dashboard"
+      "label": "LifeOS Mobile Interface"
     }
   ]
 }
