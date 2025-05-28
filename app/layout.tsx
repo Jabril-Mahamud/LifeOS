@@ -78,15 +78,15 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#8b5cf6" />
         <meta name="msapplication-tap-highlight" content="no" />
 
-        {/* Apple Touch Icons */}
-        <link rel="apple-touch-icon" href="../public/icons/ios/192x192.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="../public/icons/ios/152x152.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="../public/icons/ios/192x192.png" />
-        <link rel="apple-touch-icon" sizes="167x167" href="../public/icons/ios/192x192.png" />
+        {/* Apple Touch Icons - FIXED PATHS */}
+        <link rel="apple-touch-icon" href="/icons/ios/192x192.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icons/ios/152x152.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/ios/180x180.png" />
+        <link rel="apple-touch-icon" sizes="167x167" href="/icons/ios/167x167.png" />
 
-        {/* Favicon */}
-        <link rel="icon" type="image/png" sizes="32x32" href="../public/icons/ios/32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="../public/icons/ios/16.png" />
+        {/* Favicon - FIXED PATHS */}
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/ios/32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/icons/ios/16.png" />
         <link rel="shortcut icon" href="/favicon.ico" />
 
         {/* Splash Screens for iOS */}

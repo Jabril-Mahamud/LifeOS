@@ -8,10 +8,20 @@
   "theme_color": "#8b5cf6",
   "orientation": "portrait-primary",
   "scope": "/",
-  "categories": ["productivity", "lifestyle", "health"],
+  "categories": ["productivity", "lifestyle", "health", "utilities"],
   "lang": "en-US",
   "dir": "ltr",
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
   "icons": [
+    {
+      "src": "/icons/android/android-launchericon-48-48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icons/android/android-launchericon-72-72.png",
       "sizes": "72x72",
@@ -53,6 +63,102 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/icons/ios/16.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/ios/32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/ios/64.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/ios/128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/ios/256.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/ios/512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/ios/1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Journal Entry",
+      "short_name": "Journal",
+      "description": "Write a new journal entry",
+      "url": "/journal/new",
+      "icons": [
+        {
+          "src": "/icons/android/android-launchericon-96-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Track Habits",
+      "short_name": "Habits",
+      "description": "Check off today's habits",
+      "url": "/habits",
+      "icons": [
+        {
+          "src": "/icons/android/android-launchericon-96-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your progress and insights",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/icons/android/android-launchericon-96-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "New Project",
+      "short_name": "Project",
+      "description": "Create a new project",
+      "url": "/projects/new",
+      "icons": [
+        {
+          "src": "/icons/android/android-launchericon-96-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     }
   ],
   "screenshots": [
@@ -70,5 +176,24 @@
       "form_factor": "narrow",
       "label": "LifeOS Mobile Interface"
     }
-  ]
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+lifeos",
+      "url": "/share?url=%s"
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
 }
