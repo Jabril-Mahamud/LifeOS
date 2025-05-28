@@ -6,14 +6,14 @@ import Link from "next/link"
 export default function Home() {
   return (
     <>
-      <main className="min-h-[85vh] flex flex-col items-center justify-center px-4">
+      <main className="min-h-[70vh] md:min-h-[85vh] flex flex-col items-center justify-start md:justify-center px-4 pt-12 md:pt-0">
         <div className="max-w-[75rem] w-full mx-auto text-center">
-          <h1 className="text-5xl font-bold mb-6">Personal Journal & Habit Tracker</h1>
-          <p className="text-xl mb-8 text-muted-foreground">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">Personal Journal & Habit Tracker</h1>
+          <p className="text-lg md:text-xl mb-8 text-muted-foreground">
             Record your thoughts, track your habits, and reflect on your journey.
           </p>
          
-          <div className="flex gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <SignedIn>
               <Link
                 href="/journal"
