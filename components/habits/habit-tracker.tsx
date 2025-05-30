@@ -18,6 +18,10 @@ type HabitTrackerProps = {
   onHabitsUpdated?: () => void;
   showTitle?: boolean;
   showVisualization?: boolean;
+  // New prop to indicate when used in journal context
+  inJournalContext?: boolean;
+  // Callback to provide local habit completions to parent component
+  onLocalHabitsChange?: (habitCompletions: Record<string, boolean>) => void;
 };
 
 export function HabitTracker({ 
@@ -25,7 +29,9 @@ export function HabitTracker({
   journalData, 
   onHabitsUpdated,
   showTitle = false,
-  showVisualization = true
+  showVisualization = true,
+  inJournalContext = false,
+  onLocalHabitsChange
 }: HabitTrackerProps) {
   const [loading, setLoading] = useState(false);
   const [updatingHabitId, setUpdatingHabitId] = useState<string | null>(null);
@@ -55,25 +61,41 @@ export function HabitTracker({
     }
   }, [habits, journalData]);
 
+  // Notify parent of local habit changes when in journal context
+  useEffect(() => {
+    if (inJournalContext && onLocalHabitsChange) {
+      onLocalHabitsChange(completionStatus);
+    }
+  }, [completionStatus, inJournalContext, onLocalHabitsChange]);
+
   // Toggle habit completion
   const toggleHabitCompletion = async (habitId: string) => {
-    if (!journalData?.hasEntryToday) {
-      toast({
-        description: "Create today's journal entry first",
-      });
-      router.push("/journal/new");
-      return;
-    }
-    
-    setUpdatingHabitId(habitId);
-    setLoading(true);
-    
     // Update local state immediately
     const newStatus = !completionStatus[habitId];
     setCompletionStatus(prev => ({
       ...prev,
       [habitId]: newStatus
     }));
+
+    // If we're in journal context and there's no saved journal entry yet, keep it local only
+    if (inJournalContext && !journalData?.hasEntryToday) {
+      // Just update local state, parent will handle saving when journal is saved
+      return;
+    }
+
+    // If we're in journal context but editing an existing entry, or not in journal context
+    if (!inJournalContext && !journalData?.hasEntryToday) {
+      // Only redirect to journal creation if we're NOT in journal context
+      toast({
+        description: "Create today's journal entry first",
+      });
+      router.push("/journal/new");
+      return;
+    }
+
+    // We have a journal entry, so save to API
+    setUpdatingHabitId(habitId);
+    setLoading(true);
     
     try {
       const response = await fetch(`/api/habits/${habitId}/log`, {
@@ -127,7 +149,11 @@ export function HabitTracker({
     );
   }
 
-  if (!journalData?.hasEntryToday) {
+  // Only show the "create journal entry" message if:
+  // 1. We're NOT in journal context (i.e., we're on dashboard or habits page)
+  // 2. AND there's no journal entry for today
+  // When inJournalContext is true, we're already creating/editing a journal, so never show this message
+  if (!inJournalContext && !journalData?.hasEntryToday) {
     return (
       <Card>
         <CardContent className="text-center py-8">

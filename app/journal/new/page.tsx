@@ -106,6 +106,7 @@ export default function NewJournal() {
   const [existingEntry, setExistingEntry] = useState<any>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [activeTab, setActiveTab] = useState("write");
+  const [localHabitCompletions, setLocalHabitCompletions] = useState<Record<string, boolean>>({});
   const router = useRouter();
 
   const {
@@ -187,12 +188,18 @@ export default function NewJournal() {
 
       const method = existingEntry ? "PATCH" : "POST";
 
+      // Include local habit completions for new entries
+      const submitData = {
+        ...data,
+        habitCompletions: !existingEntry ? localHabitCompletions : undefined
+      };
+
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(submitData),
       });
 
       if (!response.ok) {
@@ -373,13 +380,13 @@ Use Markdown formatting:
 - - Bullet points and 1. Numbered lists
 - > Quotes for emphasis
 - `code snippets` and [links](https://example.com)"
-                          className="min-h-[300px] sm:min-h-[400px] text-sm sm:text-base"
+                          className="min-h-[400px] sm:min-h-[500px] text-sm sm:text-base"
                           {...register("content")}
                         />
                       </TabsContent>
                       
                       <TabsContent value="preview" className="mt-3">
-                        <div className="min-h-[300px] sm:min-h-[400px] p-4 border rounded-md bg-muted/30">
+                        <div className="min-h-[400px] sm:min-h-[500px] p-4 border rounded-md bg-muted/30">
                           {watchedContent ? (
                             <MarkdownRenderer content={watchedContent} />
                           ) : (
@@ -401,7 +408,7 @@ Use Markdown formatting:
 - - Bullet points and 1. Numbered lists
 - > Quotes for emphasis
 - `code snippets` and [links](https://example.com)"
-                      className="min-h-[300px] sm:min-h-[400px] text-sm sm:text-base"
+                      className="min-h-[400px] sm:min-h-[500px] text-sm sm:text-base"
                       {...register("content")}
                     />
                   )}
@@ -465,15 +472,20 @@ Use Markdown formatting:
                   habits={habits}
                   journalData={{
                     id: "today",
-                    hasEntryToday: Boolean(existingEntry),
+                    hasEntryToday: Boolean(existingEntry), // True only if entry actually exists
                     todayEntry: existingEntry
                       ? {
                           id: existingEntry.id,
                           habitLogs: existingEntry.habitLogs || [],
                         }
-                      : undefined,
+                      : {
+                          id: "temp-id", // Temporary ID for new entries
+                          habitLogs: [],
+                        },
                   }}
                   showTitle={false}
+                  inJournalContext={true} // This is the key - always allow habit tracking in journal context
+                  onLocalHabitsChange={setLocalHabitCompletions} // Capture local habit changes
                 />
               )}
             </CardContent>

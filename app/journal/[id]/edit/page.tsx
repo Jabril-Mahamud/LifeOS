@@ -14,9 +14,6 @@ import { toast } from "@/hooks/use-toast";
 import { MarkdownHelpInline } from "@/components/journal/markdown-help";
 import { Habit, JournalFormData, MOOD_OPTIONS, MoodType } from "@/lib/types";
 
-
-
-
 interface PageProps {
   params: Promise<{ id: string }>;
 }
@@ -176,6 +173,7 @@ export default function EditJournal({ params }: PageProps) {
                   <Input
                     id="title"
                     placeholder="Enter a title for your journal entry"
+                    className="text-sm sm:text-base"
                     {...register("title", { required: "Title is required" })}
                   />
                   {errors.title && (
@@ -186,17 +184,17 @@ export default function EditJournal({ params }: PageProps) {
                 {/* Mood Selection */}
                 <div className="space-y-2">
                   <Label>Mood</Label>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     {MOOD_OPTIONS.map((mood) => (
                       <Button
                         key={mood.value}
                         type="button"
                         variant={selectedMood === mood.value ? "default" : "outline"}
-                        className="flex-1"
+                        className="flex-1 text-sm touch-manipulation"
                         onClick={() => setSelectedMood(mood.value)}
                       >
-                        <span className="mr-2">{mood.icon}</span>
-                        {mood.label}
+                        <span className="mr-1 sm:mr-2">{mood.icon}</span>
+                        <span className="hidden xs:inline">{mood.label}</span>
                       </Button>
                     ))}
                   </div>
@@ -215,7 +213,7 @@ You can use Markdown formatting:
 - - Bullet points and 1. Numbered lists
 - > Quotes for emphasis
 - `code snippets` and links [like this](https://example.com)"
-                    className="min-h-[200px]"
+                    className="min-h-[400px] sm:min-h-[500px] text-sm sm:text-base"
                     {...register("content")}
                   />
                   <MarkdownHelpInline />
@@ -262,13 +260,18 @@ You can use Markdown formatting:
                   habits={habits} 
                   journalData={{
                     id: journalId || "",
-                    hasEntryToday: true,
+                    hasEntryToday: Boolean(journalData), // True only if the entry exists
                     todayEntry: {
                       id: journalId || "",
                       habitLogs: journalData?.habitLogs || []
                     }
                   }}
                   showTitle={false}
+                  inJournalContext={true} // Always allow habit tracking when editing a journal
+                  onHabitsUpdated={() => {
+                    // Refresh data when habits are updated in edit mode
+                    window.location.reload();
+                  }}
                 />
               )}
             </CardContent>

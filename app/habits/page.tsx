@@ -15,7 +15,7 @@ import {
   EyeOff,
   AlertCircle,
   RefreshCw,
-  BookOpen
+  BookOpen,
 } from "lucide-react";
 import {
   Card,
@@ -51,15 +51,22 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Habit, HabitTrackerJournal, HabitWithStats, Journal } from "@/lib/types/";
+import {
+  Habit,
+  HabitTrackerJournal,
+  HabitWithStats,
+  Journal,
+} from "@/lib/types/";
 
-type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+type LoadingState = "idle" | "loading" | "success" | "error";
 
 export default function HabitsPage() {
   const [habits, setHabits] = useState<HabitWithStats[]>([]);
   const [inactiveHabits, setInactiveHabits] = useState<HabitWithStats[]>([]);
-  const [journalData, setJournalData] = useState<HabitTrackerJournal | null>(null);
-  const [loadingState, setLoadingState] = useState<LoadingState>('loading');
+  const [journalData, setJournalData] = useState<HabitTrackerJournal | null>(
+    null
+  );
+  const [loadingState, setLoadingState] = useState<LoadingState>("loading");
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteHabitId, setDeleteHabitId] = useState<string | null>(null);
@@ -71,29 +78,31 @@ export default function HabitsPage() {
   // Fetch habits with better error handling
   const fetchHabits = async (isRetry = false) => {
     if (isRetry) {
-      setRetryCount(prev => prev + 1);
+      setRetryCount((prev) => prev + 1);
       setIsRetrying(true);
     } else {
-      setLoadingState('loading');
+      setLoadingState("loading");
     }
-    
+
     setError(null);
-    
+
     try {
       const response = await fetch("/api/habits");
-      
+
       if (!response.ok) {
         if (response.status === 404) {
-          throw new Error("Habits not found. This might be your first time here!");
+          throw new Error(
+            "Habits not found. This might be your first time here!"
+          );
         } else if (response.status >= 500) {
           throw new Error("Server error. Please try again later.");
         } else {
           throw new Error(`Failed to fetch habits (${response.status})`);
         }
       }
-      
+
       const data = await response.json();
-      
+
       if (!data || !Array.isArray(data.habits)) {
         throw new Error("Invalid data format received from server");
       }
@@ -111,15 +120,17 @@ export default function HabitsPage() {
 
       setHabits(active);
       setInactiveHabits(inactive);
-      setLoadingState('success');
+      setLoadingState("success");
       setRetryCount(0);
       setIsRetrying(false);
     } catch (error) {
       console.error("Error fetching habits:", error);
-      setError(error instanceof Error ? error.message : "An unexpected error occurred");
-      setLoadingState('error');
+      setError(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
+      setLoadingState("error");
       setIsRetrying(false);
-      
+
       setHabits([]);
       setInactiveHabits([]);
     }
@@ -129,12 +140,12 @@ export default function HabitsPage() {
   const fetchJournalData = async () => {
     try {
       const response = await fetch("/api/journal");
-      
+
       if (!response.ok) {
         console.warn("Could not fetch journal data:", response.status);
         return;
       }
-      
+
       const data = await response.json();
 
       setJournalData({
@@ -143,7 +154,9 @@ export default function HabitsPage() {
         todayEntry: data.todayEntry
           ? {
               id: data.todayEntry.id,
-              habitLogs: Array.isArray(data.todayEntry.habitLogs) ? data.todayEntry.habitLogs : [],
+              habitLogs: Array.isArray(data.todayEntry.habitLogs)
+                ? data.todayEntry.habitLogs
+                : [],
             }
           : undefined,
       });
@@ -155,7 +168,7 @@ export default function HabitsPage() {
   // Fetch habit stats with error handling
   const fetchHabitStats = async () => {
     if (habits.length === 0) return;
-    
+
     try {
       const updatedHabits = [...habits];
       let hasErrors = false;
@@ -168,7 +181,9 @@ export default function HabitsPage() {
             if (data.stats) {
               habit.streak = data.stats.currentStreak || 0;
               habit.completionRate = data.stats.completionRate || 0;
-              habit.streakData = Array.isArray(data.dailyLogs) ? data.dailyLogs : [];
+              habit.streakData = Array.isArray(data.dailyLogs)
+                ? data.dailyLogs
+                : [];
             }
           } else {
             hasErrors = true;
@@ -181,7 +196,7 @@ export default function HabitsPage() {
       }
 
       setHabits([...updatedHabits]);
-      
+
       if (hasErrors) {
         toast({
           title: "Warning",
@@ -205,7 +220,7 @@ export default function HabitsPage() {
 
   // Fetch stats when habits are loaded
   useEffect(() => {
-    if (habits.length > 0 && loadingState === 'success') {
+    if (habits.length > 0 && loadingState === "success") {
       fetchHabitStats();
     }
   }, [habits.length, loadingState]);
@@ -289,7 +304,7 @@ export default function HabitsPage() {
   );
 
   // Error state
-  if (loadingState === 'error') {
+  if (loadingState === "error") {
     return (
       <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -302,7 +317,10 @@ export default function HabitsPage() {
               Track and manage your daily habits
             </p>
           </div>
-          <Button onClick={() => router.push("/habits/new")} className="w-full sm:w-auto">
+          <Button
+            onClick={() => router.push("/habits/new")}
+            className="w-full sm:w-auto"
+          >
             <PlusCircle className="h-4 w-4 mr-2" />
             New Habit
           </Button>
@@ -312,15 +330,17 @@ export default function HabitsPage() {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <span className="text-sm">{error}</span>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => fetchHabits(true)}
               disabled={isRetrying}
               className="w-full sm:w-auto"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
-              {retryCount > 0 ? `Retry (${retryCount})` : 'Retry'}
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${isRetrying ? "animate-spin" : ""}`}
+              />
+              {retryCount > 0 ? `Retry (${retryCount})` : "Retry"}
             </Button>
           </AlertDescription>
         </Alert>
@@ -329,11 +349,17 @@ export default function HabitsPage() {
         <Card className="text-center py-8 sm:py-10">
           <CardContent>
             <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-base sm:text-lg font-medium mb-2">Unable to load habits</h3>
+            <h3 className="text-base sm:text-lg font-medium mb-2">
+              Unable to load habits
+            </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              There was a problem loading your habits. You can still create a new one.
+              There was a problem loading your habits. You can still create a
+              new one.
             </p>
-            <Button onClick={() => router.push("/habits/new")} className="w-full sm:w-auto">
+            <Button
+              onClick={() => router.push("/habits/new")}
+              className="w-full sm:w-auto"
+            >
               <PlusCircle className="h-4 w-4 mr-2" />
               Create your first habit
             </Button>
@@ -344,7 +370,7 @@ export default function HabitsPage() {
   }
 
   // Loading state
-  if (loadingState === 'loading') {
+  if (loadingState === "loading") {
     return (
       <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -394,7 +420,10 @@ export default function HabitsPage() {
           </p>
         </div>
 
-        <Button onClick={() => router.push("/habits/new")} className="w-full sm:w-auto">
+        <Button
+          onClick={() => router.push("/habits/new")}
+          className="w-full sm:w-auto"
+        >
           <PlusCircle className="h-4 w-4 mr-2" />
           New Habit
         </Button>
@@ -420,11 +449,16 @@ export default function HabitsPage() {
           {habits.length === 0 ? (
             <div className="text-center py-6 sm:py-8">
               <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-base sm:text-lg font-medium mb-2">No habits to track yet</h3>
+              <h3 className="text-base sm:text-lg font-medium mb-2">
+                No habits to track yet
+              </h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Create your first habit to start building positive routines
               </p>
-              <Button onClick={() => router.push("/habits/new")} className="w-full sm:w-auto">
+              <Button
+                onClick={() => router.push("/habits/new")}
+                className="w-full sm:w-auto"
+              >
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Create your first habit
               </Button>
@@ -434,6 +468,8 @@ export default function HabitsPage() {
               habits={habits}
               journalData={journalData || undefined}
               showTitle={false}
+              inJournalContext={false} // or just omit this prop since it defaults to false
+              // Note: onLocalHabitsChange is not needed here since habits save immediately to API
               onHabitsUpdated={() => {
                 fetchJournalData();
                 fetchHabitStats();
@@ -471,7 +507,9 @@ export default function HabitsPage() {
               <div className="text-center py-8 sm:py-10">
                 {searchTerm ? (
                   <>
-                    <h3 className="text-base sm:text-lg font-medium mb-2">No habits found</h3>
+                    <h3 className="text-base sm:text-lg font-medium mb-2">
+                      No habits found
+                    </h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       No habits match your search "{searchTerm}"
                     </p>
@@ -486,18 +524,26 @@ export default function HabitsPage() {
                 ) : habits.length === 0 ? (
                   <>
                     <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-base sm:text-lg font-medium mb-2">No active habits</h3>
+                    <h3 className="text-base sm:text-lg font-medium mb-2">
+                      No active habits
+                    </h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Start building positive routines by creating your first habit
+                      Start building positive routines by creating your first
+                      habit
                     </p>
-                    <Button onClick={() => router.push("/habits/new")} className="w-full sm:w-auto">
+                    <Button
+                      onClick={() => router.push("/habits/new")}
+                      className="w-full sm:w-auto"
+                    >
                       <PlusCircle className="h-4 w-4 mr-2" />
                       Create your first habit
                     </Button>
                   </>
                 ) : (
                   <>
-                    <h3 className="text-base sm:text-lg font-medium mb-2">All habits are inactive</h3>
+                    <h3 className="text-base sm:text-lg font-medium mb-2">
+                      All habits are inactive
+                    </h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       Activate some habits to start tracking them
                     </p>
@@ -514,7 +560,10 @@ export default function HabitsPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {filteredHabits.map((habit) => (
-                  <Card key={habit.id} className="overflow-hidden touch-manipulation">
+                  <Card
+                    key={habit.id}
+                    className="overflow-hidden touch-manipulation"
+                  >
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -612,7 +661,9 @@ export default function HabitsPage() {
                       <div className="mt-4">
                         <div className="flex justify-between text-xs mb-2">
                           <span>Last 30 days</span>
-                          <span>{Math.round(habit.completionRate || 0)}% completed</span>
+                          <span>
+                            {Math.round(habit.completionRate || 0)}% completed
+                          </span>
                         </div>
                         <Progress
                           value={habit.completionRate || 0}
@@ -642,7 +693,9 @@ export default function HabitsPage() {
               <div className="text-center py-8 sm:py-10">
                 {searchTerm ? (
                   <>
-                    <h3 className="text-base sm:text-lg font-medium mb-2">No inactive habits found</h3>
+                    <h3 className="text-base sm:text-lg font-medium mb-2">
+                      No inactive habits found
+                    </h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       No inactive habits match your search "{searchTerm}"
                     </p>
@@ -657,7 +710,9 @@ export default function HabitsPage() {
                 ) : (
                   <>
                     <EyeOff className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-base sm:text-lg font-medium mb-2">No inactive habits</h3>
+                    <h3 className="text-base sm:text-lg font-medium mb-2">
+                      No inactive habits
+                    </h3>
                     <p className="text-sm text-muted-foreground">
                       All your habits are currently active
                     </p>
@@ -667,7 +722,10 @@ export default function HabitsPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {filteredInactiveHabits.map((habit) => (
-                  <Card key={habit.id} className="opacity-75 overflow-hidden touch-manipulation">
+                  <Card
+                    key={habit.id}
+                    className="opacity-75 overflow-hidden touch-manipulation"
+                  >
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -786,8 +844,8 @@ export default function HabitsPage() {
             >
               Cancel
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={deleteHabit}
               className="w-full sm:w-auto"
             >
