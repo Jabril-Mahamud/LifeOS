@@ -98,7 +98,6 @@ export default function HabitsPage() {
         throw new Error("Invalid data format received from server");
       }
 
-      // Separate active and inactive habits
       const active: Habit[] = [];
       const inactive: Habit[] = [];
 
@@ -121,7 +120,6 @@ export default function HabitsPage() {
       setLoadingState('error');
       setIsRetrying(false);
       
-      // Fallback to empty arrays on error to prevent crashes
       setHabits([]);
       setInactiveHabits([]);
     }
@@ -133,7 +131,6 @@ export default function HabitsPage() {
       const response = await fetch("/api/journal");
       
       if (!response.ok) {
-        // Journal data is optional, so we don't treat this as a critical error
         console.warn("Could not fetch journal data:", response.status);
         return;
       }
@@ -152,7 +149,6 @@ export default function HabitsPage() {
       });
     } catch (error) {
       console.error("Error fetching journal data:", error);
-      // Don't show error for journal data as it's supplementary
     }
   };
 
@@ -235,7 +231,6 @@ export default function HabitsPage() {
           : "Habit deactivated successfully",
       });
 
-      // Refresh data
       fetchHabits();
     } catch (error) {
       console.error("Error updating habit status:", error);
@@ -264,7 +259,6 @@ export default function HabitsPage() {
         description: "Habit deleted successfully",
       });
 
-      // Refresh data
       fetchHabits();
     } catch (error) {
       console.error("Error deleting habit:", error);
@@ -297,18 +291,18 @@ export default function HabitsPage() {
   // Error state
   if (loadingState === 'error') {
     return (
-      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+      <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold flex items-center">
-              <CheckCircle2 className="h-6 w-6 mr-2" />
+            <h1 className="text-xl sm:text-2xl font-bold flex items-center">
+              <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
               Habits
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-1">
               Track and manage your daily habits
             </p>
           </div>
-          <Button onClick={() => router.push("/habits/new")}>
+          <Button onClick={() => router.push("/habits/new")} className="w-full sm:w-auto">
             <PlusCircle className="h-4 w-4 mr-2" />
             New Habit
           </Button>
@@ -316,13 +310,14 @@ export default function HabitsPage() {
 
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="flex items-center justify-between">
-            <span>{error}</span>
+          <AlertDescription className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <span className="text-sm">{error}</span>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => fetchHabits(true)}
               disabled={isRetrying}
+              className="w-full sm:w-auto"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
               {retryCount > 0 ? `Retry (${retryCount})` : 'Retry'}
@@ -331,14 +326,14 @@ export default function HabitsPage() {
         </Alert>
 
         {/* Fallback empty state */}
-        <Card className="text-center py-10">
+        <Card className="text-center py-8 sm:py-10">
           <CardContent>
-            <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Unable to load habits</h3>
-            <p className="text-muted-foreground mb-4">
+            <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-base sm:text-lg font-medium mb-2">Unable to load habits</h3>
+            <p className="text-sm text-muted-foreground mb-4">
               There was a problem loading your habits. You can still create a new one.
             </p>
-            <Button onClick={() => router.push("/habits/new")}>
+            <Button onClick={() => router.push("/habits/new")} className="w-full sm:w-auto">
               <PlusCircle className="h-4 w-4 mr-2" />
               Create your first habit
             </Button>
@@ -351,18 +346,18 @@ export default function HabitsPage() {
   // Loading state
   if (loadingState === 'loading') {
     return (
-      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+      <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold flex items-center">
-              <CheckCircle2 className="h-6 w-6 mr-2" />
+            <h1 className="text-xl sm:text-2xl font-bold flex items-center">
+              <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
               Habits
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-1">
               Track and manage your daily habits
             </p>
           </div>
-          <Button disabled>
+          <Button disabled className="w-full sm:w-auto">
             <PlusCircle className="h-4 w-4 mr-2" />
             New Habit
           </Button>
@@ -370,14 +365,14 @@ export default function HabitsPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <div className="h-6 bg-muted animate-pulse rounded mb-2" />
+            <div className="h-5 sm:h-6 bg-muted animate-pulse rounded mb-2" />
             <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="h-16 bg-muted animate-pulse rounded" />
-              <div className="h-16 bg-muted animate-pulse rounded" />
-              <div className="h-16 bg-muted animate-pulse rounded" />
+              <div className="h-14 sm:h-16 bg-muted animate-pulse rounded" />
+              <div className="h-14 sm:h-16 bg-muted animate-pulse rounded" />
+              <div className="h-14 sm:h-16 bg-muted animate-pulse rounded" />
             </div>
           </CardContent>
         </Card>
@@ -387,19 +382,19 @@ export default function HabitsPage() {
 
   // Success state (may have empty data)
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+    <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold flex items-center">
-            <CheckCircle2 className="h-6 w-6 mr-2" />
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center">
+            <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
             Habits
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground mt-1">
             Track and manage your daily habits
           </p>
         </div>
 
-        <Button onClick={() => router.push("/habits/new")}>
+        <Button onClick={() => router.push("/habits/new")} className="w-full sm:w-auto">
           <PlusCircle className="h-4 w-4 mr-2" />
           New Habit
         </Button>
@@ -407,12 +402,12 @@ export default function HabitsPage() {
 
       {/* Today's Habits */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center">
-            <Calendar className="h-5 w-5 mr-2" />
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base sm:text-lg flex items-center">
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
             Today's Habits
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm">
             {new Date().toLocaleDateString(undefined, {
               weekday: "long",
               year: "numeric",
@@ -423,13 +418,13 @@ export default function HabitsPage() {
         </CardHeader>
         <CardContent>
           {habits.length === 0 ? (
-            <div className="text-center py-8">
-              <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No habits to track yet</h3>
-              <p className="text-muted-foreground mb-4">
+            <div className="text-center py-6 sm:py-8">
+              <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-base sm:text-lg font-medium mb-2">No habits to track yet</h3>
+              <p className="text-sm text-muted-foreground mb-4">
                 Create your first habit to start building positive routines
               </p>
-              <Button onClick={() => router.push("/habits/new")}>
+              <Button onClick={() => router.push("/habits/new")} className="w-full sm:w-auto">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Create your first habit
               </Button>
@@ -451,63 +446,65 @@ export default function HabitsPage() {
       {/* All Habits */}
       <div className="flex justify-between items-center">
         <Tabs defaultValue="active" className="w-full">
-          <div className="flex justify-between items-center">
-            <TabsList>
-              <TabsTrigger value="active">
-                Active Habits ({habits.length})
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <TabsList className="grid w-full sm:w-auto grid-cols-2">
+              <TabsTrigger value="active" className="text-sm">
+                Active ({habits.length})
               </TabsTrigger>
-              <TabsTrigger value="inactive">
+              <TabsTrigger value="inactive" className="text-sm">
                 Inactive ({inactiveHabits.length})
               </TabsTrigger>
             </TabsList>
 
-            <div className="flex-1 max-w-xs ml-auto">
+            <div className="w-full sm:max-w-xs">
               <Input
                 placeholder="Search habits..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
+                className="w-full text-sm"
               />
             </div>
           </div>
 
-          <TabsContent value="active" className="mt-6">
+          <TabsContent value="active" className="mt-4 sm:mt-6">
             {filteredHabits.length === 0 ? (
-              <div className="text-center py-10">
+              <div className="text-center py-8 sm:py-10">
                 {searchTerm ? (
                   <>
-                    <h3 className="text-lg font-medium mb-2">No habits found</h3>
-                    <p className="text-muted-foreground mb-4">
+                    <h3 className="text-base sm:text-lg font-medium mb-2">No habits found</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
                       No habits match your search "{searchTerm}"
                     </p>
                     <Button
                       variant="outline"
                       onClick={() => setSearchTerm("")}
+                      className="w-full sm:w-auto"
                     >
                       Clear search
                     </Button>
                   </>
                 ) : habits.length === 0 ? (
                   <>
-                    <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No active habits</h3>
-                    <p className="text-muted-foreground mb-4">
+                    <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-base sm:text-lg font-medium mb-2">No active habits</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
                       Start building positive routines by creating your first habit
                     </p>
-                    <Button onClick={() => router.push("/habits/new")}>
+                    <Button onClick={() => router.push("/habits/new")} className="w-full sm:w-auto">
                       <PlusCircle className="h-4 w-4 mr-2" />
                       Create your first habit
                     </Button>
                   </>
                 ) : (
                   <>
-                    <h3 className="text-lg font-medium mb-2">All habits are inactive</h3>
-                    <p className="text-muted-foreground mb-4">
+                    <h3 className="text-base sm:text-lg font-medium mb-2">All habits are inactive</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
                       Activate some habits to start tracking them
                     </p>
                     <Button
                       variant="outline"
                       onClick={() => router.push("/habits/new")}
+                      className="w-full sm:w-auto"
                     >
                       Create new habit
                     </Button>
@@ -515,14 +512,14 @@ export default function HabitsPage() {
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {filteredHabits.map((habit) => (
-                  <Card key={habit.id} className="overflow-hidden">
-                    <CardHeader className="pb-2">
+                  <Card key={habit.id} className="overflow-hidden touch-manipulation">
+                    <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white"
+                            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white text-sm sm:text-base shrink-0"
                             style={{
                               backgroundColor:
                                 habit.color || "hsl(var(--primary))",
@@ -530,9 +527,16 @@ export default function HabitsPage() {
                           >
                             {habit.icon || "✓"}
                           </div>
-                          <CardTitle className="text-lg">
-                            {habit.name}
-                          </CardTitle>
+                          <div className="min-w-0 flex-1">
+                            <CardTitle className="text-sm sm:text-base truncate">
+                              {habit.name}
+                            </CardTitle>
+                            {habit.description && (
+                              <CardDescription className="line-clamp-2 mt-1 text-xs sm:text-sm">
+                                {habit.description}
+                              </CardDescription>
+                            )}
+                          </div>
                         </div>
 
                         <DropdownMenu>
@@ -540,7 +544,7 @@ export default function HabitsPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              className="h-8 w-8 shrink-0 touch-manipulation"
                             >
                               <MoreHorizontal className="h-4 w-4" />
                               <span className="sr-only">Open menu</span>
@@ -583,12 +587,6 @@ export default function HabitsPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-
-                      {habit.description && (
-                        <CardDescription className="line-clamp-2 mt-1">
-                          {habit.description}
-                        </CardDescription>
-                      )}
                     </CardHeader>
 
                     <CardContent className="pt-0">
@@ -597,7 +595,7 @@ export default function HabitsPage() {
                           <div className="text-xs text-muted-foreground">
                             Current streak
                           </div>
-                          <div className="text-xl font-medium">
+                          <div className="text-lg sm:text-xl font-medium">
                             {habit.streak || 0} days
                           </div>
                         </div>
@@ -605,28 +603,28 @@ export default function HabitsPage() {
                         <div className="flex items-center gap-2">
                           <CircularProgress
                             value={habit.completionRate || 0}
-                            size="md"
+                            size="sm"
                             color={habit.color || "hsl(var(--primary))"}
                           />
                         </div>
                       </div>
 
                       <div className="mt-4">
-                        <div className="flex justify-between text-xs mb-1">
+                        <div className="flex justify-between text-xs mb-2">
                           <span>Last 30 days</span>
                           <span>{Math.round(habit.completionRate || 0)}% completed</span>
                         </div>
                         <Progress
                           value={habit.completionRate || 0}
-                          className="h-1.5"
+                          className="h-2"
                         />
                       </div>
                     </CardContent>
 
-                    <CardFooter className="bg-muted/50 py-2">
+                    <CardFooter className="bg-muted/50 py-3">
                       <Button
                         variant="ghost"
-                        className="w-full text-muted-foreground text-sm"
+                        className="w-full text-muted-foreground text-sm touch-manipulation"
                         onClick={() => router.push(`/habits/${habit.id}`)}
                       >
                         <BarChart4 className="h-4 w-4 mr-2" />
@@ -639,41 +637,42 @@ export default function HabitsPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="inactive" className="mt-6">
+          <TabsContent value="inactive" className="mt-4 sm:mt-6">
             {filteredInactiveHabits.length === 0 ? (
-              <div className="text-center py-10">
+              <div className="text-center py-8 sm:py-10">
                 {searchTerm ? (
                   <>
-                    <h3 className="text-lg font-medium mb-2">No inactive habits found</h3>
-                    <p className="text-muted-foreground mb-4">
+                    <h3 className="text-base sm:text-lg font-medium mb-2">No inactive habits found</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
                       No inactive habits match your search "{searchTerm}"
                     </p>
                     <Button
                       variant="outline"
                       onClick={() => setSearchTerm("")}
+                      className="w-full sm:w-auto"
                     >
                       Clear search
                     </Button>
                   </>
                 ) : (
                   <>
-                    <EyeOff className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No inactive habits</h3>
-                    <p className="text-muted-foreground">
+                    <EyeOff className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-base sm:text-lg font-medium mb-2">No inactive habits</h3>
+                    <p className="text-sm text-muted-foreground">
                       All your habits are currently active
                     </p>
                   </>
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {filteredInactiveHabits.map((habit) => (
-                  <Card key={habit.id} className="opacity-75 overflow-hidden">
-                    <CardHeader className="pb-2">
+                  <Card key={habit.id} className="opacity-75 overflow-hidden touch-manipulation">
+                    <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white"
+                            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white text-sm sm:text-base shrink-0"
                             style={{
                               backgroundColor:
                                 habit.color || "hsl(var(--primary))",
@@ -681,9 +680,16 @@ export default function HabitsPage() {
                           >
                             {habit.icon || "✓"}
                           </div>
-                          <CardTitle className="text-lg">
-                            {habit.name}
-                          </CardTitle>
+                          <div className="min-w-0 flex-1">
+                            <CardTitle className="text-sm sm:text-base truncate">
+                              {habit.name}
+                            </CardTitle>
+                            {habit.description && (
+                              <CardDescription className="line-clamp-2 mt-1 text-xs sm:text-sm">
+                                {habit.description}
+                              </CardDescription>
+                            )}
+                          </div>
                         </div>
 
                         <DropdownMenu>
@@ -691,7 +697,7 @@ export default function HabitsPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              className="h-8 w-8 shrink-0 touch-manipulation"
                             >
                               <MoreHorizontal className="h-4 w-4" />
                               <span className="sr-only">Open menu</span>
@@ -734,12 +740,6 @@ export default function HabitsPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-
-                      {habit.description && (
-                        <CardDescription className="line-clamp-2 mt-1">
-                          {habit.description}
-                        </CardDescription>
-                      )}
                     </CardHeader>
 
                     <CardContent className="pt-0">
@@ -748,10 +748,10 @@ export default function HabitsPage() {
                       </div>
                     </CardContent>
 
-                    <CardFooter className="bg-muted/50 py-2">
+                    <CardFooter className="bg-muted/50 py-3">
                       <Button
                         variant="outline"
-                        className="w-full"
+                        className="w-full touch-manipulation"
                         onClick={() =>
                           toggleHabitActive(habit.id, habit.active)
                         }
@@ -770,7 +770,7 @@ export default function HabitsPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-[95vw] sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Are you sure?</DialogTitle>
             <DialogDescription>
@@ -778,14 +778,19 @@ export default function HabitsPage() {
               tracking data. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={deleteHabit}>
+            <Button 
+              variant="destructive" 
+              onClick={deleteHabit}
+              className="w-full sm:w-auto"
+            >
               Delete Habit
             </Button>
           </DialogFooter>

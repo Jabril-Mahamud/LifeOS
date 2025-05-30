@@ -67,12 +67,10 @@ export default function Dashboard() {
       
       const data = await response.json();
       
-      // Validate that we have the expected data structure
       if (!data || typeof data !== 'object') {
         throw new Error("Invalid data format received from server");
       }
       
-      // Set default empty states if data is missing
       const safeData: DashboardData = {
         habits: Array.isArray(data.habits) ? data.habits : [],
         journal: {
@@ -109,7 +107,6 @@ export default function Dashboard() {
     fetchDashboardData();
   }, []);
 
-  // Format a date string for display
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -122,7 +119,6 @@ export default function Dashboard() {
     }
   };
 
-  // Format a date to show "Today", "Tomorrow", or the formatted date
   const formatRelativeDate = (dateString: string | null) => {
     if (!dateString) return "No date";
     
@@ -148,42 +144,73 @@ export default function Dashboard() {
     }
   };
 
-  // Priority and status color mappings
   const priorityColors = {
     high: "text-red-500",
     medium: "text-amber-500",
     low: "text-blue-500"
   };
 
-  // Render task item
   const renderTaskItem = (task: TaskWithProject) => (
-    <div key={task.id} className="flex items-center justify-between p-2 hover:bg-accent/50 rounded-md">
-      <div className="flex items-center space-x-2">
-        {task.status === "completed" ? (
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
-        ) : (
-          <Circle className={`h-4 w-4 ${priorityColors[task.priority as keyof typeof priorityColors] || 'text-muted-foreground'}`} />
-        )}
-        <span className={task.status === "completed" ? "line-through text-muted-foreground" : ""}>{task.title}</span>
-      </div>
-      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-        {task.project && (
-          <span 
-            className="px-2 py-1 rounded-full" 
-            style={{ 
-              backgroundColor: task.project.color || '#e5e7eb',
-              color: task.project.color ? 'white' : 'inherit'
-            }}
-          >
-            {task.project.icon} {task.project.name}
-          </span>
-        )}
-        {task.dueDate && (
-          <span className="flex items-center">
-            <Clock className="h-3 w-3 mr-1" />
-            {formatRelativeDate(task.dueDate)}
-          </span>
-        )}
+    <div key={task.id} className="flex items-center justify-between p-3 hover:bg-accent/50 rounded-md border-b border-border/50 last:border-b-0">
+      <div className="flex items-start gap-3 flex-1 min-w-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 rounded-full p-0 mt-0.5 shrink-0 touch-manipulation"
+          onClick={() => {/* Toggle task logic */}}
+        >
+          {task.status === "completed" ? (
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
+          ) : task.status === "in-progress" ? (
+            <div className="h-5 w-5 rounded-full border-2 border-amber-500 flex items-center justify-center">
+              <div className="h-2 w-2 rounded-full bg-amber-500"></div>
+            </div>
+          ) : (
+            <div className="h-5 w-5 rounded-full border-2 border-muted-foreground"></div>
+          )}
+        </Button>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <span className={`text-sm font-medium leading-tight ${
+              task.status === "completed" ? "line-through text-muted-foreground" : ""
+            }`}>
+              {task.title}
+            </span>
+            {task.priority !== "medium" && (
+              <span className={`text-xs ${priorityColors[task.priority as keyof typeof priorityColors]} shrink-0`}>
+                {task.priority === "high" ? "High Priority" : "Low Priority"}
+              </span>
+            )}
+          </div>
+
+          {task.description && (
+            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+              {task.description}
+            </p>
+          )}
+
+          <div className="flex flex-wrap gap-2 mt-2">
+            {task.project && (
+              <span 
+                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                style={{ 
+                  backgroundColor: task.project.color || '#e5e7eb',
+                  color: task.project.color ? 'white' : 'inherit'
+                }}
+              >
+                <span className="mr-1">{task.project.icon}</span>
+                <span className="hidden sm:inline">{task.project.name}</span>
+              </span>
+            )}
+            {task.dueDate && (
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Clock className="h-3 w-3 mr-1" />
+                <span>{formatRelativeDate(task.dueDate)}</span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -191,19 +218,19 @@ export default function Dashboard() {
   // Loading state
   if (loadingState === 'loading') {
     return (
-      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+      <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-xl sm:text-2xl font-bold">Dashboard</h1>
           <Skeleton className="h-9 w-24" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Skeleton className="h-[200px] rounded-xl" />
-          <Skeleton className="h-[200px] rounded-xl" />
-          <Skeleton className="h-[200px] rounded-xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <Skeleton className="h-[180px] sm:h-[200px] rounded-xl" />
+          <Skeleton className="h-[180px] sm:h-[200px] rounded-xl" />
+          <Skeleton className="h-[180px] sm:h-[200px] rounded-xl" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Skeleton className="h-[300px] rounded-xl" />
-          <Skeleton className="h-[300px] rounded-xl" />
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+          <Skeleton className="h-[280px] sm:h-[300px] rounded-xl" />
+          <Skeleton className="h-[280px] sm:h-[300px] rounded-xl" />
         </div>
       </div>
     );
@@ -212,20 +239,21 @@ export default function Dashboard() {
   // Error state
   if (loadingState === 'error') {
     return (
-      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+      <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-xl sm:text-2xl font-bold">Dashboard</h1>
         </div>
         
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="flex items-center justify-between">
-            <span>{error}</span>
+          <AlertDescription className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <span className="text-sm">{error}</span>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => fetchDashboardData(true)}
               disabled={isRetrying}
+              className="w-full sm:w-auto"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
               {retryCount > 0 ? `Retry (${retryCount})` : 'Retry'}
@@ -234,11 +262,11 @@ export default function Dashboard() {
         </Alert>
 
         {/* Fallback minimal UI */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <FileEdit className="h-5 w-5 mr-2" />
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base sm:text-lg flex items-center">
+                <FileEdit className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 Journal
               </CardTitle>
             </CardHeader>
@@ -249,7 +277,7 @@ export default function Dashboard() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full"
+                className="w-full text-sm"
                 onClick={() => router.push("/journal/new")}
               >
                 Write new entry
@@ -258,9 +286,9 @@ export default function Dashboard() {
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <CheckCircle2 className="h-5 w-5 mr-2" />
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base sm:text-lg flex items-center">
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 Habits
               </CardTitle>
             </CardHeader>
@@ -271,7 +299,7 @@ export default function Dashboard() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full"
+                className="w-full text-sm"
                 onClick={() => router.push("/habits")}
               >
                 Manage habits
@@ -280,9 +308,9 @@ export default function Dashboard() {
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <LayoutGrid className="h-5 w-5 mr-2" />
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base sm:text-lg flex items-center">
+                <LayoutGrid className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 Projects
               </CardTitle>
             </CardHeader>
@@ -293,7 +321,7 @@ export default function Dashboard() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full"
+                className="w-full text-sm"
                 onClick={() => router.push("/projects")}
               >
                 View projects
@@ -307,18 +335,19 @@ export default function Dashboard() {
 
   // Success state with data
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex space-x-2">
+    <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold">Dashboard</h1>
+        <div className="flex space-x-2 w-full sm:w-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-initial">
                 <Plus className="h-4 w-4 mr-2" />
-                Create New
+                <span className="hidden xs:inline">Create New</span>
+                <span className="xs:hidden">New</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>What would you like to create?</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => router.push("/journal/new")}>
@@ -338,28 +367,28 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Journal and Habits Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Summary Cards - Mobile-First Layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
         {/* Journal Status */}
-        <Card>
+        <Card className="touch-manipulation">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center">
-              <FileEdit className="h-5 w-5 mr-2" />
+            <CardTitle className="text-base sm:text-lg flex items-center">
+              <FileEdit className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               Journal
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               {dashboardData?.journal.totalEntries || 0} total entries
             </CardDescription>
           </CardHeader>
           <CardContent>
             {dashboardData?.journal.hasEntryToday && dashboardData.journal.entries.length > 0 ? (
-              <div className="flex flex-col">
-                <div className="text-sm font-medium mb-1">Today's entry</div>
+              <div className="flex flex-col space-y-2">
+                <div className="text-sm font-medium">Today's entry</div>
                 <div className="text-sm text-muted-foreground">
-                  <span className="mr-2">{dashboardData.journal.entries[0].title}</span>
-                  <span className="text-xs opacity-70">
+                  <div className="font-medium">{dashboardData.journal.entries[0].title}</div>
+                  <div className="text-xs opacity-70 mt-1">
                     {formatDate(dashboardData.journal.entries[0].date)}
-                  </span>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -375,7 +404,7 @@ export default function Dashboard() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="w-full"
+              className="w-full text-sm touch-manipulation"
               onClick={() => router.push(
                 dashboardData?.journal.hasEntryToday && dashboardData.journal.entries.length > 0
                   ? `/journal/${dashboardData.journal.entries[0].id}` 
@@ -388,25 +417,30 @@ export default function Dashboard() {
         </Card>
 
         {/* Habit Tracking */}
-        <Card>
+        <Card className="touch-manipulation">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center">
-              <CheckCircle2 className="h-5 w-5 mr-2" />
-              Habit Tracking
+            <CardTitle className="text-base sm:text-lg flex items-center">
+              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              Habits
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               {dashboardData?.habits.length || 0} active habits
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3">
             {dashboardData && dashboardData.habits.length > 0 ? (
               dashboardData.habits.slice(0, 3).map((habit) => (
-                <div key={habit.id} className="flex flex-col space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">{habit.icon} {habit.name}</span>
-                    <span className="text-xs">{habit.streak} day streak</span>
+                <div key={habit.id} className="flex flex-col space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium flex items-center">
+                      <span className="mr-2">{habit.icon}</span>
+                      {habit.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {habit.streak} days
+                    </span>
                   </div>
-                  <Progress value={habit.completionRate} className="h-1.5" />
+                  <Progress value={habit.completionRate} className="h-2" />
                 </div>
               ))
             ) : (
@@ -419,7 +453,7 @@ export default function Dashboard() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="w-full"
+              className="w-full text-sm touch-manipulation"
               onClick={() => router.push(dashboardData?.habits.length === 0 ? "/habits/new" : "/habits")}
             >
               {dashboardData?.habits.length === 0 ? "Create first habit" : "Manage habits"}
@@ -428,13 +462,13 @@ export default function Dashboard() {
         </Card>
 
         {/* Projects Summary */}
-        <Card>
+        <Card className="touch-manipulation sm:col-span-2 lg:col-span-1">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center">
-              <LayoutGrid className="h-5 w-5 mr-2" />
+            <CardTitle className="text-base sm:text-lg flex items-center">
+              <LayoutGrid className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               Projects
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               {dashboardData?.projects.total || 0} active projects
             </CardDescription>
           </CardHeader>
@@ -443,15 +477,16 @@ export default function Dashboard() {
               dashboardData.projects.list.slice(0, 3).map((project) => (
                 <div 
                   key={project.id} 
-                  className="flex justify-between items-center p-2 hover:bg-accent/50 rounded-md cursor-pointer"
+                  className="flex justify-between items-center p-2 hover:bg-accent/50 rounded-md cursor-pointer touch-manipulation"
                   onClick={() => router.push(`/projects/${project.id}`)}
                 >
-                  <span className="text-sm font-medium">
-                    {project.icon} {project.name}
+                  <span className="text-sm font-medium flex items-center">
+                    <span className="mr-2">{project.icon}</span>
+                    <span className="truncate">{project.name}</span>
                   </span>
-                  <span className="text-xs flex items-center">
+                  <span className="text-xs flex items-center text-muted-foreground whitespace-nowrap ml-2">
                     <ListTodo className="h-3 w-3 mr-1" />
-                    {project._count.tasks} tasks
+                    {project._count.tasks}
                   </span>
                 </div>
               ))
@@ -465,7 +500,7 @@ export default function Dashboard() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="w-full"
+              className="w-full text-sm touch-manipulation"
               onClick={() => router.push(dashboardData?.projects.list.length === 0 ? "/projects/new" : "/projects")}
             >
               {dashboardData?.projects.list.length === 0 ? "Create first project" : "View all projects"}
@@ -474,58 +509,64 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Tasks Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Tasks Section - Mobile-Optimized */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Task Lists */}
         <Card className="col-span-1">
           <Tabs defaultValue="upcoming">
             <CardHeader className="pb-2">
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-lg flex items-center">
-                  <ListTodo className="h-5 w-5 mr-2" />
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <CardTitle className="text-base sm:text-lg flex items-center">
+                  <ListTodo className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   Tasks
                 </CardTitle>
-                <TabsList>
-                  <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-                  <TabsTrigger value="completed">Completed</TabsTrigger>
+                <TabsList className="grid w-full sm:w-auto grid-cols-2">
+                  <TabsTrigger value="upcoming" className="text-xs sm:text-sm">Upcoming</TabsTrigger>
+                  <TabsTrigger value="completed" className="text-xs sm:text-sm">Completed</TabsTrigger>
                 </TabsList>
               </div>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Manage your tasks
               </CardDescription>
             </CardHeader>
             
             <CardContent>
-              <TabsContent value="upcoming" className="space-y-2 mt-0">
+              <TabsContent value="upcoming" className="space-y-0 mt-0">
                 {dashboardData && dashboardData.tasks.upcoming.length > 0 ? (
-                  dashboardData.tasks.upcoming.map((task) => renderTaskItem(task))
+                  <div className="space-y-0">
+                    {dashboardData.tasks.upcoming.map((task) => renderTaskItem(task))}
+                  </div>
                 ) : (
-                  <div className="text-sm text-muted-foreground p-2">
+                  <div className="text-sm text-muted-foreground p-4 text-center">
                     No upcoming tasks. Create a task to get started with your work!
                   </div>
                 )}
               </TabsContent>
-              <TabsContent value="completed" className="space-y-2 mt-0">
+              <TabsContent value="completed" className="space-y-0 mt-0">
                 {dashboardData && dashboardData.tasks.recentlyCompleted.length > 0 ? (
-                  dashboardData.tasks.recentlyCompleted.map((task) => renderTaskItem(task))
+                  <div className="space-y-0">
+                    {dashboardData.tasks.recentlyCompleted.map((task) => renderTaskItem(task))}
+                  </div>
                 ) : (
-                  <div className="text-sm text-muted-foreground p-2">
+                  <div className="text-sm text-muted-foreground p-4 text-center">
                     No recently completed tasks
                   </div>
                 )}
               </TabsContent>
             </CardContent>
             
-            <CardFooter className="flex justify-between">
+            <CardFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between">
               <Button 
                 variant="outline" 
                 size="sm"
+                className="w-full sm:w-auto text-sm touch-manipulation"
                 onClick={() => router.push("/tasks")}
               >
                 View all tasks
               </Button>
               <Button 
                 size="sm"
+                className="w-full sm:w-auto text-sm touch-manipulation"
                 onClick={() => router.push("/tasks/new")}
               >
                 <PlusCircle className="h-4 w-4 mr-2" />
@@ -535,21 +576,21 @@ export default function Dashboard() {
           </Tabs>
         </Card>
 
-        {/* Calendar / Journal Entries */}
+        {/* Journal Entries */}
         <Card className="col-span-1">
           <Tabs defaultValue="journal">
             <CardHeader className="pb-2">
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-lg flex items-center">
-                  <Calendar className="h-5 w-5 mr-2" />
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <CardTitle className="text-base sm:text-lg flex items-center">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   Journal Entries
                 </CardTitle>
-                <TabsList>
-                  <TabsTrigger value="journal">Recent</TabsTrigger>
-                  <TabsTrigger value="calendar">Calendar</TabsTrigger>
+                <TabsList className="grid w-full sm:w-auto grid-cols-2">
+                  <TabsTrigger value="journal" className="text-xs sm:text-sm">Recent</TabsTrigger>
+                  <TabsTrigger value="calendar" className="text-xs sm:text-sm">Calendar</TabsTrigger>
                 </TabsList>
               </div>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Your recent journal activity
               </CardDescription>
             </CardHeader>
@@ -560,45 +601,47 @@ export default function Dashboard() {
                   dashboardData.journal.entries.map((entry) => (
                     <div 
                       key={entry.id} 
-                      className="flex flex-col p-2 hover:bg-accent/50 rounded-md cursor-pointer"
+                      className="flex flex-col p-3 hover:bg-accent/50 rounded-md cursor-pointer touch-manipulation border-b border-border/50 last:border-b-0"
                       onClick={() => router.push(`/journal/${entry.id}`)}
                     >
-                      <div className="flex justify-between">
-                        <span className="font-medium">{entry.title}</span>
-                        <span className="text-xs text-muted-foreground">
+                      <div className="flex justify-between items-start">
+                        <span className="font-medium text-sm pr-2">{entry.title}</span>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
                           {formatRelativeDate(entry.date)}
                         </span>
                       </div>
                       {entry.content && (
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                           {entry.content}
                         </p>
                       )}
                     </div>
                   ))
                 ) : (
-                  <div className="text-sm text-muted-foreground p-2">
+                  <div className="text-sm text-muted-foreground p-4 text-center">
                     No journal entries yet. Start writing to capture your thoughts and experiences!
                   </div>
                 )}
               </TabsContent>
               <TabsContent value="calendar" className="mt-0">
                 <div className="h-[200px] flex items-center justify-center text-muted-foreground">
-                  <p>Calendar view will be implemented soon</p>
+                  <p className="text-sm text-center">Calendar view will be implemented soon</p>
                 </div>
               </TabsContent>
             </CardContent>
             
-            <CardFooter className="flex justify-between">
+            <CardFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between">
               <Button 
                 variant="outline" 
                 size="sm"
+                className="w-full sm:w-auto text-sm touch-manipulation"
                 onClick={() => router.push("/journal")}
               >
                 View all entries
               </Button>
               <Button 
                 size="sm"
+                className="w-full sm:w-auto text-sm touch-manipulation"
                 onClick={() => router.push("/journal/new")}
               >
                 <PlusCircle className="h-4 w-4 mr-2" />

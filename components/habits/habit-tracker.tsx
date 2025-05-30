@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Circle, Calendar, BarChart } from "lucide-react";
+import { CheckCircle2, Circle, Calendar, BarChart, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { HabitHeatmapCalendar } from "@/components/habits/habit-heatmap-calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Habit, HabitTrackerJournal, HabitWithStats, Journal } from "@/lib/types";
-
 
 type HabitTrackerProps = {
   habits?: HabitWithStats[];
@@ -103,6 +103,7 @@ export function HabitTracker({
       
       toast({
         description: "Failed to update habit status",
+        variant: "destructive",
       });
     } finally {
       setUpdatingHabitId(null);
@@ -119,79 +120,116 @@ export function HabitTracker({
   const hasEnoughData = habitsWithData.length > 0;
 
   if (habits.length === 0) {
-    return <div className="text-sm text-muted-foreground">No habits to track</div>;
-  }
-
-  if (!journalData?.hasEntryToday) {
     return (
-      <div className="text-sm text-muted-foreground">
-        Create a journal entry to track habits
+      <div className="text-center py-6">
+        <p className="text-sm text-muted-foreground">No habits to track</p>
       </div>
     );
   }
 
+  if (!journalData?.hasEntryToday) {
+    return (
+      <Card>
+        <CardContent className="text-center py-8">
+          <div className="text-sm text-muted-foreground mb-4">
+            Create a journal entry to track habits
+          </div>
+          <Button 
+            onClick={() => router.push("/journal/new")}
+            className="w-full sm:w-auto"
+          >
+            Create Journal Entry
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Tab Navigation */}
       {showVisualization && hasEnoughData && (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="today">
+            <TabsTrigger value="today" className="text-sm">
               <Calendar className="h-4 w-4 mr-2" />
-              Today's Habits
+              <span className="hidden xs:inline">Today's Habits</span>
+              <span className="xs:hidden">Today</span>
             </TabsTrigger>
-            <TabsTrigger value="insights">
+            <TabsTrigger value="insights" className="text-sm">
               <BarChart className="h-4 w-4 mr-2" />
-              Habit Insights
+              <span className="hidden xs:inline">Habit Insights</span>
+              <span className="xs:hidden">Insights</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="today" className="space-y-4 mt-4">
+          <TabsContent value="today" className="space-y-3 sm:space-y-4 mt-4">
             {/* Today's Habits List */}
-            <div className="space-y-3">
-              {habits.map((habit) => {
+            <div className="space-y-0">
+              {habits.map((habit, index) => {
                 const isCompleted = completionStatus[habit.id] || false;
                 const isUpdating = updatingHabitId === habit.id;
                 
                 return (
                   <div 
                     key={habit.id} 
-                    className="flex items-center justify-between p-3 hover:bg-accent/20 rounded-md border"
+                    className={`
+                      flex items-center justify-between p-3 sm:p-4 hover:bg-accent/20 rounded-md 
+                      cursor-pointer touch-manipulation transition-colors duration-200
+                      ${index < habits.length - 1 ? 'border-b border-border/50' : ''}
+                      ${isUpdating ? 'opacity-50' : ''}
+                    `}
                     onClick={() => !isUpdating && toggleHabitCompletion(habit.id)}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`${isUpdating ? 'opacity-50' : ''}`}>
+                    <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                      <div className={`${isUpdating ? 'opacity-50' : ''} shrink-0`}>
                         {isCompleted ? (
                           <CheckCircle2 
-                            className="h-5 w-5" 
+                            className="h-6 w-6 sm:h-7 sm:w-7" 
                             style={{ color: habit.color || 'currentColor' }}
                           />
                         ) : (
-                          <Circle className="h-5 w-5 text-muted-foreground" />
+                          <Circle className="h-6 w-6 sm:h-7 sm:w-7 text-muted-foreground" />
                         )}
                       </div>
-                      <div>
-                        <span className="font-medium">
-                          {habit.icon && <span className="mr-1">{habit.icon}</span>}
-                          {habit.name}
-                        </span>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                          <span className="text-sm sm:text-base font-medium flex items-center">
+                            {habit.icon && <span className="mr-2">{habit.icon}</span>}
+                            <span className="truncate">{habit.name}</span>
+                          </span>
+                          
+                          {habit.streak !== undefined && (
+                            <div className="flex items-center mt-1 sm:mt-0 text-xs sm:text-sm text-muted-foreground">
+                              <span className="whitespace-nowrap">
+                                Current streak: <span className="font-medium text-foreground">{habit.streak} days</span>
+                              </span>
+                            </div>
+                          )}
+                        </div>
                         
-                        {habit.streak !== undefined && (
-                          <div className="flex items-center mt-1 text-xs text-muted-foreground">
-                            <span>Current streak: {habit.streak} days</span>
+                        {habit.completionRate !== undefined && (
+                          <div className="mt-2 sm:hidden">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                              <span>Progress</span>
+                              <span>{habit.completionRate}%</span>
+                            </div>
+                            <Progress value={habit.completionRate} className="h-1.5" />
                           </div>
                         )}
                       </div>
                     </div>
                     
                     {habit.completionRate !== undefined && (
-                      <div className="flex items-center gap-2">
+                      <div className="hidden sm:flex items-center gap-3 shrink-0">
                         <div className="w-20">
-                          <Progress value={habit.completionRate} className="h-1.5" />
+                          <Progress value={habit.completionRate} className="h-2" />
                         </div>
                         <span className="text-xs text-muted-foreground w-8 text-right">
                           {habit.completionRate}%
                         </span>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
                       </div>
                     )}
                   </div>
@@ -201,19 +239,22 @@ export function HabitTracker({
             
             {/* Quick Visualization Teaser */}
             {hasEnoughData && (
-              <div className="mt-6 p-4 bg-muted/30 rounded-lg border border-dashed text-center">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Want to see your habit patterns over time?
-                </p>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setActiveTab("insights")}
-                >
-                  <BarChart className="h-4 w-4 mr-2" />
-                  View Insights
-                </Button>
-              </div>
+              <Card className="mt-4 sm:mt-6">
+                <CardContent className="p-4 text-center">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Want to see your habit patterns over time?
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setActiveTab("insights")}
+                    className="w-full sm:w-auto"
+                  >
+                    <BarChart className="h-4 w-4 mr-2" />
+                    View Insights
+                  </Button>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 
@@ -229,37 +270,47 @@ export function HabitTracker({
       
       {/* Simple Habit List Only (when visualization is disabled or not enough data) */}
       {(!showVisualization || !hasEnoughData) && (
-        <div className="space-y-3">
-          {habits.map((habit) => {
+        <div className="space-y-0">
+          {habits.map((habit, index) => {
             const isCompleted = completionStatus[habit.id] || false;
             const isUpdating = updatingHabitId === habit.id;
             
             return (
               <div 
                 key={habit.id} 
-                className="flex items-center p-3 hover:bg-accent/20 rounded-md border"
+                className={`
+                  flex items-center p-3 sm:p-4 hover:bg-accent/20 rounded-md 
+                  cursor-pointer touch-manipulation transition-colors duration-200
+                  ${index < habits.length - 1 ? 'border-b border-border/50' : ''}
+                  ${isUpdating ? 'opacity-50' : ''}
+                `}
                 onClick={() => !isUpdating && toggleHabitCompletion(habit.id)}
               >
-                <div className={`mr-3 ${isUpdating ? 'opacity-50' : ''}`}>
+                <div className={`mr-3 sm:mr-4 ${isUpdating ? 'opacity-50' : ''} shrink-0`}>
                   {isCompleted ? (
                     <CheckCircle2 
-                      className="h-5 w-5" 
+                      className="h-6 w-6 sm:h-7 sm:w-7" 
                       style={{ color: habit.color || 'currentColor' }}
                     />
                   ) : (
-                    <Circle className="h-5 w-5 text-muted-foreground" />
+                    <Circle className="h-6 w-6 sm:h-7 sm:w-7 text-muted-foreground" />
                   )}
                 </div>
-                <span className="text-sm font-medium">
-                  {habit.icon && <span className="mr-1">{habit.icon}</span>}
-                  {habit.name}
-                </span>
                 
-                {habit.streak !== undefined && (
-                  <Badge variant="outline" className="ml-auto">
-                    {habit.streak} day streak
-                  </Badge>
-                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <span className="text-sm sm:text-base font-medium flex items-center">
+                      {habit.icon && <span className="mr-2">{habit.icon}</span>}
+                      <span className="truncate">{habit.name}</span>
+                    </span>
+                    
+                    {habit.streak !== undefined && (
+                      <Badge variant="outline" className="mt-2 sm:mt-0 self-start sm:self-center text-xs">
+                        {habit.streak} day streak
+                      </Badge>
+                    )}
+                  </div>
+                </div>
               </div>
             );
           })}
