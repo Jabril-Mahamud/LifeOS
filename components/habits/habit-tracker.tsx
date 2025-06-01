@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Circle, Calendar, BarChart, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -18,9 +18,7 @@ type HabitTrackerProps = {
   onHabitsUpdated?: () => void;
   showTitle?: boolean;
   showVisualization?: boolean;
-  // New prop to indicate when used in journal context
   inJournalContext?: boolean;
-  // Callback to provide local habit completions to parent component
   onLocalHabitsChange?: (habitCompletions: Record<string, boolean>) => void;
 };
 
@@ -39,43 +37,57 @@ export function HabitTracker({
   const [activeTab, setActiveTab] = useState<string>("today");
   const router = useRouter();
 
-  // Initialize completion status from journal data
-  useEffect(() => {
+  // Memoize the initial completion status to prevent unnecessary recalculations
+  const initialCompletionStatus = useMemo(() => {
     if (journalData?.hasEntryToday && journalData.todayEntry) {
       const status: Record<string, boolean> = {};
+      
+      // Initialize all habits to false
       habits.forEach(habit => {
         status[habit.id] = false;
       });
       
+      // Set completed habits to true
       journalData.todayEntry.habitLogs.forEach(log => {
         status[log.habitId] = log.completed;
       });
       
-      setCompletionStatus(status);
+      return status;
     } else {
       const status: Record<string, boolean> = {};
       habits.forEach(habit => {
         status[habit.id] = false;
       });
-      setCompletionStatus(status);
+      return status;
     }
-  }, [habits, journalData]);
+  }, [habits, journalData?.hasEntryToday, journalData?.todayEntry]);
 
-  // Notify parent of local habit changes when in journal context
+  // Initialize completion status only when the initial status changes
   useEffect(() => {
+    setCompletionStatus(initialCompletionStatus);
+  }, [initialCompletionStatus]);
+
+  // Stable callback for notifying parent of local habit changes
+  const notifyLocalHabitsChange = useCallback((status: Record<string, boolean>) => {
     if (inJournalContext && onLocalHabitsChange) {
-      onLocalHabitsChange(completionStatus);
+      onLocalHabitsChange(status);
     }
-  }, [completionStatus, inJournalContext, onLocalHabitsChange]);
+  }, [inJournalContext, onLocalHabitsChange]);
+
+  // Only notify parent when completion status actually changes and we're in journal context
+  useEffect(() => {
+    notifyLocalHabitsChange(completionStatus);
+  }, [completionStatus, notifyLocalHabitsChange]);
 
   // Toggle habit completion
   const toggleHabitCompletion = async (habitId: string) => {
     // Update local state immediately
     const newStatus = !completionStatus[habitId];
-    setCompletionStatus(prev => ({
-      ...prev,
+    const updatedStatus = {
+      ...completionStatus,
       [habitId]: newStatus
-    }));
+    };
+    setCompletionStatus(updatedStatus);
 
     // If we're in journal context and there's no saved journal entry yet, keep it local only
     if (inJournalContext && !journalData?.hasEntryToday) {
@@ -118,10 +130,7 @@ export function HabitTracker({
       }
     } catch (error) {
       // Revert on error
-      setCompletionStatus(prev => ({
-        ...prev,
-        [habitId]: !newStatus
-      }));
+      setCompletionStatus(completionStatus);
       
       toast({
         description: "Failed to update habit status",
@@ -134,8 +143,9 @@ export function HabitTracker({
   };
 
   // Filter habits with streak data for the visualization
-  const habitsWithData = habits.filter(habit => 
-    habit.streakData && habit.streakData.length > 0
+  const habitsWithData = useMemo(() => 
+    habits.filter(habit => habit.streakData && habit.streakData.length > 0),
+    [habits]
   );
 
   // Check if there's enough data for visualization

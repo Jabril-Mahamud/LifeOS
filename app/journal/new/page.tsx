@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FileEdit, ArrowLeft, Save, Smile, Frown, Meh, NotebookPen, Eye, EyeOff } from "lucide-react";
@@ -175,6 +175,28 @@ export default function NewJournal() {
     fetchData();
   }, [setValue]);
 
+  // Memoize the journal data object to prevent unnecessary re-renders
+  const journalData = useMemo(() => {
+    return {
+      id: "today",
+      hasEntryToday: Boolean(existingEntry),
+      todayEntry: existingEntry
+        ? {
+            id: existingEntry.id,
+            habitLogs: existingEntry.habitLogs || [],
+          }
+        : {
+            id: "temp-id",
+            habitLogs: [],
+          },
+    };
+  }, [existingEntry]);
+
+  // Stable callback for handling local habit changes
+  const handleLocalHabitsChange = useCallback((habitCompletions: Record<string, boolean>) => {
+    setLocalHabitCompletions(habitCompletions);
+  }, []);
+
   // Handle form submission
   const onSubmit = async (data: JournalFormData) => {
     // Update data with current mood
@@ -233,12 +255,12 @@ export default function NewJournal() {
     }
   };
 
-  const useNotebookPen = (template: string) => {
+  const useTemplate = useCallback((template: string) => {
     setValue("content", template);
     toast({
-      description: "NotebookPen loaded! Feel free to customize it.",
+      description: "Template loaded! Feel free to customize it.",
     });
-  };
+  }, [setValue]);
 
   return (
     <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6">
@@ -306,16 +328,16 @@ export default function NewJournal() {
                   </div>
                 </div>
 
-                {/* NotebookPen Options */}
+                {/* Template Options */}
                 {!existingEntry && (
                   <div className="space-y-2">
-                    <Label>Quick Start NotebookPens</Label>
+                    <Label>Quick Start Templates</Label>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => useNotebookPen(PRODUCTIVITY_TEMPLATE)}
+                        onClick={() => useTemplate(PRODUCTIVITY_TEMPLATE)}
                         className="flex-1 text-sm touch-manipulation"
                       >
                         <NotebookPen className="h-4 w-4 mr-2" />
@@ -325,7 +347,7 @@ export default function NewJournal() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => useNotebookPen(SIMPLE_TEMPLATE)}
+                        onClick={() => useTemplate(SIMPLE_TEMPLATE)}
                         className="flex-1 text-sm touch-manipulation"
                       >
                         <FileEdit className="h-4 w-4 mr-2" />
@@ -470,22 +492,10 @@ Use Markdown formatting:
               ) : (
                 <HabitTracker
                   habits={habits}
-                  journalData={{
-                    id: "today",
-                    hasEntryToday: Boolean(existingEntry), // True only if entry actually exists
-                    todayEntry: existingEntry
-                      ? {
-                          id: existingEntry.id,
-                          habitLogs: existingEntry.habitLogs || [],
-                        }
-                      : {
-                          id: "temp-id", // Temporary ID for new entries
-                          habitLogs: [],
-                        },
-                  }}
+                  journalData={journalData}
                   showTitle={false}
-                  inJournalContext={true} // This is the key - always allow habit tracking in journal context
-                  onLocalHabitsChange={setLocalHabitCompletions} // Capture local habit changes
+                  inJournalContext={true}
+                  onLocalHabitsChange={handleLocalHabitsChange}
                 />
               )}
             </CardContent>
