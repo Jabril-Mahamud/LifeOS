@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { FileEdit, ArrowLeft, Save, Smile, Frown, Meh, NotebookPen, Eye, EyeOff } from "lucide-react";
+import { FileEdit, ArrowLeft, Save, Smile, Frown, Meh, NotebookPen, Eye, EyeOff, Plus, Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -26,198 +26,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-import { Habit, JournalFormData, MoodType, MOOD_OPTIONS } from "@/lib/types";
-
-const PRODUCTIVITY_TEMPLATE = `# Daily Focus - ${new Date().toLocaleDateString('en-US', { 
-  weekday: 'long', 
-  year: 'numeric', 
-  month: 'long', 
-  day: 'numeric' 
-})}
-
-## 🎯 Today's Priorities
-- [ ] Priority 1: [Specific outcome expected]
-- [ ] Priority 2: [Specific outcome expected]  
-- [ ] Priority 3: [Specific outcome expected]
-
-## ✅ Completed
-**What I accomplished:**
-- Finished [specific task/project]
-- Made progress on [specific area]
-- Resolved [specific issue]
-
-**Key wins:** [1-2 notable achievements]
-
-## 📊 Progress Check
-**Project/Goal:** [Name]
-- **Current status:** [Brief update]
-- **Next milestone:** [Specific target]
-- **Blockers:** [What's holding me back]
-
-## 🧠 Learning & Insights
-**Today I learned:**
-- [Specific insight or skill gained]
-- [Process improvement discovered]
-
-**What worked well:**
-- [Strategy/approach that was effective]
-
-**What didn't work:**
-- [Challenge faced and why it happened]
-
-## 🔄 Tomorrow's Setup
-**Top 3 priorities:**
-1. [Specific action item]
-2. [Specific action item]  
-3. [Specific action item]
-
-**Preparation needed:**
-- [Resource/tool required]
-- [Information to gather]
-- [Person to contact]
-
-## 📈 Weekly/Monthly View
-**This week's focus:** [Main objective]
-**This month's goal:** [Larger outcome]
-
----
-**Energy level:** [1-10] | **Focus time:** [Hours of deep work]`;
-
-const SIMPLE_TEMPLATE = `# ${new Date().toLocaleDateString('en-US', { 
-  weekday: 'long', 
-  year: 'numeric', 
-  month: 'long', 
-  day: 'numeric' 
-})}
-
-## What happened today?
-
-
-## How am I feeling?
-
-
-## What did I learn?
-
-
-## Tomorrow's focus:
-`;
-
-const WORKOUT_TEMPLATE = `# ${new Date().toLocaleDateString('en-US', { 
-  weekday: 'long', 
-  year: 'numeric', 
-  month: 'long', 
-  day: 'numeric' 
-})} - Fitness Log
-
-## 🏃 Today's Workout
-**Type:** [Cardio/Strength/Yoga/Rest Day]
-**Duration:** [Time spent]
-**Intensity:** [Light/Moderate/High]
-
-### Exercises:
-- [ ] Exercise 1 - [Sets x Reps or Duration]
-- [ ] Exercise 2 - [Sets x Reps or Duration]
-- [ ] Exercise 3 - [Sets x Reps or Duration]
-
-## 💪 How I Felt
-**Energy Level:** [1-10]
-**Motivation:** [1-10]
-**Physical feeling:** 
-
-## 🥗 Nutrition Notes
-**Water intake:** [Glasses/Liters]
-**Meals:** 
-- Breakfast: 
-- Lunch: 
-- Dinner: 
-- Snacks: 
-
-## 🎯 Tomorrow's Plan
-**Planned activity:** 
-**Focus area:** 
-**Goal:** `;
-
-const WORK_TEMPLATE = `# ${new Date().toLocaleDateString('en-US', { 
-  weekday: 'long', 
-  year: 'numeric', 
-  month: 'long', 
-  day: 'numeric' 
-})} - Work Journal
-
-## 🎯 Today's Priorities
-- [ ] [High priority task]
-- [ ] [Medium priority task]
-- [ ] [Low priority task]
-
-## ✅ Completed Tasks
-- [Task completed]
-- [Another completed task]
-
-## 💡 Key Insights & Learning
-**What I learned:**
-
-**Problem I solved:**
-
-**Skills I developed:**
-
-## 🤝 Meetings & Collaborations
-**Important meetings:**
-- Meeting 1: [Key outcomes]
-- Meeting 2: [Action items]
-
-**Team interactions:**
-
-## 📊 Progress & Metrics
-**Goals worked toward:**
-
-**Metrics/Numbers:**
-
-## 🔄 Tomorrow's Setup
-**Top 3 priorities:**
-1. 
-2. 
-3. 
-
-**Preparation needed:**
-
-## 💭 Reflection
-**What went well:**
-
-**What could improve:**
-
-**Energy & mood:** [1-10]`;
-
-const TEMPLATES = [
-  {
-    id: 'daily',
-    name: 'Daily Reflection',
-    icon: '📋',
-    description: 'Simple daily check-in',
-    content: SIMPLE_TEMPLATE
-  },
-  {
-    id: 'productivity',
-    name: 'Productivity & Goals',
-    icon: '🎯',
-    description: 'Detailed planning and tracking',
-    content: PRODUCTIVITY_TEMPLATE
-  },
-  {
-    id: 'workout',
-    name: 'Workout & Health',
-    icon: '🏃',
-    description: 'Fitness and wellness tracking',
-    content: WORKOUT_TEMPLATE
-  },
-  {
-    id: 'work',
-    name: 'Work & Career',
-    icon: '💼',
-    description: 'Professional development',
-    content: WORK_TEMPLATE
-  }
-];
+import { Habit, JournalFormData, MoodType, MOOD_OPTIONS, CustomTemplate, TemplateFormData } from "@/lib/types";
+import { BUILT_IN_TEMPLATES, generateFreshTemplate } from "@/lib/constants/templates";
 
 export default function NewJournal() {
   const [loading, setLoading] = useState(false);
@@ -228,6 +47,10 @@ export default function NewJournal() {
   const [showPreview, setShowPreview] = useState(false);
   const [activeTab, setActiveTab] = useState("write");
   const [localHabitCompletions, setLocalHabitCompletions] = useState<Record<string, boolean>>({});
+  const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
+  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateDescription, setTemplateDescription] = useState("");
   const router = useRouter();
 
   const {
@@ -295,6 +118,18 @@ export default function NewJournal() {
 
     fetchData();
   }, [setValue]);
+
+  // Load custom templates from localStorage
+  useEffect(() => {
+    const savedTemplates = localStorage.getItem('journal-custom-templates');
+    if (savedTemplates) {
+      try {
+        setCustomTemplates(JSON.parse(savedTemplates));
+      } catch (error) {
+        console.error('Error loading custom templates:', error);
+      }
+    }
+  }, []);
 
   // Memoize the journal data object to prevent unnecessary re-renders
   const journalData = useMemo(() => {
@@ -376,12 +211,81 @@ export default function NewJournal() {
     }
   };
 
-  const useTemplate = useCallback((template: string) => {
-    setValue("content", template);
+  const useTemplate = useCallback((templateIdOrContent: string, isCustom = false) => {
+    let content: string;
+    
+    if (isCustom) {
+      // For custom templates, use the content directly
+      content = templateIdOrContent;
+    } else {
+      // For built-in templates, generate fresh content with current date
+      content = generateFreshTemplate(templateIdOrContent);
+    }
+    
+    setValue("content", content);
     toast({
       description: "Template loaded! Feel free to customize it.",
     });
   }, [setValue]);
+
+  // Save a custom template
+  const saveCustomTemplate = useCallback(() => {
+    const content = watchedContent || "";
+    
+    if (!templateName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a template name.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!content.trim()) {
+      toast({
+        title: "Error", 
+        description: "Please write some content before saving as a template.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const templateData: TemplateFormData = {
+      name: templateName.trim(),
+      description: templateDescription.trim() || "Custom template",
+      content: content,
+    };
+
+    const newTemplate: CustomTemplate = {
+      id: Date.now().toString(),
+      ...templateData,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedTemplates = [...customTemplates, newTemplate];
+    setCustomTemplates(updatedTemplates);
+    localStorage.setItem('journal-custom-templates', JSON.stringify(updatedTemplates));
+
+    // Reset dialog state
+    setIsTemplateDialogOpen(false);
+    setTemplateName("");
+    setTemplateDescription("");
+
+    toast({
+      description: "Custom template saved successfully!",
+    });
+  }, [templateName, templateDescription, watchedContent, customTemplates]);
+
+  // Delete a custom template
+  const deleteCustomTemplate = useCallback((templateId: string) => {
+    const updatedTemplates = customTemplates.filter(t => t.id !== templateId);
+    setCustomTemplates(updatedTemplates);
+    localStorage.setItem('journal-custom-templates', JSON.stringify(updatedTemplates));
+    
+    toast({
+      description: "Template deleted successfully.",
+    });
+  }, [customTemplates]);
 
   return (
     <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6">
@@ -469,17 +373,19 @@ export default function NewJournal() {
                               <span className="sm:hidden">📝</span>
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-64" align="end">
-                            <div className="space-y-2">
+                          <PopoverContent className="w-64 sm:w-80" align="end">
+                            <div className="space-y-3">
                               <h4 className="font-medium text-sm">📝 Choose a Template</h4>
+                              
+                              {/* Built-in templates */}
                               <div className="space-y-1">
-                                {TEMPLATES.map((template) => (
+                                {BUILT_IN_TEMPLATES.map((template) => (
                                   <Button
                                     key={template.id}
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => useTemplate(template.content)}
+                                    onClick={() => useTemplate(template.id)}
                                     className="w-full justify-start text-left h-auto p-2"
                                   >
                                     <span className="mr-2">{template.icon}</span>
@@ -489,21 +395,60 @@ export default function NewJournal() {
                                     </div>
                                   </Button>
                                 ))}
-                                <div className="border-t pt-1 mt-2">
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setValue("content", "")}
-                                    className="w-full justify-start text-left h-auto p-2"
-                                  >
-                                    <span className="mr-2">+</span>
-                                    <div>
-                                      <div className="font-medium text-sm">Create new</div>
-                                      <div className="text-xs text-muted-foreground">Start with blank template</div>
-                                    </div>
-                                  </Button>
+                              </div>
+
+                              {/* Custom templates */}
+                              {customTemplates.length > 0 && (
+                                <div className="space-y-2">
+                                  <div className="border-t pt-2">
+                                    <div className="text-xs font-medium text-muted-foreground mb-2">Your Templates</div>
+                                  </div>
+                                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                                    {customTemplates.map((template) => (
+                                      <div key={template.id} className="group flex items-center">
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => useTemplate(template.content, true)}
+                                          className="flex-1 justify-start text-left h-auto p-2"
+                                        >
+                                          <span className="mr-2">📄</span>
+                                          <div>
+                                            <div className="font-medium text-sm">{template.name}</div>
+                                            <div className="text-xs text-muted-foreground">{template.description}</div>
+                                          </div>
+                                        </Button>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => deleteCustomTemplate(template.id)}
+                                          className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
+                              )}
+
+                              {/* Save template action */}
+                              <div className="border-t pt-2">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setIsTemplateDialogOpen(true)}
+                                  className="w-full justify-start text-left h-auto p-2"
+                                >
+                                  <span className="mr-2">💾</span>
+                                  <div>
+                                    <div className="font-medium text-sm">Save as Template</div>
+                                    <div className="text-xs text-muted-foreground">Save current content for reuse</div>
+                                  </div>
+                                </Button>
                               </div>
                             </div>
                           </PopoverContent>
@@ -625,6 +570,72 @@ Use Markdown formatting:
           </Card>
         </div>
       </div>
+
+      {/* Save Custom Template Dialog */}
+      <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
+        <DialogContent className="max-w-[95vw] sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save as Template</DialogTitle>
+            <DialogDescription>
+              Save your current journal content as a reusable template.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="template-name">Template Name</Label>
+              <Input
+                id="template-name"
+                placeholder="e.g., Weekly Review, Morning Pages..."
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="template-description">Description (optional)</Label>
+              <Input
+                id="template-description"
+                placeholder="Brief description of when to use this template"
+                value={templateDescription}
+                onChange={(e) => setTemplateDescription(e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            {/* Preview of content */}
+            <div className="space-y-2">
+              <Label>Content Preview</Label>
+              <div className="max-h-32 overflow-y-auto p-3 bg-muted rounded-md text-sm">
+                {watchedContent ? (
+                  <pre className="whitespace-pre-wrap font-sans">{watchedContent.slice(0, 200)}{watchedContent.length > 200 ? '...' : ''}</pre>
+                ) : (
+                  <span className="text-muted-foreground italic">No content to save</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsTemplateDialogOpen(false)}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={saveCustomTemplate}
+              disabled={!templateName.trim() || !watchedContent?.trim()}
+              className="w-full sm:w-auto"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Template
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

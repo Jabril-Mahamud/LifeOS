@@ -38,6 +38,11 @@ export interface JournalFormData {
     completed: boolean;
     notes?: string | null;
   }>;
+  habitCompletions?: Record<string, boolean>;
+}
+
+export interface JournalSubmitData extends JournalFormData {
+  habitCompletions?: Record<string, boolean>;
 }
 
 // ============================================================================
@@ -46,6 +51,17 @@ export interface JournalFormData {
 
 export interface JournalListProps {
   // No specific props needed as it manages its own state
+}
+
+export interface NewJournalPageState {
+  loading: boolean;
+  fetchingData: boolean;
+  habits: Habit[];
+  selectedMood: MoodType;
+  existingEntry: any;
+  showPreview: boolean;
+  activeTab: string;
+  localHabitCompletions: Record<string, boolean>;
 }
 
 // ============================================================================

@@ -13,6 +13,7 @@ export * from './habits';
 export * from './journal';
 export * from './projects';
 export * from './dashboard';
+export * from './templates';
 
 // Common utilities
 export * from './common';
