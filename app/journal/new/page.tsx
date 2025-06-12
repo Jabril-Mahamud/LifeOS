@@ -21,6 +21,11 @@ import { toast } from "@/hooks/use-toast";
 import { MarkdownHelpInline } from "@/components/journal/markdown-help";
 import { MarkdownRenderer } from "@/components/journal/markdown-renderer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import { Habit, JournalFormData, MoodType, MOOD_OPTIONS } from "@/lib/types";
 
@@ -97,6 +102,122 @@ const SIMPLE_TEMPLATE = `# ${new Date().toLocaleDateString('en-US', {
 
 ## Tomorrow's focus:
 `;
+
+const WORKOUT_TEMPLATE = `# ${new Date().toLocaleDateString('en-US', { 
+  weekday: 'long', 
+  year: 'numeric', 
+  month: 'long', 
+  day: 'numeric' 
+})} - Fitness Log
+
+## 🏃 Today's Workout
+**Type:** [Cardio/Strength/Yoga/Rest Day]
+**Duration:** [Time spent]
+**Intensity:** [Light/Moderate/High]
+
+### Exercises:
+- [ ] Exercise 1 - [Sets x Reps or Duration]
+- [ ] Exercise 2 - [Sets x Reps or Duration]
+- [ ] Exercise 3 - [Sets x Reps or Duration]
+
+## 💪 How I Felt
+**Energy Level:** [1-10]
+**Motivation:** [1-10]
+**Physical feeling:** 
+
+## 🥗 Nutrition Notes
+**Water intake:** [Glasses/Liters]
+**Meals:** 
+- Breakfast: 
+- Lunch: 
+- Dinner: 
+- Snacks: 
+
+## 🎯 Tomorrow's Plan
+**Planned activity:** 
+**Focus area:** 
+**Goal:** `;
+
+const WORK_TEMPLATE = `# ${new Date().toLocaleDateString('en-US', { 
+  weekday: 'long', 
+  year: 'numeric', 
+  month: 'long', 
+  day: 'numeric' 
+})} - Work Journal
+
+## 🎯 Today's Priorities
+- [ ] [High priority task]
+- [ ] [Medium priority task]
+- [ ] [Low priority task]
+
+## ✅ Completed Tasks
+- [Task completed]
+- [Another completed task]
+
+## 💡 Key Insights & Learning
+**What I learned:**
+
+**Problem I solved:**
+
+**Skills I developed:**
+
+## 🤝 Meetings & Collaborations
+**Important meetings:**
+- Meeting 1: [Key outcomes]
+- Meeting 2: [Action items]
+
+**Team interactions:**
+
+## 📊 Progress & Metrics
+**Goals worked toward:**
+
+**Metrics/Numbers:**
+
+## 🔄 Tomorrow's Setup
+**Top 3 priorities:**
+1. 
+2. 
+3. 
+
+**Preparation needed:**
+
+## 💭 Reflection
+**What went well:**
+
+**What could improve:**
+
+**Energy & mood:** [1-10]`;
+
+const TEMPLATES = [
+  {
+    id: 'daily',
+    name: 'Daily Reflection',
+    icon: '📋',
+    description: 'Simple daily check-in',
+    content: SIMPLE_TEMPLATE
+  },
+  {
+    id: 'productivity',
+    name: 'Productivity & Goals',
+    icon: '🎯',
+    description: 'Detailed planning and tracking',
+    content: PRODUCTIVITY_TEMPLATE
+  },
+  {
+    id: 'workout',
+    name: 'Workout & Health',
+    icon: '🏃',
+    description: 'Fitness and wellness tracking',
+    content: WORKOUT_TEMPLATE
+  },
+  {
+    id: 'work',
+    name: 'Work & Career',
+    icon: '💼',
+    description: 'Professional development',
+    content: WORK_TEMPLATE
+  }
+];
 
 export default function NewJournal() {
   const [loading, setLoading] = useState(false);
@@ -328,40 +449,67 @@ export default function NewJournal() {
                   </div>
                 </div>
 
-                {/* Template Options */}
-                {!existingEntry && (
-                  <div className="space-y-2">
-                    <Label>Quick Start Templates</Label>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => useTemplate(PRODUCTIVITY_TEMPLATE)}
-                        className="flex-1 text-sm touch-manipulation"
-                      >
-                        <NotebookPen className="h-4 w-4 mr-2" />
-                        Productivity Focus
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => useTemplate(SIMPLE_TEMPLATE)}
-                        className="flex-1 text-sm touch-manipulation"
-                      >
-                        <FileEdit className="h-4 w-4 mr-2" />
-                        Simple Reflection
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Content with Tabs */}
+                {/* Content with Template Selector */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="content">Journal Entry</Label>
                     <div className="flex items-center gap-2">
+                      {/* Template Selector */}
+                      {!existingEntry && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="text-xs sm:text-sm"
+                            >
+                              <NotebookPen className="h-4 w-4 mr-1" />
+                              <span className="hidden sm:inline">Templates</span>
+                              <span className="sm:hidden">📝</span>
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-64" align="end">
+                            <div className="space-y-2">
+                              <h4 className="font-medium text-sm">📝 Choose a Template</h4>
+                              <div className="space-y-1">
+                                {TEMPLATES.map((template) => (
+                                  <Button
+                                    key={template.id}
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => useTemplate(template.content)}
+                                    className="w-full justify-start text-left h-auto p-2"
+                                  >
+                                    <span className="mr-2">{template.icon}</span>
+                                    <div>
+                                      <div className="font-medium text-sm">{template.name}</div>
+                                      <div className="text-xs text-muted-foreground">{template.description}</div>
+                                    </div>
+                                  </Button>
+                                ))}
+                                <div className="border-t pt-1 mt-2">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setValue("content", "")}
+                                    className="w-full justify-start text-left h-auto p-2"
+                                  >
+                                    <span className="mr-2">+</span>
+                                    <div>
+                                      <div className="font-medium text-sm">Create new</div>
+                                      <div className="text-xs text-muted-foreground">Start with blank template</div>
+                                    </div>
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                      
                       <Button
                         type="button"
                         variant="ghost"
@@ -385,40 +533,15 @@ export default function NewJournal() {
                   </div>
 
                   {showPreview ? (
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="write" className="text-sm">Write</TabsTrigger>
-                        <TabsTrigger value="preview" className="text-sm">Preview</TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="write" className="mt-3">
-                        <Textarea
-                          id="content"
-                          placeholder="Start writing your thoughts, experiences, and reflections...
-
-Use Markdown formatting:
-- **Bold text** and *italic text*
-- # Headers and ## Subheaders  
-- - Bullet points and 1. Numbered lists
-- > Quotes for emphasis
-- `code snippets` and [links](https://example.com)"
-                          className="min-h-[400px] sm:min-h-[500px] text-sm sm:text-base"
-                          {...register("content")}
-                        />
-                      </TabsContent>
-                      
-                      <TabsContent value="preview" className="mt-3">
-                        <div className="min-h-[400px] sm:min-h-[500px] p-4 border rounded-md bg-muted/30">
-                          {watchedContent ? (
-                            <MarkdownRenderer content={watchedContent} />
-                          ) : (
-                            <p className="text-muted-foreground italic">
-                              Start writing to see a preview...
-                            </p>
-                          )}
-                        </div>
-                      </TabsContent>
-                    </Tabs>
+                    <div className="min-h-[400px] sm:min-h-[500px] p-4 border rounded-md bg-muted/30">
+                      {watchedContent ? (
+                        <MarkdownRenderer content={watchedContent} />
+                      ) : (
+                        <p className="text-muted-foreground italic">
+                          Start writing to see a preview...
+                        </p>
+                      )}
+                    </div>
                   ) : (
                     <Textarea
                       id="content"
