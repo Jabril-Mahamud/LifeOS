@@ -233,6 +233,11 @@ Acceptance
 Acceptance
 - Visual spacing consistent with existing shadcn/ui patterns.
 
+### Phase 2 status
+- [x] Extend validation to journal, projects, and tasks APIs with standardized error responses
+- [x] Mobile padding added (journal, habits, projects, tasks) and a11y labels (tab bar, create button)
+- [ ] Quick visual tidy (card paddings, icon sizes)
+
 ---
 
 ## Phase 3 — Tests & monitoring
