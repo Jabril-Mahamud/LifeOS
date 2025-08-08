@@ -80,7 +80,7 @@ export async function PATCH(
         { status: 400 }
       );
     }
-    const { title, description, projectId, priority, dueDate, status, completedAt } = parsed.data as any;
+    const { title, description, projectId, priority, dueDate, status, completedAt } = parsed.data;
 
     // Find the user in our database
     const dbUser = await prisma.user.findUnique({
@@ -125,7 +125,7 @@ export async function PATCH(
     // Handle status updates to "completed"
     let updatedCompletedAt = completedAt;
     if (status === "completed" && task.status !== "completed") {
-      updatedCompletedAt = new Date();
+      updatedCompletedAt = new Date().toISOString();
     } else if (status !== "completed" && task.status === "completed") {
       updatedCompletedAt = null;
     }

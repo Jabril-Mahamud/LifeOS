@@ -27,7 +27,13 @@ export default function NewJournal() {
   const [fetchingData, setFetchingData] = useState(true);
   const [habits, setHabits] = useState<Habit[]>([]);
   const [selectedMood, setSelectedMood] = useState<MoodType>("neutral");
-  const [existingEntry, setExistingEntry] = useState<any>(null);
+  const [existingEntry, setExistingEntry] = useState<{
+    id: string;
+    title: string;
+    content?: string | null;
+    mood?: MoodType;
+    habitLogs?: Array<{ habitId: string; completed: boolean; notes?: string | null }>;
+  } | null>(null);
   const router = useRouter();
 
   const {
@@ -77,7 +83,7 @@ export default function NewJournal() {
         const habitsData = await habitsResponse.json();
 
         // Only use active habits
-        setHabits(habitsData.habits.filter((habit: any) => habit.active));
+        setHabits(habitsData.habits.filter((habit: Habit) => habit.active));
       } catch (error) {
         console.error("Error fetching data:", error);
         toast({
@@ -148,7 +154,7 @@ export default function NewJournal() {
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
       <div className="flex items-center">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-2xl font-bold ml-2">
@@ -284,7 +290,15 @@ You can use Markdown formatting:
                     todayEntry: existingEntry
                       ? {
                           id: existingEntry.id,
-                          habitLogs: existingEntry.habitLogs || [],
+                          habitLogs: (existingEntry.habitLogs || []).map(log => ({
+                            id: log.habitId, // Use habitId as a temporary ID
+                            habitId: log.habitId,
+                            journalId: existingEntry.id,
+                            completed: log.completed,
+                            notes: log.notes || null,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                          })),
                         }
                       : undefined,
                   }}

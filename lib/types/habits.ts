@@ -39,13 +39,9 @@ export interface HabitStatsResponse {
 // HABIT FORM TYPES
 // ============================================================================
 
-export interface HabitFormData {
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  active?: boolean;
-}
+import { HabitFormSchema } from './schemas';
+
+export type HabitFormData = HabitFormSchema;
 
 // ============================================================================
 // HABIT COMPONENT TYPES

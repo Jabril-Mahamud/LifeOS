@@ -3,6 +3,7 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { getOrCreateDbUser } from '@/lib/user';
 import { createProjectSchema } from '@/lib/validation/projects';
+import { handlePrismaError } from '@/lib/utils/errors';
 
 // GET /api/projects - Get all user projects
 export async function GET(req: NextRequest) {
@@ -74,21 +75,6 @@ export async function POST(req: NextRequest) {
     }
     const dbUser = await getOrCreateDbUser(userId, clerkUserObj);
 
-    // Check if project with this name already exists for the user
-    const existingProject = await prisma.project.findFirst({
-      where: {
-        authorId: dbUser.id,
-        name,
-      },
-    });
-
-    if (existingProject) {
-      return NextResponse.json(
-        { error: 'A project with this name already exists' }, 
-        { status: 400 }
-      );
-    }
-
     // Create a new project
     const project = await prisma.project.create({
       data: {
@@ -103,9 +89,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ project }, { status: 201 });
   } catch (error) {
     console.error('Error creating project:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    );
+    const { status, message } = handlePrismaError(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }

@@ -3,6 +3,7 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { getOrCreateDbUser } from '@/lib/user';
 import { createHabitSchema } from '@/lib/validation/habits';
+import { handlePrismaError } from '@/lib/utils/errors';
 
 // GET /api/habits - Get all user habits
 export async function GET(req: NextRequest) {
@@ -66,21 +67,6 @@ export async function POST(req: NextRequest) {
     }
     const dbUser = await getOrCreateDbUser(userId, clerkUserObj);
 
-    // Check if habit with this name already exists for the user
-    const existingHabit = await prisma.habit.findFirst({
-      where: {
-        authorId: dbUser.id,
-        name,
-      },
-    });
-
-    if (existingHabit) {
-      return NextResponse.json(
-        { error: 'A habit with this name already exists' }, 
-        { status: 400 }
-      );
-    }
-
     // Create a new habit
     const habit = await prisma.habit.create({
       data: {
@@ -95,9 +81,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ habit }, { status: 201 });
   } catch (error) {
     console.error('Error creating habit:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    );
+    const { status, message } = handlePrismaError(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }

@@ -24,7 +24,7 @@ export function PWAInstallPrompt() {
     // Check if app is already installed (standalone mode)
     const checkStandalone = () => {
       const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches ||
-        (window.navigator as any).standalone ||
+        (window.navigator as unknown as { standalone?: boolean }).standalone ||
         document.referrer.includes('android-app://');
       
       setIsStandalone(isStandaloneMode);

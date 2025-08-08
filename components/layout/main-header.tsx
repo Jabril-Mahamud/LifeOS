@@ -190,6 +190,7 @@ export function MainHeader() {
                     variant="ghost"
                     size="icon"
                     className="h-9 w-9"
+                    aria-label="Open navigation menu"
                   >
                     <Menu className="h-5 w-5" />
                     <span className="sr-only">Open navigation menu</span>

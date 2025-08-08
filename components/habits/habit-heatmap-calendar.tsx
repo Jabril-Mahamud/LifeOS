@@ -20,11 +20,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { HabitWithStats } from "@/lib/types";
+import { DashboardHabit } from "@/lib/types";
 
 
 interface HeatmapCalendarProps {
-  habits: HabitWithStats[];
+  habits: DashboardHabit[];
   title?: string;
   className?: string;
 }
@@ -151,7 +151,8 @@ export function HabitHeatmapCalendar({
       if (habit?.color) {
         // Create opacity levels for the habit color
         return { 
-          backgroundColor: habit.color,
+          backgroundColor: habit.color || 'hsl(var(--primary))',
+                color: 'white',
           opacity: 0.25 + (intensity * 0.2) // 0.25, 0.45, 0.65, 0.85
         };
       }
@@ -222,7 +223,7 @@ export function HabitHeatmapCalendar({
           </div>
           
           <div className="flex gap-2">
-            <Button variant="outline" size="icon" onClick={prevMonth}>
+            <Button variant="outline" size="icon" onClick={prevMonth} aria-label="Previous month">
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="text-sm font-medium w-28 text-center">
@@ -233,6 +234,7 @@ export function HabitHeatmapCalendar({
               size="icon" 
               onClick={nextMonth}
               disabled={isSameMonth(selectedDate, new Date())}
+              aria-label="Next month"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -258,7 +260,8 @@ export function HabitHeatmapCalendar({
               size="sm"
               onClick={() => setSelectedHabit(habit.id)}
               style={selectedHabit === habit.id && habit.color ? 
-                { backgroundColor: habit.color, borderColor: habit.color } : 
+                { backgroundColor: habit.color || 'hsl(var(--primary))',
+                color: 'white', borderColor: habit.color } : 
                 {}
               }
             >

@@ -3,6 +3,7 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { getOrCreateDbUser } from '@/lib/user';
 import { createTaskSchema } from '@/lib/validation/tasks';
+import { formatForStorage, startOfUserDay, endOfUserDay } from '@/lib/utils/dates';
 
 // GET /api/tasks - Get all user tasks
 export async function GET(req: NextRequest) {
@@ -29,7 +30,12 @@ export async function GET(req: NextRequest) {
     const priority = req.nextUrl.searchParams.get('priority');
     
     // Build where clause based on query parameters
-    const where: any = { authorId: dbUser.id };
+    const where: {
+      authorId: string;
+      projectId?: string;
+      status?: string;
+      priority?: string;
+    } = { authorId: dbUser.id };
     
     if (projectId) {
       where.projectId = projectId;
@@ -43,27 +49,52 @@ export async function GET(req: NextRequest) {
       where.priority = priority;
     }
 
-    // Get user's tasks
-    const tasks = await prisma.task.findMany({
-      where,
-      orderBy: [
-        { status: 'asc' }, // Pending tasks first
-        { dueDate: 'asc' }, // Then by due date (soonest first)
-        { priority: 'desc' }, // Then by priority (highest first)
-      ],
-      include: {
-        project: {
-          select: {
-            id: true,
-            name: true,
-            color: true,
-            icon: true,
+    // Get pagination parameters
+    const page = parseInt(req.nextUrl.searchParams.get('page') || '1');
+    const limit = parseInt(req.nextUrl.searchParams.get('limit') || '20');
+    const skip = (page - 1) * limit;
+
+    // Get user's tasks with pagination
+    const [tasks, total] = await Promise.all([
+      prisma.task.findMany({
+        where,
+        orderBy: [
+          { status: 'asc' }, // Pending tasks first
+          { dueDate: 'asc' }, // Then by due date (soonest first)
+          { priority: 'desc' }, // Then by priority (highest first)
+        ],
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          status: true,
+          priority: true,
+          dueDate: true,
+          completedAt: true,
+          project: {
+            select: {
+              id: true,
+              name: true,
+              color: true,
+              icon: true,
+            },
           },
         },
-      },
-    });
+        skip,
+        take: limit,
+      }),
+      prisma.task.count({ where })
+    ]);
 
-    return NextResponse.json({ tasks });
+    return NextResponse.json({
+      tasks,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error('Error fetching tasks:', error);
     return NextResponse.json(
@@ -123,7 +154,7 @@ export async function POST(req: NextRequest) {
         projectId,
         priority: priority || 'medium',
         status: status || 'pending',
-        dueDate: dueDate ? new Date(dueDate) : undefined,
+        dueDate: dueDate ? formatForStorage(dueDate) : undefined,
         authorId: dbUser.id,
       },
       include: {

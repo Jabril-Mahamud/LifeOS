@@ -9,14 +9,12 @@ import {
   CalendarDays,
   BarChart4,
   Trophy,
-  Calendar,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -31,8 +29,6 @@ import {
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
-  isSameMonth,
-  isSameDay,
   subMonths,
   addMonths,
 } from "date-fns";
@@ -297,13 +293,13 @@ export default function HabitDetailPage({ params }: PageProps) {
                 Habit Calendar
               </CardTitle>
               <div className="flex items-center space-x-2">
-                <Button variant="outline" size="icon" onClick={prevMonth}>
+                <Button variant="outline" size="icon" onClick={prevMonth} aria-label="Previous month">
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-sm font-medium">
                   {format(currentMonth, "MMMM yyyy")}
                 </span>
-                <Button variant="outline" size="icon" onClick={nextMonth}>
+                <Button variant="outline" size="icon" onClick={nextMonth} aria-label="Next month">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>

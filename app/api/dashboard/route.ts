@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
-import { startOfDay, endOfDay, subDays, parseISO, isToday } from 'date-fns';
+import { startOfDay, endOfDay, subDays } from 'date-fns';
 import { getOrCreateDbUser } from '@/lib/user';
 
 export async function GET(req: NextRequest) {

@@ -130,6 +130,10 @@
 
 /* Enhanced accent color usage */
 @layer components {
+  /* Mobile bottom padding for tab bar */
+  .mobile-pb {
+    @apply pb-24 lg:pb-0;
+  }
   /* Focus states with accent color */
   .focus-accent:focus-visible {
     @apply ring-2 ring-accent ring-offset-2 ring-offset-background;

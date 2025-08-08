@@ -77,7 +77,7 @@ export async function PATCH(
         { status: 400 }
       );
     }
-    const { title, content, mood, habitLogs = [] } = parsed.data as any;
+    const { title, content, mood, habitLogs = [] } = parsed.data;
     
     // Find the user in our database
     const dbUser = await prisma.user.findUnique({
@@ -118,7 +118,7 @@ export async function PATCH(
     // Process habit logs if provided
     if (habitLogs.length > 0) {
       // Verify these habits belong to the user
-      const habitIds = habitLogs.map((log: any) => log.habitId);
+      const habitIds = habitLogs.map((log) => log.habitId);
       const userHabits = await prisma.habit.findMany({
         where: {
           id: { in: habitIds },

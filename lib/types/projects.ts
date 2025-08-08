@@ -60,23 +60,10 @@ export interface ProjectStats {
 // FORM TYPES
 // ============================================================================
 
-export interface TaskFormData {
-  title: string;
-  description: string;
-  projectId: string;
-  priority: TaskPriority;
-  status: TaskStatus;
-  dueDate: Date | null;
-}
+import { TaskFormSchema, ProjectFormSchema } from './schemas';
 
-export interface ProjectFormData {
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  completed?: boolean;
-  archived?: boolean;
-}
+export type TaskFormData = TaskFormSchema;
+export type ProjectFormData = ProjectFormSchema;
 
 // ============================================================================
 // COMPONENT TYPES

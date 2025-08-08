@@ -1,12 +1,13 @@
 import { z } from "zod";
+import { taskStatusSchema, taskPrioritySchema } from "@/lib/types/enums";
 
 export const createTaskSchema = z.object({
-  title: z.string().min(1, { message: "Title is required" }),
-  description: z.string().max(2000).optional(),
-  projectId: z.string().optional(),
-  priority: z.enum(["low", "medium", "high"]).optional(),
-  status: z.enum(["pending", "in-progress", "completed"]).optional(),
-  dueDate: z.string().datetime().optional(),
+  title: z.string().min(1, { message: "Title is required" }).max(100, { message: "Title must be 100 characters or less" }),
+  description: z.string().max(2000, { message: "Description must be 2000 characters or less" }).optional(),
+  projectId: z.string().uuid({ message: "Invalid project ID" }).optional(),
+  priority: taskPrioritySchema.optional(),
+  status: taskStatusSchema.optional(),
+  dueDate: z.string().datetime({ message: "Invalid date format" }).optional(),
 });
 
 export const updateTaskSchema = createTaskSchema.partial().extend({

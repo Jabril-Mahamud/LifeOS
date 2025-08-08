@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { HabitTracker } from "@/components/habits/habit-tracker";
 import { toast } from "@/hooks/use-toast";
 import { MarkdownHelpInline } from "@/components/journal/markdown-help";
-import { Habit, JournalFormData, MOOD_OPTIONS, MoodType } from "@/lib/types";
+import { Habit, JournalFormData, MOOD_OPTIONS, MoodType, JournalWithHabitLogs } from "@/lib/types";
 
 
 
@@ -27,7 +27,7 @@ export default function EditJournal({ params }: PageProps) {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [selectedMood, setSelectedMood] = useState<MoodType>("neutral");
   const [journalId, setJournalId] = useState<string | null>(null);
-  const [journalData, setJournalData] = useState<any>(null);
+  const [journalData, setJournalData] = useState<JournalWithHabitLogs | null>(null);
   const router = useRouter();
   
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<JournalFormData>({
@@ -77,7 +77,7 @@ export default function EditJournal({ params }: PageProps) {
         
         const habitsData = await habitsResponse.json();
         // Only use active habits
-        setHabits(habitsData.habits.filter((habit: any) => habit.active));
+        setHabits(habitsData.habits.filter((habit: Habit) => habit.active));
       } catch (error) {
         console.error("Error fetching data:", error);
         toast({
@@ -137,7 +137,7 @@ export default function EditJournal({ params }: PageProps) {
     return (
       <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         <div className="flex items-center">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl font-bold ml-2">Loading journal data...</h1>
@@ -149,7 +149,7 @@ export default function EditJournal({ params }: PageProps) {
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
       <div className="flex items-center">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-2xl font-bold ml-2">Edit Journal Entry</h1>

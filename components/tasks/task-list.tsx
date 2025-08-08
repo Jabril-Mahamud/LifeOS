@@ -12,7 +12,7 @@ import {
   ArrowUp,
   ArrowRight 
 } from "lucide-react";
-import { format } from "date-fns";
+import { formatForDisplay } from "@/lib/utils/dates";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,22 +35,10 @@ export function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
   const router = useRouter();
   const [loadingTaskId, setLoadingTaskId] = useState<string | null>(null);
 
-  // Format a date to show "Today", "Tomorrow", or the formatted date
+  // Format a date for display
   const formatRelativeDate = (dateString: string | null) => {
     if (!dateString) return null;
-    
-    const date = new Date(dateString);
-    const today = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 1);
-    
-    if (format(date, "yyyy-MM-dd") === format(today, "yyyy-MM-dd")) {
-      return "Today";
-    } else if (format(date, "yyyy-MM-dd") === format(tomorrow, "yyyy-MM-dd")) {
-      return "Tomorrow";
-    } else {
-      return format(date, "MMM d, yyyy");
-    }
+    return formatForDisplay(dateString);
   };
 
   // Priority and status color mappings
@@ -189,8 +177,8 @@ export function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
                     variant="outline"
                     className="text-xs font-normal"
                     style={{
-                      backgroundColor: task.project.color || undefined,
-                      color: task.project.color ? 'white' : undefined
+                                    backgroundColor: task.project.color || 'hsl(var(--primary))',
+              color: 'white'
                     }}
                   >
                     {task.project.name}

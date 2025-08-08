@@ -7,13 +7,22 @@ import type { User as DbUser } from '@prisma/client';
  * - If not found, match by primary email and attach the Clerk userId
  * - Otherwise, create a new user
  */
-export async function getOrCreateDbUser(userId: string, clerkUser: any): Promise<DbUser> {
+type ClerkEmailAddress = { id: string; emailAddress: string };
+type ClerkUser = {
+  firstName?: string | null;
+  lastName?: string | null;
+  imageUrl?: string | null;
+  primaryEmailAddressId?: string | null;
+  emailAddresses?: ClerkEmailAddress[];
+};
+
+export async function getOrCreateDbUser(userId: string, clerkUser: ClerkUser): Promise<DbUser> {
   if (!userId) {
     throw new Error('AUTH_REQUIRED');
   }
 
   const primaryEmail: string | undefined = clerkUser?.emailAddresses?.find(
-    (email: any) => email.id === clerkUser?.primaryEmailAddressId
+    (email: ClerkEmailAddress) => email.id === clerkUser?.primaryEmailAddressId
   )?.emailAddress;
 
   if (!primaryEmail) {

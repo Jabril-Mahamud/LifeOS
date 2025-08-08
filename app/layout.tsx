@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/components/layout/theme/theme-provider";
 import { PWAInstallPrompt } from "@/components/pwa/install-prompt";
 import Script from "next/script";
 import { MobileTabBar } from "@/components/layout/mobile-tabbar";
+import { MobileFab } from "@/components/layout/mobile-fab";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
@@ -185,6 +186,7 @@ export default function RootLayout({
             </div>
             <Footer />
             <MobileTabBar />
+            <MobileFab />
             <Toaster />
             <PWAInstallPrompt />
           </ThemeProvider>

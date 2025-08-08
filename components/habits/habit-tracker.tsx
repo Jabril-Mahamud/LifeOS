@@ -59,7 +59,7 @@ export function HabitTracker({
   const toggleHabitCompletion = async (habitId: string) => {
     if (!journalData?.hasEntryToday) {
       toast({
-        description: "Create today's journal entry first",
+        description: "Create today&apos;s journal entry first",
       });
       router.push("/journal/new");
       return;
@@ -113,7 +113,15 @@ export function HabitTracker({
   // Filter habits with streak data for the visualization
   const habitsWithData = habits.filter(habit => 
     habit.streakData && habit.streakData.length > 0
-  );
+  ).map(habit => ({
+    id: habit.id,
+    name: habit.name,
+    icon: habit.icon,
+    color: habit.color,
+    streak: habit.streak || 0,
+    completionRate: habit.completionRate || 0,
+    streakData: habit.streakData || [],
+  }));
 
   // Check if there's enough data for visualization
   const hasEnoughData = habitsWithData.length > 0;
@@ -138,7 +146,7 @@ export function HabitTracker({
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="today">
               <Calendar className="h-4 w-4 mr-2" />
-              Today's Habits
+              Today&apos;s Habits
             </TabsTrigger>
             <TabsTrigger value="insights">
               <BarChart className="h-4 w-4 mr-2" />
@@ -164,7 +172,7 @@ export function HabitTracker({
                         {isCompleted ? (
                           <CheckCircle2 
                             className="h-5 w-5" 
-                            style={{ color: habit.color || 'currentColor' }}
+                            style={{ color: habit.color || 'hsl(var(--primary))' }}
                           />
                         ) : (
                           <Circle className="h-5 w-5 text-muted-foreground" />
@@ -244,7 +252,7 @@ export function HabitTracker({
                   {isCompleted ? (
                     <CheckCircle2 
                       className="h-5 w-5" 
-                      style={{ color: habit.color || 'currentColor' }}
+                      style={{ color: habit.color || 'hsl(var(--primary))' }}
                     />
                   ) : (
                     <Circle className="h-5 w-5 text-muted-foreground" />

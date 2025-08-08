@@ -162,10 +162,10 @@ export async function POST(req: NextRequest) {
     });
 
     // Process habit logs if provided
-    const createdHabitLogs = [];
+    const createdHabitLogs: Array<{ id: string }> = [];
     if (habitLogs.length > 0) {
       // Verify these habits belong to the user
-      const habitIds = habitLogs.map((log: any) => log.habitId);
+      const habitIds = habitLogs.map((log) => log.habitId);
       const userHabits = await prisma.habit.findMany({
         where: {
           id: { in: habitIds },

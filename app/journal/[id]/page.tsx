@@ -134,7 +134,7 @@ export default function JournalDetailPage({ params }: PageProps) {
     return (
       <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         <div className="flex items-center">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl font-bold ml-2">Loading journal entry...</h1>
@@ -147,7 +147,7 @@ export default function JournalDetailPage({ params }: PageProps) {
     return (
       <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         <div className="flex items-center">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl font-bold ml-2">Journal entry not found</h1>
@@ -163,7 +163,7 @@ export default function JournalDetailPage({ params }: PageProps) {
     <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl font-bold ml-2">Journal Entry</h1>

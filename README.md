@@ -149,6 +149,61 @@ LifeOS is designed to be your central hub for personal growth and productivity. 
 
    Navigate to [http://localhost:3000](http://localhost:3000)
 
+### Environment Variables
+
+The following environment variables are required:
+
+```env
+# Authentication (required)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...  # Clerk publishable key
+CLERK_SECRET_KEY=sk_test_...                   # Clerk secret key
+
+# Database (required)
+DATABASE_URL=postgresql://...                  # PostgreSQL connection string
+
+# Application (required)
+NEXT_PUBLIC_APP_URL=http://localhost:3000     # Base URL for the application
+
+# PWA (optional)
+NEXT_PUBLIC_PWA_ENABLED=true                  # Enable/disable PWA features
+```
+
+For development:
+1. Copy `.env.example` to `.env.local`
+2. Fill in the required values
+3. Optional values can be left empty
+
+For production:
+1. Set all required variables in your hosting platform
+2. Use production-grade values (e.g., PostgreSQL with SSL)
+3. Set `NODE_ENV=production`
+
+### Build & Lint Policy
+
+The project enforces strict TypeScript and ESLint rules:
+
+1. **TypeScript**:
+   - Strict mode enabled
+   - No implicit any
+   - No unused variables/imports
+   - Proper return types required
+
+2. **ESLint**:
+   - All warnings must be fixed before deployment
+   - No disabling of important rules
+   - Custom rules for React Hooks and accessibility
+
+3. **Build Process**:
+   - TypeScript compilation must succeed
+   - ESLint checks must pass
+   - No runtime errors in server components
+   - All environment variables must be present
+
+4. **CI/CD**:
+   - Automated checks on pull requests
+   - Build verification before deployment
+   - Type checking across the entire codebase
+
 ### Setting Up Authentication
 
 1. Create a free account at [Clerk.dev](https://clerk.dev)

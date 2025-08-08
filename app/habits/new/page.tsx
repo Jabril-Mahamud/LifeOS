@@ -85,7 +85,7 @@ export default function NewHabit() {
               <Label htmlFor="name">Habit Name <span className="text-red-500">*</span></Label>
               <Input
                 id="name"
-                placeholder="Enter habit name (e.g., 'Drink water', 'Read', 'Exercise')"
+                placeholder="Enter habit name (e.g., &apos;Drink water&apos;, &apos;Read&apos;, &apos;Exercise&apos;)"
                 {...register("name", { required: "Habit name is required" })}
               />
               {errors.name && (

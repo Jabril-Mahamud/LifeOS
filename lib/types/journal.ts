@@ -29,23 +29,16 @@ export interface DashboardJournal {
 // JOURNAL FORM TYPES
 // ============================================================================
 
-export interface JournalFormData {
-  title: string;
-  content: string;
-  mood: MoodType;
-  habitLogs?: Array<{
-    habitId: string;
-    completed: boolean;
-    notes?: string | null;
-  }>;
-}
+import { JournalFormSchema } from './schemas';
+
+export type JournalFormData = JournalFormSchema;
 
 // ============================================================================
 // JOURNAL COMPONENT TYPES
 // ============================================================================
 
 export interface JournalListProps {
-  // No specific props needed as it manages its own state
+  placeholder?: string;
 }
 
 // ============================================================================

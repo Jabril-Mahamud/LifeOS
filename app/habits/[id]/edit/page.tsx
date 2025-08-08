@@ -142,7 +142,7 @@ export default function EditHabit({ params }: PageProps) {
     return (
       <div className="container mx-auto max-w-3xl p-4 md:p-6 lg:p-8">
         <div className="flex items-center mb-6">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl font-bold ml-2">Loading habit data...</h1>
@@ -154,7 +154,7 @@ export default function EditHabit({ params }: PageProps) {
   return (
     <div className="container mx-auto max-w-3xl p-4 md:p-6 lg:p-8">
       <div className="flex items-center mb-6">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-2xl font-bold ml-2">Edit Habit</h1>
@@ -180,7 +180,7 @@ export default function EditHabit({ params }: PageProps) {
               </Label>
               <Input
                 id="name"
-                placeholder="Enter habit name (e.g., 'Drink water', 'Read', 'Exercise')"
+                placeholder="Enter habit name (e.g., &apos;Drink water&apos;, &apos;Read&apos;, &apos;Exercise&apos;)"
                 {...register("name", { required: "Habit name is required" })}
               />
               {errors.name && (
@@ -255,7 +255,7 @@ export default function EditHabit({ params }: PageProps) {
               <p className="text-sm text-muted-foreground">
                 {active
                   ? "This habit is active and will be tracked"
-                  : "This habit is inactive and won't appear in daily tracking"}
+                  : "This habit is inactive and won&apos;t appear in daily tracking"}
               </p>
             </div>
           </CardContent>
