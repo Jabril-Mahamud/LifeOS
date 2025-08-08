@@ -18,14 +18,12 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { 
   Menu, 
-  ChevronDown, 
-  FileEdit, 
-  CheckCircle2, 
   Plus, 
-  LayoutGrid, 
-  ListTodo,
   BarChart3,
-  X
+  FileEdit,
+  CheckCircle2,
+  LayoutGrid,
+  ListTodo
 } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme/theme-toggle";
 
@@ -39,70 +37,12 @@ export function MainHeader() {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  // Check if current path is in journal/habits system
-  const isJournalHabitsActive = () => {
-    return pathname.startsWith('/journal') || pathname.startsWith('/habits');
-  };
-
-  // Check if current path is in projects/tasks system
-  const isProjectsTasksActive = () => {
-    return pathname.startsWith('/projects') || pathname.startsWith('/tasks');
-  };
-
-  // Journal & Habits navigation items
-  const journalHabitsItems = [
-    {
-      name: "Journal",
-      href: "/journal",
-      icon: FileEdit,
-      description: "View all journal entries"
-    },
-    {
-      name: "Manage Habits",
-      href: "/habits",
-      icon: CheckCircle2,
-      description: "Track and manage habits"
-    },
-    {
-      name: "New Journal Entry",
-      href: "/journal/new",
-      icon: Plus,
-      description: "Write a new journal entry"
-    },
-    {
-      name: "New Habit",
-      href: "/habits/new",
-      icon: Plus,
-      description: "Create a new habit"
-    },
-  ];
-
-  // Projects & Tasks navigation items
-  const projectsTasksItems = [
-    {
-      name: "Projects",
-      href: "/projects",
-      icon: LayoutGrid,
-      description: "View all projects"
-    },
-    {
-      name: "Tasks",
-      href: "/tasks",
-      icon: ListTodo,
-      description: "View all tasks"
-    },
-    {
-      name: "New Project",
-      href: "/projects/new",
-      icon: Plus,
-      description: "Create a new project"
-    },
-    {
-      name: "New Task",
-      href: "/tasks/new",
-      icon: Plus,
-      description: "Create a new task"
-    },
+  // Unified create items
+  const createItems = [
+    { name: "Journal Entry", href: "/journal/new" },
+    { name: "Habit", href: "/habits/new" },
+    { name: "Project", href: "/projects/new" },
+    { name: "Task", href: "/tasks/new" },
   ];
 
   return (
@@ -172,7 +112,6 @@ export function MainHeader() {
             {/* Desktop Navigation */}
             <div className="hidden lg:ml-6 lg:flex lg:space-x-8">
               <SignedIn>
-                {/* Dashboard Link */}
                 <Link
                   href="/dashboard"
                   className={`${
@@ -184,80 +123,6 @@ export function MainHeader() {
                   <BarChart3 className="h-4 w-4 mr-2 text-purple-300 dark:text-purple-400" />
                   Dashboard
                 </Link>
-
-                {/* Journal & Habits Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className={`${
-                        isJournalHabitsActive()
-                          ? "border-purple-300 dark:border-purple-400 text-foreground"
-                          : "border-transparent text-muted-foreground hover:border-purple-200 dark:hover:border-purple-600 hover:text-foreground"
-                      } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-16 transition-colors`}
-                    >
-                      <FileEdit className="h-4 w-4 mr-2 text-purple-300 dark:text-purple-400" />
-                      Journal & Habits
-                      <ChevronDown className="h-3 w-3 ml-1 text-purple-300 dark:text-purple-400" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-56 border-purple-100/30 dark:border-purple-800/30">
-                    <DropdownMenuLabel className="text-purple-400 dark:text-purple-300">Journal & Habits</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-purple-100/30 dark:bg-purple-800/30" />
-                    {journalHabitsItems.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <DropdownMenuItem key={item.name} asChild>
-                          <Link href={item.href} className="flex items-start gap-2 p-2 hover:bg-purple-50/50 dark:hover:bg-purple-900/20">
-                            <Icon className="h-4 w-4 mt-0.5 text-purple-300 dark:text-purple-400" />
-                            <div className="flex flex-col">
-                              <span className="font-medium">{item.name}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {item.description}
-                              </span>
-                            </div>
-                          </Link>
-                        </DropdownMenuItem>
-                      );
-                    })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* Projects & Tasks Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className={`${
-                        isProjectsTasksActive()
-                          ? "border-purple-300 dark:border-purple-400 text-foreground"
-                          : "border-transparent text-muted-foreground hover:border-purple-200 dark:hover:border-purple-600 hover:text-foreground"
-                      } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-16 transition-colors`}
-                    >
-                      <LayoutGrid className="h-4 w-4 mr-2 text-purple-300 dark:text-purple-400" />
-                      Projects & Tasks
-                      <ChevronDown className="h-3 w-3 ml-1 text-purple-300 dark:text-purple-400" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-56 border-purple-100/30 dark:border-purple-800/30">
-                    <DropdownMenuLabel className="text-purple-400 dark:text-purple-300">Projects & Tasks</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-purple-100/30 dark:bg-purple-800/30" />
-                    {projectsTasksItems.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <DropdownMenuItem key={item.name} asChild>
-                          <Link href={item.href} className="flex items-start gap-2 p-2 hover:bg-purple-50/50 dark:hover:bg-purple-900/20">
-                            <Icon className="h-4 w-4 mt-0.5 text-purple-300 dark:text-purple-400" />
-                            <div className="flex flex-col">
-                              <span className="font-medium">{item.name}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {item.description}
-                              </span>
-                            </div>
-                          </Link>
-                        </DropdownMenuItem>
-                      );
-                    })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </SignedIn>
             </div>
           </div>
@@ -266,7 +131,24 @@ export function MainHeader() {
           <div className="hidden lg:flex lg:items-center lg:space-x-4">
             <ThemeToggle />
             <SignedIn>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Create New</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {createItems.map((item) => (
+                      <DropdownMenuItem key={item.href} asChild>
+                        <Link href={item.href}>{item.name}</Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 {user && (
                   <span className="text-sm text-muted-foreground">
                     {user.firstName}
@@ -412,19 +294,24 @@ export function MainHeader() {
                           </Link>
                         </div>
 
-                        {/* Journal & Habits Section */}
+                        {/* Browse */}
                         <div>
                           <h3 className="px-3 mb-3 text-sm font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
-                            Journal & Habits
+                            Browse
                           </h3>
                           <div className="space-y-1">
-                            {journalHabitsItems.map((item) => {
-                              const Icon = item.icon;
-                              const isActive = pathname === item.href;
+                            {[
+                              { name: "Dashboard", href: "/dashboard", Icon: BarChart3 },
+                              { name: "Journal", href: "/journal", Icon: FileEdit },
+                              { name: "Habits", href: "/habits", Icon: CheckCircle2 },
+                              { name: "Projects", href: "/projects", Icon: LayoutGrid },
+                              { name: "Tasks", href: "/tasks", Icon: ListTodo },
+                            ].map(({ name, href, Icon }) => {
+                              const isActive = pathname === href;
                               return (
                                 <Link
-                                  key={item.name}
-                                  href={item.href}
+                                  key={href}
+                                  href={href}
                                   className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
                                     isActive
                                       ? "bg-purple-100/70 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
@@ -433,48 +320,35 @@ export function MainHeader() {
                                   onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                   <Icon className="h-5 w-5 text-purple-400 dark:text-purple-300" />
-                                  <div className="flex-1 min-w-0">
-                                    <span className="text-base block">{item.name}</span>
-                                    <span className="text-sm text-muted-foreground block truncate">
-                                      {item.description}
-                                    </span>
-                                  </div>
+                                  <span className="text-base block">{name}</span>
                                 </Link>
                               );
                             })}
                           </div>
                         </div>
 
-                        {/* Projects & Tasks Section */}
+                        {/* Create */}
                         <div>
                           <h3 className="px-3 mb-3 text-sm font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
-                            Projects & Tasks
+                            Create
                           </h3>
                           <div className="space-y-1">
-                            {projectsTasksItems.map((item) => {
-                              const Icon = item.icon;
-                              const isActive = pathname === item.href;
-                              return (
-                                <Link
-                                  key={item.name}
-                                  href={item.href}
-                                  className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                                    isActive
-                                      ? "bg-purple-100/70 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-                                      : "hover:bg-purple-50/50 dark:hover:bg-purple-900/20 text-foreground"
-                                  }`}
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                  <Icon className="h-5 w-5 text-purple-400 dark:text-purple-300" />
-                                  <div className="flex-1 min-w-0">
-                                    <span className="text-base block">{item.name}</span>
-                                    <span className="text-sm text-muted-foreground block truncate">
-                                      {item.description}
-                                    </span>
-                                  </div>
-                                </Link>
-                              );
-                            })}
+                            {[
+                              { name: "Journal Entry", href: "/journal/new" },
+                              { name: "Habit", href: "/habits/new" },
+                              { name: "Project", href: "/projects/new" },
+                              { name: "Task", href: "/tasks/new" },
+                            ].map(({ name, href }) => (
+                              <Link
+                                key={href}
+                                href={href}
+                                className="flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-purple-50/50 dark:hover:bg-purple-900/20 text-foreground"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <Plus className="h-5 w-5 text-purple-400 dark:text-purple-300" />
+                                <span className="text-base block">{name}</span>
+                              </Link>
+                            ))}
                           </div>
                         </div>
 

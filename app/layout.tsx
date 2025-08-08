@@ -3,14 +3,16 @@ import "./globals.css";
 import { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { MainHeader } from "@/components/layout/main-header";
+import { Sidebar } from "@/components/layout/sidebar";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/layout/theme/theme-provider";
 import { PWAInstallPrompt } from "@/components/pwa/install-prompt";
 import Script from "next/script";
+import { MobileTabBar } from "@/components/layout/mobile-tabbar";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://clerk-next-app.vercel.app/"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   title: "LifeOS - Personal Life Operating System",
   description:
     "Track your daily thoughts, moods, and habits in one place to build better routines and gain insights into your well-being.",
@@ -177,8 +179,12 @@ export default function RootLayout({
         >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <MainHeader />
-            <div className="flex-grow">{children}</div>
+            <div className="flex flex-1 w-full">
+              <Sidebar />
+              <div className="flex-1 min-w-0">{children}</div>
+            </div>
             <Footer />
+            <MobileTabBar />
             <Toaster />
             <PWAInstallPrompt />
           </ThemeProvider>

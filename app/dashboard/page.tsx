@@ -33,6 +33,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardData, LoadingState, TaskWithProject } from "@/lib/types";
+import { QuickAdd } from "@/components/quick-add";
+import { HabitHeatmapCalendar } from "@/components/habits/habit-heatmap-calendar";
+import { HabitConsistencyChart } from "@/components/habits/habit-consistency-chart";
 
 export default function Dashboard() {
   const [loadingState, setLoadingState] = useState<LoadingState>('loading');
@@ -307,10 +310,10 @@ export default function Dashboard() {
 
   // Success state with data
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+    <div className="container mx-auto p-4 pb-24 md:p-6 lg:p-8 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex space-x-2">
+        <div className="hidden md:flex space-x-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -337,6 +340,9 @@ export default function Dashboard() {
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Quick Add */}
+      <QuickAdd />
 
       {/* Journal and Habits Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -607,6 +613,12 @@ export default function Dashboard() {
             </CardFooter>
           </Tabs>
         </Card>
+      </div>
+
+      {/* Habit Insights */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <HabitHeatmapCalendar habits={dashboardData?.habits || []} />
+        <HabitConsistencyChart habits={dashboardData?.habits || []} />
       </div>
     </div>
   );

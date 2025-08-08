@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { getOrCreateDbUser } from '@/lib/user';
+import { createHabitSchema } from '@/lib/validation/habits';
 
 // GET /api/habits - Get all user habits
 export async function GET(req: NextRequest) {
@@ -48,14 +49,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { name, description, icon, color } = await req.json();
-    
-    if (!name) {
+    const body = await req.json();
+    const parsed = createHabitSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Habit name is required' }, 
+        { error: 'VALIDATION_ERROR', issues: parsed.error.issues },
         { status: 400 }
       );
     }
+    const { name, description, icon, color } = parsed.data;
 
     // Resolve DB user safely
     const clerkUserObj = await currentUser();
