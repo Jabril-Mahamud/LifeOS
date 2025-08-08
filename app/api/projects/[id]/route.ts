@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
+import { updateProjectSchema } from "@/lib/validation/projects";
 
 export async function GET(
   req: NextRequest,
@@ -66,7 +67,15 @@ export async function PATCH(
   }
 
   try {
-    const { name, description, icon, color, completed, archived } = await req.json();
+    const body = await req.json();
+    const parsed = updateProjectSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "VALIDATION_ERROR", issues: parsed.error.issues },
+        { status: 400 }
+      );
+    }
+    const { name, description, icon, color, completed, archived } = parsed.data;
 
     // Find the user in our database
     const dbUser = await prisma.user.findUnique({

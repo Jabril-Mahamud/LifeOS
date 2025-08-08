@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { getOrCreateDbUser } from '@/lib/user';
+import { createProjectSchema } from '@/lib/validation/projects';
 
 // GET /api/projects - Get all user projects
 export async function GET(req: NextRequest) {
@@ -56,14 +57,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { name, description, color, icon } = await req.json();
-    
-    if (!name) {
+    const body = await req.json();
+    const parsed = createProjectSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Project name is required' }, 
+        { error: 'VALIDATION_ERROR', issues: parsed.error.issues },
         { status: 400 }
       );
     }
+    const { name, description, color, icon } = parsed.data;
 
     // Resolve DB user safely
     const clerkUserObj = await currentUser();

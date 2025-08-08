@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { getOrCreateDbUser } from '@/lib/user';
+import { createTaskSchema } from '@/lib/validation/tasks';
 
 // GET /api/tasks - Get all user tasks
 export async function GET(req: NextRequest) {
@@ -82,14 +83,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { title, description, projectId, priority, dueDate, status } = await req.json();
-    
-    if (!title) {
+    const body = await req.json();
+    const parsed = createTaskSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Task title is required' }, 
+        { error: 'VALIDATION_ERROR', issues: parsed.error.issues },
         { status: 400 }
       );
     }
+    const { title, description, projectId, priority, dueDate, status } = parsed.data;
 
     // Resolve DB user safely
     const clerkUserObj = await currentUser();

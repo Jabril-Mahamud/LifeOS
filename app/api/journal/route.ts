@@ -3,6 +3,7 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { startOfDay, endOfDay } from 'date-fns';
 import { getOrCreateDbUser } from '@/lib/user';
+import { createJournalSchema } from '@/lib/validation/journal';
 
 export async function GET(req: NextRequest) {
   const authObject = await auth();
@@ -110,14 +111,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { title, content, mood = 'neutral', habitLogs = [] } = await req.json();
-    
-    if (!title) {
+    const body = await req.json();
+    const parsed = createJournalSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Title is required' }, 
+        { error: 'VALIDATION_ERROR', issues: parsed.error.issues },
         { status: 400 }
       );
     }
+    const { title, content, mood = 'neutral', habitLogs = [] } = parsed.data;
 
     // Resolve or create the DB user via helper to avoid duplicate email errors
     const clerkUserForPost = await currentUser();
