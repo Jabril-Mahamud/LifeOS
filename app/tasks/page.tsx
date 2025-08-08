@@ -262,7 +262,7 @@ export default function TasksPage() {
 
   // Success state (may have empty data)
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="container mx-auto p-6 pb-24 max-w-4xl">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <h1 className="text-2xl font-medium">Tasks</h1>
 

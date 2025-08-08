@@ -134,7 +134,7 @@ export function MainHeader() {
               <div className="flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" aria-label="Create new">
                       <Plus className="h-4 w-4 mr-2" />
                       Create
                     </Button>

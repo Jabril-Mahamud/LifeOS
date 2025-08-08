@@ -17,7 +17,7 @@ export function MobileTabBar() {
   const pathname = usePathname();
 
   return (
-    <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" role="navigation" aria-label="Primary">
       <nav className="grid grid-cols-5 px-2 py-2" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         {items.map(({ name, href, Icon }) => {
           const isActive = pathname === href || pathname.startsWith(`${href}/`);
