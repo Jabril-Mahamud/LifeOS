@@ -22,8 +22,8 @@ async function main() {
     data: {
       clerkId: "user_2x0EBigV3xgmexdOQCciX5Fphnu",
       email: "jabrilmahamud8@gmail.com",
-      firstName: "John",
-      lastName: "Doe",
+      firstName: "Jabril",
+      lastName: "Mahamud",
       profileImage: "https://via.placeholder.com/150",
     },
   });
@@ -64,63 +64,36 @@ async function main() {
 
   console.log("Created post:", post);
 
-  // Create sample habits
+  // Create focused habits aligned with user goals
   const habits = await Promise.all([
+    // Job Search & Networking
     prisma.habit.create({
       data: {
-        name: "Meditation",
-        description: "Daily mindfulness practice for 10 minutes",
-        icon: "🧘",
-        color: "#9f7aea", // Purple
+        name: "Job Applications",
+        description: "Submit 3 quality job applications with customized cover letters daily. Building momentum in the job search!",
+        icon: "briefcase",
+        color: "#3b82f6", // Blue
         active: true,
         authorId: user.id,
       },
     }),
     prisma.habit.create({
       data: {
-        name: "Read 30 minutes",
-        description: "Read books to expand knowledge",
-        icon: "📚",
-        color: "#4299e1", // Blue
+        name: "Network Outreach",
+        description: "Connect with 2 industry professionals on LinkedIn daily. Growing your network opens doors!",
+        icon: "users",
+        color: "#0ea5e9", // Sky
         active: true,
         authorId: user.id,
       },
     }),
+    
+    // Developer Skills
     prisma.habit.create({
       data: {
-        name: "Exercise",
-        description: "Physical activity for at least 20 minutes",
-        icon: "💪",
-        color: "#ed8936", // Orange
-        active: true,
-        authorId: user.id,
-      },
-    }),
-    prisma.habit.create({
-      data: {
-        name: "Drink water",
-        description: "8 glasses of water daily",
-        icon: "💧",
-        color: "#38b2ac", // Teal
-        active: true,
-        authorId: user.id,
-      },
-    }),
-    prisma.habit.create({
-      data: {
-        name: "Practice guitar",
-        description: "Practice playing guitar",
-        icon: "🎸",
-        color: "#f56565", // Red
-        active: false, // Inactive habit
-        authorId: user.id,
-      },
-    }),
-    prisma.habit.create({
-      data: {
-        name: "Write code",
-        description: "Practice coding skills",
-        icon: "💻",
+        name: "LeetCode Practice",
+        description: "Solve 2 LeetCode problems daily. Sharpen your problem-solving skills for interviews!",
+        icon: "code",
         color: "#6366f1", // Indigo
         active: true,
         authorId: user.id,
@@ -128,10 +101,66 @@ async function main() {
     }),
     prisma.habit.create({
       data: {
-        name: "Morning stretching",
-        description: "5 minutes of stretching after waking up",
-        icon: "🤸",
-        color: "#10b981", // Emerald
+        name: "Python Projects",
+        description: "Code for 1 hour on Python projects daily. Building your portfolio one commit at a time!",
+        icon: "code-2",
+        color: "#8b5cf6", // Violet
+        active: true,
+        authorId: user.id,
+      },
+    }),
+    
+    // Fitness & Health
+    prisma.habit.create({
+      data: {
+        name: "Strength Training",
+        description: "Complete 30 minutes of strength exercises daily. Building a stronger, healthier you!",
+        icon: "dumbbell",
+        color: "#ef4444", // Red
+        active: true,
+        authorId: user.id,
+      },
+    }),
+    prisma.habit.create({
+      data: {
+        name: "Meal Prep",
+        description: "Prepare healthy meals for tomorrow daily. Fuel your body for success!",
+        icon: "utensils",
+        color: "#22c55e", // Green
+        active: true,
+        authorId: user.id,
+      },
+    }),
+    
+    // Arabic Language
+    prisma.habit.create({
+      data: {
+        name: "Arabic Vocabulary",
+        description: "Learn 10 new Arabic words daily. Every word brings you closer to fluency!",
+        icon: "book-open",
+        color: "#f59e0b", // Amber
+        active: true,
+        authorId: user.id,
+      },
+    }),
+    prisma.habit.create({
+      data: {
+        name: "Arabic Practice",
+        description: "30 minutes of Arabic speaking or writing practice daily. Confidence grows with practice!",
+        icon: "message-square",
+        color: "#eab308", // Yellow
+        active: true,
+        authorId: user.id,
+      },
+    }),
+    
+    // Personal Organization
+    prisma.habit.create({
+      data: {
+        name: "Evening Planning",
+        description: "Plan tomorrow's schedule and priorities each evening. Set yourself up for success!",
+        icon: "calendar",
+        color: "#a855f7", // Purple
         active: true,
         authorId: user.id,
       },
@@ -140,13 +169,13 @@ async function main() {
 
   console.log(`Created ${habits.length} habits`);
 
-  // Create projects
+  // Create focused projects aligned with current priorities
   const projects = await Promise.all([
     prisma.project.create({
       data: {
-        name: "Personal Website",
-        description: "Rebuild my personal website with modern technologies",
-        icon: "🌐",
+        name: "Job Search & Networking",
+        description: "Strategic job search campaign focusing on full-stack developer positions. Building connections and preparing for interviews.",
+        icon: "briefcase",
         color: "#3b82f6", // Blue
         completed: false,
         archived: false,
@@ -155,10 +184,10 @@ async function main() {
     }),
     prisma.project.create({
       data: {
-        name: "Learn React",
-        description: "Study React and build sample projects",
-        icon: "⚛️",
-        color: "#10b981", // Emerald
+        name: "Developer Skill Growth",
+        description: "Systematic approach to enhancing technical skills through focused learning and project work.",
+        icon: "code",
+        color: "#6366f1", // Indigo
         completed: false,
         archived: false,
         authorId: user.id,
@@ -166,9 +195,20 @@ async function main() {
     }),
     prisma.project.create({
       data: {
-        name: "Home Organization",
-        description: "Organize and declutter the house",
-        icon: "🏠",
+        name: "Fitness & Health Plan",
+        description: "Comprehensive fitness and nutrition program focused on strength training and healthy eating habits.",
+        icon: "dumbbell",
+        color: "#ef4444", // Red
+        completed: false,
+        archived: false,
+        authorId: user.id,
+      },
+    }),
+    prisma.project.create({
+      data: {
+        name: "Arabic Language Journey",
+        description: "Structured approach to achieving conversational fluency in Arabic through daily practice and immersion.",
+        icon: "book-open",
         color: "#f59e0b", // Amber
         completed: false,
         archived: false,
@@ -177,34 +217,12 @@ async function main() {
     }),
     prisma.project.create({
       data: {
-        name: "Vacation Planning",
-        description: "Plan summer vacation to Europe",
-        icon: "✈️",
-        color: "#ec4899", // Pink
+        name: "Personal Life Organization",
+        description: "Establishing and maintaining productive daily routines and life management systems.",
+        icon: "layout-grid",
+        color: "#a855f7", // Purple
         completed: false,
         archived: false,
-        authorId: user.id,
-      },
-    }),
-    prisma.project.create({
-      data: {
-        name: "Photography Course",
-        description: "Complete online photography course",
-        icon: "📷",
-        color: "#8b5cf6", // Violet
-        completed: false,
-        archived: false,
-        authorId: user.id,
-      },
-    }),
-    prisma.project.create({
-      data: {
-        name: "Old Project",
-        description: "This is an archived project",
-        icon: "📦",
-        color: "#6b7280", // Gray
-        completed: true,
-        archived: true,
         authorId: user.id,
       },
     }),
@@ -213,10 +231,10 @@ async function main() {
   console.log(`Created ${projects.length} projects`);
 
   // Create tasks for projects
-  const personalWebsiteTasks = [
+  const jobSearchTasks = [
     {
-      title: "Design website mockup",
-      description: "Create wireframes and design mockups for the personal website",
+      title: "Update Resume with Latest Skills",
+      description: "Enhance resume with recent projects and technical skills. Focus on full-stack development achievements.",
       status: "completed",
       priority: "high",
       dueDate: subDays(new Date(), 5),
@@ -224,194 +242,194 @@ async function main() {
       projectId: projects[0].id,
     },
     {
-      title: "Set up Next.js project",
-      description: "Initialize Next.js project with TypeScript and required dependencies",
-      status: "completed",
+      title: "Create Portfolio Website",
+      description: "Build a professional portfolio showcasing your best projects and technical blog posts.",
+      status: "in-progress",
       priority: "high",
-      dueDate: subDays(new Date(), 2),
-      completedAt: subDays(new Date(), 1),
+      dueDate: addDays(new Date(), 7),
+      completedAt: null,
       projectId: projects[0].id,
     },
     {
-      title: "Implement homepage",
-      description: "Code the homepage layout and components",
+      title: "Research Target Companies",
+      description: "Create list of 20 companies hiring full-stack developers. Research their tech stacks and culture.",
       status: "in-progress",
+      priority: "medium",
+      dueDate: addDays(new Date(), 3),
+      completedAt: null,
+      projectId: projects[0].id,
+    },
+    {
+      title: "Prepare STAR Stories",
+      description: "Document 10 specific technical achievements using the STAR method for interviews.",
+      status: "pending",
+      priority: "high",
+      dueDate: addDays(new Date(), 5),
+      completedAt: null,
+      projectId: projects[0].id,
+    },
+    {
+      title: "Set up Job Search Tracking",
+      description: "Create spreadsheet to track applications, follow-ups, and interview stages.",
+      status: "pending",
       priority: "medium",
       dueDate: addDays(new Date(), 2),
       completedAt: null,
       projectId: projects[0].id,
     },
+  ];
+
+  const devSkillsTasks = [
     {
-      title: "Create portfolio section",
-      description: "Develop the portfolio showcase section with project cards",
-      status: "pending",
-      priority: "medium",
-      dueDate: addDays(new Date(), 5),
-      completedAt: null,
-      projectId: projects[0].id,
-    },
-    {
-      title: "Deploy website",
-      description: "Deploy the website to Vercel or Netlify",
-      status: "pending",
-      priority: "low",
+      title: "Complete Python Advanced Course",
+      description: "Finish advanced Python course focusing on backend development and APIs.",
+      status: "in-progress",
+      priority: "high",
       dueDate: addDays(new Date(), 14),
       completedAt: null,
-      projectId: projects[0].id,
+      projectId: projects[1].id,
+    },
+    {
+      title: "Build Full-Stack Project",
+      description: "Create a full-stack application using Python backend and React frontend.",
+      status: "pending",
+      priority: "high",
+      dueDate: addDays(new Date(), 30),
+      completedAt: null,
+      projectId: projects[1].id,
+    },
+    {
+      title: "Complete LeetCode Study Plan",
+      description: "Work through curated list of 50 essential coding problems for interviews.",
+      status: "in-progress",
+      priority: "high",
+      dueDate: addDays(new Date(), 21),
+      completedAt: null,
+      projectId: projects[1].id,
+    },
+    {
+      title: "Learn System Design",
+      description: "Study and document key system design patterns and architectures.",
+      status: "pending",
+      priority: "medium",
+      dueDate: addDays(new Date(), 45),
+      completedAt: null,
+      projectId: projects[1].id,
     },
   ];
 
-  const learnReactTasks = [
+  const fitnessTasks = [
     {
-      title: "Complete React basics course",
-      description: "Finish the React fundamentals course on Udemy",
+      title: "Create Workout Schedule",
+      description: "Design 4-day split workout routine focusing on strength training.",
       status: "completed",
       priority: "high",
-      dueDate: subDays(new Date(), 10),
-      completedAt: subDays(new Date(), 7),
-      projectId: projects[1].id,
+      dueDate: subDays(new Date(), 7),
+      completedAt: subDays(new Date(), 6),
+      projectId: projects[2].id,
     },
     {
-      title: "Build a todo app",
-      description: "Create a simple todo application using React",
-      status: "completed",
-      priority: "medium",
-      dueDate: subDays(new Date(), 5),
-      completedAt: subDays(new Date(), 4),
-      projectId: projects[1].id,
-    },
-    {
-      title: "Learn React Hooks",
-      description: "Study and practice using React hooks",
+      title: "Plan Meal Prep System",
+      description: "Develop weekly meal prep routine with healthy, high-protein recipes.",
       status: "in-progress",
       priority: "high",
       dueDate: addDays(new Date(), 3),
       completedAt: null,
-      projectId: projects[1].id,
-    },
-    {
-      title: "Build a weather app",
-      description: "Create a weather app that uses an external API",
-      status: "pending",
-      priority: "medium",
-      dueDate: addDays(new Date(), 7),
-      completedAt: null,
-      projectId: projects[1].id,
-    },
-  ];
-
-  const homeOrganizationTasks = [
-    {
-      title: "Declutter living room",
-      description: "Sort through and organize the living room",
-      status: "completed",
-      priority: "medium",
-      dueDate: subDays(new Date(), 15),
-      completedAt: subDays(new Date(), 14),
       projectId: projects[2].id,
     },
     {
-      title: "Organize kitchen cabinets",
-      description: "Clean and reorganize kitchen cabinets and drawers",
-      status: "in-progress",
+      title: "Set Up Home Gym",
+      description: "Purchase and organize essential equipment for home workouts.",
+      status: "pending",
       priority: "medium",
-      dueDate: addDays(new Date(), 1),
-      completedAt: null,
-      projectId: projects[2].id,
-    },
-    {
-      title: "Donate unused items",
-      description: "Collect items to donate and take them to donation center",
-      status: "pending",
-      priority: "low",
-      dueDate: addDays(new Date(), 10),
-      completedAt: null,
-      projectId: projects[2].id,
-    },
-  ];
-
-  const vacationPlanningTasks = [
-    {
-      title: "Research destinations",
-      description: "Research potential destinations in Europe",
-      status: "completed",
-      priority: "high",
-      dueDate: subDays(new Date(), 20),
-      completedAt: subDays(new Date(), 18),
-      projectId: projects[3].id,
-    },
-    {
-      title: "Check passport validity",
-      description: "Ensure passport is valid for at least 6 months after return date",
-      status: "completed",
-      priority: "high",
-      dueDate: subDays(new Date(), 15),
-      completedAt: subDays(new Date(), 15),
-      projectId: projects[3].id,
-    },
-    {
-      title: "Book flights",
-      description: "Search for and book flights to Europe",
-      status: "in-progress",
-      priority: "high",
-      dueDate: addDays(new Date(), 7),
-      completedAt: null,
-      projectId: projects[3].id,
-    },
-    {
-      title: "Reserve accommodations",
-      description: "Book hotels or Airbnbs for each destination",
-      status: "pending",
-      priority: "high",
       dueDate: addDays(new Date(), 14),
       completedAt: null,
+      projectId: projects[2].id,
+    },
+    {
+      title: "Track Progress Metrics",
+      description: "Set up system to track weight, measurements, and strength progress.",
+      status: "pending",
+      priority: "medium",
+      dueDate: addDays(new Date(), 7),
+      completedAt: null,
+      projectId: projects[2].id,
+    },
+  ];
+
+  const arabicTasks = [
+    {
+      title: "Complete Arabic Basics Course",
+      description: "Finish foundational Arabic course covering essential grammar and vocabulary.",
+      status: "completed",
+      priority: "high",
+      dueDate: subDays(new Date(), 30),
+      completedAt: subDays(new Date(), 28),
       projectId: projects[3].id,
     },
     {
-      title: "Create itinerary",
-      description: "Plan daily activities and sightseeing",
+      title: "Set Up Language Exchange",
+      description: "Find and schedule regular practice sessions with native speakers.",
+      status: "in-progress",
+      priority: "high",
+      dueDate: addDays(new Date(), 7),
+      completedAt: null,
+      projectId: projects[3].id,
+    },
+    {
+      title: "Create Vocabulary System",
+      description: "Set up Anki deck for spaced repetition vocabulary practice.",
       status: "pending",
       priority: "medium",
-      dueDate: addDays(new Date(), 30),
+      dueDate: addDays(new Date(), 5),
+      completedAt: null,
+      projectId: projects[3].id,
+    },
+    {
+      title: "Plan Immersion Strategy",
+      description: "Curate Arabic podcasts, YouTube channels, and reading materials.",
+      status: "pending",
+      priority: "medium",
+      dueDate: addDays(new Date(), 10),
       completedAt: null,
       projectId: projects[3].id,
     },
   ];
 
-  const photographyCourseTasks = [
+  const personalOrgTasks = [
     {
-      title: "Complete basics module",
-      description: "Finish the photography basics module",
+      title: "Design Morning Routine",
+      description: "Create optimal morning routine incorporating exercise and learning.",
       status: "completed",
-      priority: "medium",
-      dueDate: subDays(new Date(), 30),
-      completedAt: subDays(new Date(), 28),
+      priority: "high",
+      dueDate: subDays(new Date(), 14),
+      completedAt: subDays(new Date(), 13),
       projectId: projects[4].id,
     },
     {
-      title: "Practice composition techniques",
-      description: "Take 20 photos demonstrating different composition techniques",
-      status: "completed",
-      priority: "medium",
-      dueDate: subDays(new Date(), 20),
-      completedAt: subDays(new Date(), 19),
-      projectId: projects[4].id,
-    },
-    {
-      title: "Learn about lighting",
-      description: "Complete the lighting module and practice exercises",
+      title: "Set Up Task Management",
+      description: "Implement GTD system for managing projects and responsibilities.",
       status: "in-progress",
-      priority: "medium",
+      priority: "high",
       dueDate: addDays(new Date(), 5),
       completedAt: null,
       projectId: projects[4].id,
     },
     {
-      title: "Photo editing basics",
-      description: "Learn basic photo editing in Lightroom",
+      title: "Create Budget System",
+      description: "Set up detailed budget tracking for job transition period.",
+      status: "pending",
+      priority: "high",
+      dueDate: addDays(new Date(), 7),
+      completedAt: null,
+      projectId: projects[4].id,
+    },
+    {
+      title: "Organize Digital Files",
+      description: "Implement file organization system for documents and projects.",
       status: "pending",
       priority: "medium",
-      dueDate: addDays(new Date(), 15),
+      dueDate: addDays(new Date(), 14),
       completedAt: null,
       projectId: projects[4].id,
     },
@@ -420,26 +438,26 @@ async function main() {
   // Create standalone tasks (not associated with any project)
   const standaloneTasks = [
     {
-      title: "Schedule dentist appointment",
-      description: "Call dentist office to schedule annual checkup",
+      title: "Schedule Health Checkup",
+      description: "Book annual physical examination before job transition",
       status: "pending",
       priority: "medium",
-      dueDate: addDays(new Date(), 5),
+      dueDate: addDays(new Date(), 14),
       completedAt: null,
       projectId: null,
     },
     {
-      title: "Pay utility bills",
-      description: "Pay electric and water bills online",
-      status: "completed",
+      title: "Update LinkedIn Profile",
+      description: "Refresh LinkedIn with latest skills and achievements",
+      status: "pending",
       priority: "high",
-      dueDate: subDays(new Date(), 2),
-      completedAt: subDays(new Date(), 3),
+      dueDate: addDays(new Date(), 2),
+      completedAt: null,
       projectId: null,
     },
     {
-      title: "Buy groceries",
-      description: "Purchase items from shopping list",
+      title: "Review Monthly Budget",
+      description: "Adjust monthly budget for job search period",
       status: "pending",
       priority: "high",
       dueDate: addDays(new Date(), 1),
@@ -450,11 +468,11 @@ async function main() {
 
   // Combine all tasks
   const allTasks = [
-    ...personalWebsiteTasks,
-    ...learnReactTasks,
-    ...homeOrganizationTasks,
-    ...vacationPlanningTasks,
-    ...photographyCourseTasks,
+    ...jobSearchTasks,
+    ...devSkillsTasks,
+    ...fitnessTasks,
+    ...arabicTasks,
+    ...personalOrgTasks,
     ...standaloneTasks,
   ];
 
@@ -543,31 +561,93 @@ async function main() {
     
     journalEntries.push(journalEntry);
     
-    // Create habit logs for each entry (with some randomness for completion)
+    // Create habit logs for each entry with realistic completion patterns
     for (const habit of habits.filter(h => h.active)) {
-      // More likely to complete habits on recent days (learning and improvement)
-      // Higher chance of completion for simple habits like "Drink water"
-      let completionChance = 0.7; // Base chance
-      
-      if (habit.name === "Drink water") {
-        completionChance = 0.9; // Higher chance for simple habits
-      } else if (habit.name === "Exercise") {
-        completionChance = 0.6; // Lower chance for demanding habits
+      let completionChance = 0.65; // Base chance - realistic but showing room for improvement
+      let notes = null;
+
+      // Adjust completion chances based on habit type and difficulty
+      switch (habit.name) {
+        // Job Search - higher completion on weekdays
+        case "Job Applications":
+        case "Network Outreach":
+          completionChance = entryDate.getDay() >= 1 && entryDate.getDay() <= 5 ? 0.8 : 0.3;
+          break;
+
+        // Developer Skills - steady effort with some variation
+        case "LeetCode Practice":
+        case "Python Projects":
+          completionChance = 0.7;
+          break;
+
+        // Fitness - affected by energy levels and weekends
+        case "Strength Training":
+          completionChance = entryDate.getDay() === 0 ? 0.4 : 0.75; // Lower on Sundays
+          break;
+        case "Meal Prep":
+          completionChance = entryDate.getDay() === 0 ? 0.85 : 0.7; // Higher on Sundays
+          break;
+
+        // Language Learning - steady daily practice
+        case "Arabic Vocabulary":
+        case "Arabic Practice":
+          completionChance = 0.75; // Consistent daily effort
+          break;
+
+        // Personal Organization - high priority
+        case "Evening Planning":
+          completionChance = 0.85; // High completion as it's crucial for next day
+          break;
       }
-      
-      // Improvement over time - lower chance further in the past
-      if (i > 30) {
-        completionChance -= 0.2;
+
+      // Improvement over time - show progress in habit formation
+      if (i > 45) {
+        completionChance -= 0.25; // Early days - still building habits
+      } else if (i > 30) {
+        completionChance -= 0.15; // Starting to improve
       } else if (i > 15) {
-        completionChance -= 0.1;
+        completionChance -= 0.05; // Getting better
       }
-      
+
       const completed = Math.random() < completionChance;
-      
+
+      // Add meaningful notes for completed habits
+      if (completed) {
+        switch (habit.name) {
+          case "Job Applications":
+            notes = "Applied to senior positions at tech companies";
+            break;
+          case "Network Outreach":
+            notes = "Connected with developers in target companies";
+            break;
+          case "LeetCode Practice":
+            notes = "Completed array and string manipulation problems";
+            break;
+          case "Python Projects":
+            notes = "Worked on API implementation and testing";
+            break;
+          case "Strength Training":
+            notes = "Completed full body workout with progressive overload";
+            break;
+          case "Meal Prep":
+            notes = "Prepared healthy meals for next 3 days";
+            break;
+          case "Arabic Vocabulary":
+            notes = "Learned new vocabulary for daily conversations";
+            break;
+          case "Arabic Practice":
+            notes = "Practiced speaking with language exchange partner";
+            break;
+          case "Evening Planning":
+            notes = "Planned tomorrow's tasks and priorities";
+            break;
+        }
+      }
+
       await prisma.habitLog.create({
         data: {
           completed,
-          notes: completed ? `Completed ${habit.name}` : null,
+          notes,
           journalId: journalEntry.id,
           habitId: habit.id,
         },
