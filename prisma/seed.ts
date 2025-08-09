@@ -30,27 +30,33 @@ async function main() {
 
   console.log("Created user:", user);
 
-  // Create a sample organization
-  const organization = await prisma.organization.create({
-    data: {
-      clerkId: "sample-clerk-org-id-1",
-      name: "Demo Company",
-      imageUrl: "https://via.placeholder.com/150",
-    },
-  });
+  // Optionally seed organizations if explicitly enabled
+  const shouldSeedOrgs =
+    process.env.SEED_ORGS === "true" || process.env.CLERK_ORGS_ENABLED === "true";
 
-  console.log("Created organization:", organization);
+  if (shouldSeedOrgs) {
+    const organization = await prisma.organization.create({
+      data: {
+        clerkId: "sample-clerk-org-id-1",
+        name: "Demo Company",
+        imageUrl: "https://via.placeholder.com/150",
+      },
+    });
 
-  // Add the user to the organization
-  const membership = await prisma.organizationMember.create({
-    data: {
-      userId: user.id,
-      organizationId: organization.id,
-      role: "admin",
-    },
-  });
+    console.log("Created organization:", organization);
 
-  console.log("Created organization membership:", membership);
+    const membership = await prisma.organizationMember.create({
+      data: {
+        userId: user.id,
+        organizationId: organization.id,
+        role: "admin",
+      },
+    });
+
+    console.log("Created organization membership:", membership);
+  } else {
+    console.log("Skipping organization seeding (set SEED_ORGS=true to enable)");
+  }
 
   // Create a sample post
   const post = await prisma.post.create({
