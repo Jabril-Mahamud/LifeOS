@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { startOfDay, endOfDay } from 'date-fns';
-import { getOrCreateDbUser } from '@/lib/user';
 
 export async function GET(req: NextRequest) {
   const authObject = await auth();
@@ -20,8 +19,33 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'User not found in Clerk' }, { status: 404 });
     }
     
-    // Find or create user; if email exists, attach Clerk ID instead of duplicating
-    const dbUser = await getOrCreateDbUser(userId, clerkUser);
+    // Find or create user in our database based on Clerk ID
+    let dbUser = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    // If we don't have this user in our database yet, create them
+    if (!dbUser) {
+      // Get primary email from the Clerk user
+      const primaryEmail = clerkUser.emailAddresses.find(
+        email => email.id === clerkUser.primaryEmailAddressId
+      )?.emailAddress;
+      
+      if (!primaryEmail) {
+        return NextResponse.json({ error: 'User has no email address' }, { status: 400 });
+      }
+      
+      // Create a new user in our database with data from Clerk
+      dbUser = await prisma.user.create({
+        data: {
+          clerkId: userId,
+          email: primaryEmail,
+          firstName: clerkUser.firstName,
+          lastName: clerkUser.lastName,
+          profileImage: clerkUser.imageUrl,
+        },
+      });
+    }
 
     // Check if there's a date parameter in the request
     const dateParam = req.nextUrl.searchParams.get('date');
@@ -119,12 +143,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Resolve or create the DB user via helper to avoid duplicate email errors
-    const clerkUserForPost = await currentUser();
-    if (!clerkUserForPost) {
-      return NextResponse.json({ error: 'User not found in Clerk' }, { status: 404 });
+    // Find the user in our database
+    let dbUser = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    // If user doesn't exist in our database yet, create them
+    if (!dbUser) {
+      const clerkUser = await currentUser();
+      
+      if (!clerkUser) {
+        return NextResponse.json({ error: 'User not found in Clerk' }, { status: 404 });
+      }
+      
+      const primaryEmail = clerkUser.emailAddresses.find(
+        email => email.id === clerkUser.primaryEmailAddressId
+      )?.emailAddress;
+      
+      if (!primaryEmail) {
+        return NextResponse.json({ error: 'User has no email address' }, { status: 400 });
+      }
+      
+      dbUser = await prisma.user.create({
+        data: {
+          clerkId: userId,
+          email: primaryEmail,
+          firstName: clerkUser.firstName,
+          lastName: clerkUser.lastName,
+          profileImage: clerkUser.imageUrl,
+        },
+      });
     }
-    const dbUser = await getOrCreateDbUser(userId, clerkUserForPost);
 
     // Check if a journal entry already exists for today
     const today = startOfDay(new Date());

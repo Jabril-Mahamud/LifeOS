@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
-import { getOrCreateDbUser } from '@/lib/user';
 
 // GET /api/tasks - Get all user tasks
 export async function GET(req: NextRequest) {
@@ -91,12 +90,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Resolve DB user safely
-    const clerkUserObj = await currentUser();
-    if (!clerkUserObj) {
-      return NextResponse.json({ error: 'User not found in Clerk' }, { status: 404 });
+    // Find the user in our database
+    let dbUser = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    // If user doesn't exist in our database yet, create them
+    if (!dbUser) {
+      const clerkUser = await currentUser();
+      
+      if (!clerkUser) {
+        return NextResponse.json({ error: 'User not found in Clerk' }, { status: 404 });
+      }
+      
+      const primaryEmail = clerkUser.emailAddresses.find(
+        email => email.id === clerkUser.primaryEmailAddressId
+      )?.emailAddress;
+      
+      if (!primaryEmail) {
+        return NextResponse.json({ error: 'User has no email address' }, { status: 400 });
+      }
+      
+      dbUser = await prisma.user.create({
+        data: {
+          clerkId: userId,
+          email: primaryEmail,
+          firstName: clerkUser.firstName,
+          lastName: clerkUser.lastName,
+          profileImage: clerkUser.imageUrl,
+        },
+      });
     }
-    const dbUser = await getOrCreateDbUser(userId, clerkUserObj);
 
     // If projectId is provided, verify it exists and belongs to the user
     if (projectId) {
